@@ -1,13 +1,13 @@
 import { useParams } from "react-router-dom";
-import { GroupContext } from "../contexts/GroupContext.jsx";
+import { GroupContext } from "../src/context/GroupContext";
 import { useContext } from "react";
 
 export default function TeacherFeed() {
-  const { feedId } = useParams();
-  console.log(feedId);
+  const { id } = useParams();
+  console.log(id);
   const groups = useContext(GroupContext);
 
-  const group = groups.find((grp) => grp.id === feedId);
+  const group = groups.find((grp) => grp.id === id);
   console.log(group);
 
   return (

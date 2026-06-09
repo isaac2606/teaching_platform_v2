@@ -5,7 +5,7 @@ import Button from "../src/components/ui/Button";
 import Input from "../src/components/ui/Input";
 
 const INITIAL_HUBS = [
-    { id: "1", title: "math", status: "not done" },
+    { id: "1", title: "math", status: "not done", messages:["hello","hi","test"] },
     { id: "2", title: "svt", status: "done" },
     { id: "3", title: "eco", status: "not done" }
 ];
@@ -14,7 +14,7 @@ export default function TeacherHub() {
     const { hubs, addHub, editHub, deleteHub } = useHubs(INITIAL_HUBS);
     const [newHub, setNewHub] = useState("");
     const [filter, setFilter] = useState("all");
-
+    
     const filteredHubs = useMemo(() => {
         if (filter === "all") return hubs;
         return hubs.filter(hub => hub.status === filter);

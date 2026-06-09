@@ -1,8 +1,10 @@
 import { NavLink } from "react-router-dom";
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Sidebar() {
   const [role, setRole] = useState("Teacher");
+  const { user, logout } = useContext(AuthContext);
 
   const navItems = [
     { name: "Dashboard", path: "/dashboard" },
@@ -67,15 +69,21 @@ export default function Sidebar() {
 
       {/* 4. User Profile */}
       <div className="p-4 border-t border-white/10">
-        <div className="flex gap-3 items-center p-2 rounded-xl hover:bg-white/5 cursor-pointer transition-colors">
+        <div className="flex gap-3 items-center p-2 rounded-xl hover:bg-white/5 cursor-pointer transition-colors mb-2">
           <div className="bg-brand-primary text-white w-10 h-10 flex items-center justify-center rounded-full font-bold shadow-lg shadow-brand-primary/20">
-            LH
+            {user?.username ? user.username.substring(0, 2).toUpperCase() : "U"}
           </div>
           <div className="flex-1 min-w-0">
-             <p className="text-white font-semibold text-sm truncate">Layla Hassan</p>
+             <p className="text-white font-semibold text-sm truncate">{user?.username || "User"}</p>
              <p className="text-xs text-text-secondary truncate">{role}</p>
           </div>
         </div>
+        <button 
+          onClick={logout}
+          className="w-full py-2 text-sm text-red-400 hover:bg-red-400/10 hover:text-red-300 font-medium rounded-lg transition-colors border border-red-500/20"
+        >
+          Log Out
+        </button>
       </div>
 
     </aside>
