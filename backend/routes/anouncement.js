@@ -43,7 +43,6 @@ router.post("/add", verifyToken,async (req,res)=>{
 })
 
 
-
 router.get("/getAnounc",verifyToken,async(req,res)=>{
     try{
 
@@ -58,6 +57,15 @@ router.get("/getAnounc",verifyToken,async(req,res)=>{
 })
 
 
+router.get("/group/:groupId", verifyToken, async (req, res) => {
+    try {
+        // Find all announcements where the groups array contains this groupId
+        const feed = await Anouncement.find({ groups: req.params.groupId });
+        res.status(200).json(feed);
+    } catch (err) {
+        res.status(500).json(err);
+    }
+});
 
 
 

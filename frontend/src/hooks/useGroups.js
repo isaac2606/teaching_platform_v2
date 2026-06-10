@@ -40,13 +40,16 @@ export function useGroups(initialGroups = []) {
     try {
       // This will connect to the new PUT route we will write
       const response = await api.put(`/group/${groupId}`, { title: newTitle });
+      const savedGroup = response.data; 
       setGroups((prevGroups) =>
         prevGroups.map((group) =>
-          group._id === groupId ? { ...group, title: newTitle } : group
+          group._id === groupId ? { ...group, savedGroup } : group
         )
       );
     } catch (err) {
       setError(err.message);
+    }finally{
+      setLoading(false);
     }
   }, []);
 
@@ -59,6 +62,8 @@ export function useGroups(initialGroups = []) {
       );
     } catch (err) {
       setError(err.message);
+    }finally{
+      setLoading(false);
     }
   }, []);
 
