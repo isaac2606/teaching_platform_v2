@@ -73,6 +73,18 @@ router.get("/getGroups",verifyToken,async(req,res)=>{
     }
 })
 
+router.get("/:id",verifyToken,async(req,res)=>{
+    try{
+
+        const group= await Group.findById(req.params.id);
+
+        res.status(200).json(group)
+
+        
+    }catch(err){
+        res.status(500).json(err)
+    }
+})
 
 router.put("/:id",verifyToken,authorize("teacher"),async (req,res)=>{
 

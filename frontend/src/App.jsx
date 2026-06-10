@@ -4,7 +4,7 @@ import DashboardLayout from "./layouts/DashboardLayout";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import './App.css';
-import TeacherFeed from "../hub/TeacherFeed";
+// TeacherFeed has been refactored into pages/GroupFeed.jsx and lazy loaded below
 import {GroupProvider} from "./context/GroupContext"
 import { useContext } from "react";
 // Lazy loading pages for performance
@@ -12,6 +12,7 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 // Note: TeacherHub has been refactored into pages/Dashboard.jsx!
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
+const GroupFeed = lazy(() => import("./pages/GroupFeed"));
 
 // Fallback loader component
 const Loader = () => (
@@ -46,7 +47,7 @@ export default function App() {
                   into the main App.jsx router tree for a scalable architecture. 
                 */}
                 <Route path="dashboard" element={<Dashboard />} />
-                <Route path="teacherFeed/:id" element={<TeacherFeed />} />
+                <Route path="groupFeed/:id" element={<GroupFeed />} />
                 {/* Future pages can be added here */}
                 {/* <Route path="groups" element={<Groups />} /> */}
                 {/* <Route path="schedule" element={<Schedule />} /> */}

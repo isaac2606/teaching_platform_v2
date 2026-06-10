@@ -49,7 +49,7 @@ const GroupCard = memo(function GroupCard({ group, onDelete, onEdit }) {
 
                 {/* Footer Action */}
                 <div className="flex justify-center mt-auto w-full">
-                    <Link to={`/teacherFeed/${group._id}`} className="w-full">
+                    <Link to={`/groupFeed/${group._id}`} className="w-full">
                         <Button className="w-full" variant="secondary">
                             View Feed
                         </Button>

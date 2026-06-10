@@ -57,6 +57,8 @@ router.get("/getAnounc",verifyToken,async(req,res)=>{
 })
 
 
+
+
 router.get("/group/:groupId", verifyToken, async (req, res) => {
     try {
         // Find all announcements where the groups array contains this groupId
