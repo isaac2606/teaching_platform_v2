@@ -43,7 +43,7 @@ const GroupCard = memo(function GroupCard({ group, onDelete, onEdit }) {
                 {/* Content */}
                 <div className="text-center my-4">
                     <h3 className="text-2xl font-bold text-white capitalize truncate drop-shadow-md">
-                        {group.title}
+                        {group.title || "test"}
                     </h3>
                 </div>
 

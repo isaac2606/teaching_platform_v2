@@ -101,7 +101,7 @@ router.put("/:id",verifyToken,authorize("teacher"),async (req,res)=>{
 })
 
 
-router.delete("/:id",verifyToken,authorize("teacher",async (req,res)=>{
+router.delete("/:id", verifyToken, authorize("teacher"), async (req, res) => {
 
     try{
 
@@ -111,5 +111,6 @@ router.delete("/:id",verifyToken,authorize("teacher",async (req,res)=>{
     }catch(err){
         res.status(500).json(err)
     }
-}))
+})
+
 module.exports = router;

@@ -5,8 +5,8 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import './App.css';
 // TeacherFeed has been refactored into pages/GroupFeed.jsx and lazy loaded below
-import {GroupProvider} from "./context/GroupContext"
-import { useContext } from "react";
+
+
 // Lazy loading pages for performance
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 // Note: TeacherHub has been refactored into pages/Dashboard.jsx!
@@ -20,17 +20,13 @@ const Loader = () => (
     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-primary"></div>
   </div>
 );
-const INITIAL_HUBS = [
-    { id: "1", title: "math", status: "not done", messages:["hello","hi","test"] },
-    { id: "2", title: "svt", status: "done" ,messages:["hello","hi","test"]},
-    { id: "3", title: "eco", status: "not done" ,messages:["hello","hi","test"]}
-];
+
 
 
 export default function App() {
   return (
     <AuthProvider>
-      <GroupProvider value={INITIAL_HUBS}>
+      
         <Suspense fallback={<Loader />}>
           <Routes>
             {/* Public Routes */}
@@ -55,7 +51,7 @@ export default function App() {
             </Route>
           </Routes>
         </Suspense>
-      </GroupProvider>
+      
     </AuthProvider>
   );
 }
