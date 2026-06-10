@@ -5,19 +5,7 @@ const verifyToken = require("../middleware/verifyToken")
 const authorize=require("../middleware/roleMiddleware");
 const { findById } = require("../models/User");
 
-router.get("/teacher",  verifyToken,authorize("teacher"), async (req,res)=> {
-    res.json({
-        message:"this is teacher side"
-    })
-})
 
-
-router.get("/student", verifyToken , authorize("student"), async (req,res)=> {
-
-    res.json({
-        message:"this is student side"
-    })
-})
 
 router.get("/getUsers",verifyToken,async(req,res)=>{
     try{

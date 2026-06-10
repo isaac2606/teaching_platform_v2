@@ -12,7 +12,7 @@ router.post("/", verifyToken, authorize("teacher"), async (req , res)=>{
     try{
         const inviteToken = crypto.randomBytes(8).toString('hex');
         const group =  new Group({
-            name:req.body.name,
+            title:req.body.title,
             teacher: req.user.userId,
             inviteToken:inviteToken
             });
@@ -59,7 +59,7 @@ router.put("/:id/leave", verifyToken ,authorize("student"),async(req,res)=>{
 }
 )
 
-
+//get ALL groups
 router.get("/getGroups",verifyToken,async(req,res)=>{
     try{
 
@@ -73,4 +73,31 @@ router.get("/getGroups",verifyToken,async(req,res)=>{
     }
 })
 
+
+router.put("/:id",verifyToken,authorize("teacher"),async (req,res)=>{
+
+    try{
+        const updatedGroup = await Group.findByIdAndUpdate(
+            req.params.id,
+            {   $set:{title:req.body.title} },
+            {   new: true    });
+        res.status(200).json(updatedGroup);
+    }catch(err){
+        res.status(500).json(err)
+    }
+
+})
+
+
+router.delete("/:id",verifyToken,authorize("teacher",async (req,res)=>{
+
+    try{
+
+        await Group.findByIdAndDelete(req.params.id);
+        res.status(200).json("Group has been deleted")
+
+    }catch(err){
+        res.status(500).json(err)
+    }
+}))
 module.exports = router;

@@ -9,7 +9,7 @@ import {GroupProvider} from "./context/GroupContext"
 import { useContext } from "react";
 // Lazy loading pages for performance
 const Dashboard = lazy(() => import("./pages/Dashboard"));
-const TeacherHub = lazy(() => import("../hub/TeacherHub")); // Note: This will need to be ported to V2 pages later
+// Note: TeacherHub has been refactored into pages/Dashboard.jsx!
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 
@@ -45,7 +45,7 @@ export default function App() {
                   Notice how we are moving the nested routes from Dashboard.jsx 
                   into the main App.jsx router tree for a scalable architecture. 
                 */}
-                <Route path="dashboard" element={<TeacherHub />} />
+                <Route path="dashboard" element={<Dashboard />} />
                 <Route path="teacherFeed/:id" element={<TeacherFeed />} />
                 {/* Future pages can be added here */}
                 {/* <Route path="groups" element={<Groups />} /> */}
