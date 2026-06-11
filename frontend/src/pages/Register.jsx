@@ -8,7 +8,8 @@ export default function Register() {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
-    password: ""
+    password: "",
+    role:"student"
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -84,6 +85,39 @@ export default function Register() {
             placeholder="••••••••"
             required
           />
+          <div className="p-4 border-b border-white/10">
+              <div className="flex bg-black/20 rounded-lg p-1 border border-white/5">
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setFormData({
+                        ...formData,
+                        role:"teacher"
+                  })
+                }}
+                      
+                  className={`flex-1 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 ${
+                    formData.role === "teacher" ? "bg-brand-primary text-white shadow-md" : "text-text-secondary hover:text-white"
+                  }`}
+                >
+                  Teacher
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    setFormData({
+                        ...formData,
+                        role:"student"
+                  })
+                }}
+                  className={`flex-1 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 ${
+                    formData.role === "student" ? "bg-brand-primary text-white shadow-md" : "text-text-secondary hover:text-white"
+                  }`}
+                >
+                  Student
+                </button>
+              </div>
+            </div>
 
           <Button 
             type="submit" 
