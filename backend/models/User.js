@@ -19,6 +19,10 @@ const UserSchema = new mongoose.Schema(
       enum: ["student", "teacher", "admin"],
       default: "student",
     },
+    groups:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Group" 
+    }],
     refreshToken: { type: String },
   },
   { timestamps: true },

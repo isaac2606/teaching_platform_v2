@@ -7,6 +7,10 @@ const GroupCard = memo(function GroupCard({ group, onDelete, onEdit }) {
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState("");
 
+    const handleCopy = () => {
+        navigator.clipboard.writeText(`http://localhost:5173/join/${group.inviteToken}`)
+    }
+    
     return(
         <div className="relative glass-panel group-hover-trigger overflow-hidden transition-all duration-300 hover:shadow-2xl hover:shadow-brand-primary/20 hover:-translate-y-1">
             {/* Dynamic Background Gradient */}
@@ -54,6 +58,9 @@ const GroupCard = memo(function GroupCard({ group, onDelete, onEdit }) {
                             View Feed
                         </Button>
                     </Link>
+                    <Button className="" variant="secondary" onClick={handleCopy}>
+                            Link
+                    </Button>
                 </div>
             </div>
 

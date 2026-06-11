@@ -1,13 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 import api from '../services/api';
-const INITIAL_GROUPS = [
-    { id: "1", title: "math", status: "not done", messages:["hello","hi","test"] },
-    { id: "2", title: "svt", status: "done" ,messages:["hello","hi","test"]},
-    { id: "3", title: "eco", status: "not done" ,messages:["hello","hi","test"]}
-];
+
 export function useGroups() {
 
-  const [groups, setGroups] = useState(INITIAL_GROUPS);
+  const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 

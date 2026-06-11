@@ -3,6 +3,9 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import DashboardLayout from "./layouts/DashboardLayout";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+import { useContext } from "react";
+import { AuthContext } from "./context/AuthContext";
+
 import './App.css';
 // TeacherFeed has been refactored into pages/GroupFeed.jsx and lazy loaded below
 
@@ -13,6 +16,8 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const GroupFeed = lazy(() => import("./pages/GroupFeed"));
+const StudentDashboard = lazy(() => import("./pages/StudentDashboard"));
+const JoinGroup = lazy(() => import("./pages/JoinGroup"));
 
 // Fallback loader component
 const Loader = () => (
@@ -21,12 +26,16 @@ const Loader = () => (
   </div>
 );
 
-
+// We must create a small wrapper component here because we cannot use AuthContext 
+// inside the same App component that provides the AuthProvider!
+function RoleBasedDashboard() {
+  const { user } = useContext(AuthContext);
+  return user?.role === "teacher" ? <Dashboard /> : <StudentDashboard />;
+}
 
 export default function App() {
   return (
     <AuthProvider>
-      
         <Suspense fallback={<Loader />}>
           <Routes>
             {/* Public Routes */}
@@ -38,20 +47,21 @@ export default function App() {
               <Route path="/" element={<DashboardLayout />}>
                 <Route index element={<Navigate to="/dashboard" replace />} />
                 
-                {/* 
-                  Notice how we are moving the nested routes from Dashboard.jsx 
-                  into the main App.jsx router tree for a scalable architecture. 
-                */}
-                <Route path="dashboard" element={<Dashboard />} />
+                {/* 1. THE DASHBOARD ROUTE (Using our new wrapper) */}
+                <Route path="dashboard" element={<RoleBasedDashboard />} />
+                
                 <Route path="groupFeed/:id" element={<GroupFeed />} />
-                {/* Future pages can be added here */}
-                {/* <Route path="groups" element={<Groups />} /> */}
-                {/* <Route path="schedule" element={<Schedule />} /> */}
               </Route>
             </Route>
+
+            {/* 2. THE JOIN ROUTE (This only loads the JoinGroup teleporter) */}
+            <Route path="/join/:inviteToken" element={
+              <ProtectedRoute>
+                <JoinGroup />
+              </ProtectedRoute>
+            } />
           </Routes>
         </Suspense>
-      
     </AuthProvider>
   );
 }

@@ -2,7 +2,7 @@ import { useContext } from "react";
 import { Navigate, Outlet } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
-export default function ProtectedRoute() {
+export default function ProtectedRoute({ children }) {
     const { user, loading } = useContext(AuthContext);
 
     // If still checking localStorage, show a simple loader
@@ -19,6 +19,7 @@ export default function ProtectedRoute() {
         return <Navigate to="/login" replace />;
     }
 
-    // If they DO exist, let them through to the page!
-    return <Outlet />;
+    // If they passed children (like <JoinGroup />), render the children.
+    // Otherwise, fallback to rendering nested <Outlet /> routes.
+    return children ? children : <Outlet />;
 }
