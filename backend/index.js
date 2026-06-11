@@ -4,13 +4,14 @@ const app = express();
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const helmet = require("helmet");
-const morgan = require("morgan");
+const morgan = require("morgan"); 
+const path = require("path"); 
 dotenv.config();
 
 const authRoute = require("./routes/auth");
 const userRoute = require("./routes/user");
 const groupRoute = require("./routes/group");
-const anouncementRoute = require("./routes/anouncement");
+const announcementRoute = require("./routes/announcement");
 
 
 mongoose
@@ -35,9 +36,10 @@ app.use(helmet());
 app.use(morgan("common"));
 
 app.use("/api/auth",authRoute);
+app.use("/images", express.static(path.join(__dirname, "uploads")));
 app.use("/api/user",userRoute);
 app.use("/api/group", groupRoute);
-app.use("/api/anouncement",anouncementRoute)
+app.use("/api/announcement",announcementRoute);
 
 app.get("/test", (req, res) => {
   res.json({

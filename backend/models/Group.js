@@ -21,9 +21,9 @@ const GroupSchema = new mongoose.Schema({
         ref:"User",
  
     }], 
-    anouncements:[{
+    announcements:[{
         type:mongoose.Schema.Types.ObjectId,
-        ref:"Anouncement"
+        ref:"Announcement"
     }]
   },
 

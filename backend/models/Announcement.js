@@ -1,6 +1,6 @@
 const mongoose  = require('mongoose');
 
-const AnouncementSchema = new mongoose.Schema({
+const AnnouncementSchema = new mongoose.Schema({
     
     title:{
         type:String,
@@ -20,10 +20,15 @@ const AnouncementSchema = new mongoose.Schema({
         required:true
  
     }],
+    imageUrl:{
+        type:String,
+        default:""
+    },
+
      
   },
 
     { timestamps:true })
 
 
-module.exports= mongoose.model('Anouncement',AnouncementSchema);
+module.exports= mongoose.model('Announcement',AnnouncementSchema);
