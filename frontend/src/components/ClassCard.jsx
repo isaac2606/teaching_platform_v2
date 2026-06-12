@@ -4,7 +4,7 @@ import Button from "./ui/Button";
 import Input from "./ui/Input";
 import { AuthContext } from "../context/AuthContext";
 
-const GroupCard = memo(function GroupCard({ group, onDelete, onEdit }) {
+const ClassCard = memo(function ClassCard({ group, onDelete, onEdit }) {
     const {user} = useContext(AuthContext)
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState("");
@@ -101,4 +101,4 @@ const GroupCard = memo(function GroupCard({ group, onDelete, onEdit }) {
     );
 });
 
-export default GroupCard;
+export default ClassCard;

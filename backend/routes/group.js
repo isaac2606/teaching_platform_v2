@@ -117,6 +117,8 @@ router.get("/:inviteToken", verifyToken, async (req, res) => {
   }
 });
 
+
+//edit group
 router.put("/:id", verifyToken, authorize("teacher"), async (req, res) => {
   try {
     const updatedGroup = await Group.findByIdAndUpdate(

@@ -1,6 +1,6 @@
 const mongoose  = require('mongoose');
 
-const GroupSchema = new mongoose.Schema({
+const ClassSchema = new mongoose.Schema({
     
     title:{
         type:String,
@@ -11,27 +11,29 @@ const GroupSchema = new mongoose.Schema({
         ref:"User",
         required:true
     },
-    inviteToken:{
-        type:String,
-        
-        unique:true
+    group:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Group",
+        required:true
+ 
     },
     students:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
- 
-    }], 
+         
+    }],
     announcements:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Announcement"
     }],
-    classes:[{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:"Class"
-    }]
+    date:{
+        type:Date
+    }
+
+     
   },
 
     { timestamps:true })
 
 
-module.exports= mongoose.model('Group',GroupSchema);
+module.exports= mongoose.model('Class',ClassSchema);

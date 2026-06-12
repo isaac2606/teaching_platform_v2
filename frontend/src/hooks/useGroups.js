@@ -44,7 +44,7 @@ export function useGroups() {
       const savedGroup = response.data; 
       setGroups((prevGroups) =>
         prevGroups.map((group) =>
-          group._id === groupId ? { ...group, savedGroup } : group
+          group._id === groupId ? savedGroup  : group
         )
       );
     } catch (err) {

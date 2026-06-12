@@ -12,6 +12,7 @@ const authRoute = require("./routes/auth");
 const userRoute = require("./routes/user");
 const groupRoute = require("./routes/group");
 const announcementRoute = require("./routes/announcement");
+const classRoute = require("./routes/class");
 
 
 mongoose
@@ -40,7 +41,7 @@ app.use("/images", express.static(path.join(__dirname, "uploads")));
 app.use("/api/user",userRoute);
 app.use("/api/group", groupRoute);
 app.use("/api/announcement",announcementRoute);
-
+app.use("/api/class",classRoute)
 app.get("/test", (req, res) => {
   res.json({
     message:"frontend and backend are connected"});

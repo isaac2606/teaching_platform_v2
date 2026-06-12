@@ -1,11 +1,12 @@
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { AuthContext } from "../context/AuthContext";
 import api from "../services/api";
 
 
 export default function GroupFeed() {
   const { id } = useParams();
-  
+  const {user}=useContext(AuthContext)
   // 1. FIXED: Added [] so it defaults to an empty array before the data loads
   const [feed, setFeed] = useState([]);
   const [group, setGroup] = useState({});
@@ -83,12 +84,12 @@ export default function GroupFeed() {
           </p>
           <h1 className="text-3xl font-bold text-white">{group.title}</h1>
         </div>
-        <button 
+        {user.role ==="teacher" && <button 
           onClick={() => setIsModalOpen(true)}
           className="bg-brand-primary hover:bg-brand-secondary text-white px-5 py-2 rounded-lg font-medium transition-colors shadow-lg"
         >
           + Post
-        </button>
+        </button>}
       </div>
 
       {/* Modal Overlay */}
