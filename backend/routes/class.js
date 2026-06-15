@@ -3,6 +3,8 @@ const router = express.Router();
 
 const verifyToken = require("../middleware/verifyToken");
 const roleMiddleware = require("../middleware/roleMiddleware");
+const upload = require("../middleware/upload");
+
 const {
     createClass,
     getClassesByGroup,
@@ -10,7 +12,7 @@ const {
 } = require("../controllers/classController");
 
 // create a class
-router.post("/createClass", verifyToken, roleMiddleware("teacher"), createClass);
+router.post("/createClass", verifyToken, roleMiddleware("teacher"), upload.single("imageUrl"), createClass);
 
 // get classes for a specific group
 router.get("/getClasses/:groupId", verifyToken, roleMiddleware("teacher"), getClassesByGroup);

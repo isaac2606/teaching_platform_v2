@@ -10,10 +10,14 @@ const createClass = async (req, res) => {
             return res.status(404).json({ message: "Group not found" });
         }
 
+        const imagePath = req.file ? req.file.filename : "";
+
         const newClass = new Class({
             title: req.body.title,
             teacher: req.user.userId,
             group: req.body.groupId,
+            date: req.body.date || "",
+            imageUrl: imagePath
         });
 
         const savedClass = await newClass.save();

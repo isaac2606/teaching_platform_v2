@@ -27,10 +27,12 @@ const ClassSchema = new mongoose.Schema({
         ref:"Announcement"
     }],
     date:{
-        type:Date
+        type:String
+    },
+    imageUrl:{
+        type:String,
+        default:""
     }
-
-     
   },
 
     { timestamps:true })
