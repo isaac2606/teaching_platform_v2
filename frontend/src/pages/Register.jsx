@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import api from "../services/api";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Register() {
+
+  const {login , user} = useContext(AuthContext)
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -31,11 +34,23 @@ export default function Register() {
 
     try {
       // Using our configured Axios interceptor api.js
-      await api.post("/auth/Register", formData);
+      const response  = await api.post("/auth/Register", formData);
+      const data = response.data;
       // If successful, redirect to login
-      navigate("/login");
+
+      if (data.accessToken){
+
+        login(data.user, data.accessToken, data.refreshToken);
+          
+        navigate("/dashboard");
+        
+      }
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed. Please try again.");
+      if (!err.response) {
+        setError("Network error. Please ensure the backend server is running.");
+      } else {
+        setError(err.response?.data?.message || "Registration failed. Please try again.");
+      }
     } finally {
       setLoading(false);
     }

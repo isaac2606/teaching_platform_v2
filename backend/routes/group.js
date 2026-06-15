@@ -1,144 +1,48 @@
 const express = require("express");
-const User = require("../models/User");
 const router = express.Router();
-const Group = require("../models/Group");
-const crypto = require("crypto");
 const verifyToken = require("../middleware/verifyToken");
 const authorize = require("../middleware/roleMiddleware");
+const {
+  createGroup,
+  joinGroup,
+  leaveGroup,
+  getAllGroups,
+  getJoinedGroups,
+  getGroupById,
+  getGroupByInviteToken,
+  getGroupsByTeacher,
+  updateGroup,
+  deleteGroup
+} = require("../controllers/groupController");
 
-//create a group
-router.post("/", verifyToken, authorize("teacher"), async (req, res) => {
-  try {
-    const inviteToken = crypto.randomBytes(8).toString("hex");
-    const group = new Group({
-      title: req.body.title,
-      teacher: req.user.userId,
-      inviteToken: inviteToken,
-    });
-    const savedPost = await group.save();
-    res.status(201).json(savedPost);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
+// create a group
+router.post("/", verifyToken, authorize("teacher"), createGroup);
 
-//join a group
+// join a group
+router.post("/join/:inviteToken", verifyToken, authorize("student"), joinGroup);
 
-router.post(
-  "/join/:inviteToken",
-  verifyToken,
-  authorize("student"),
-  async (req, res) => {
-    try {
-      const group = await Group.findOne({
-        inviteToken: req.params.inviteToken,
-      });
+// leave a group
+router.put("/:id/leave", verifyToken, authorize("student"), leaveGroup);
 
-      if (!group) {
-        return res.status(404).json("Group not found or invalid invite token.");
-      }
+// get ALL groups
+router.get("/getGroups", verifyToken, getAllGroups);
 
-      if (!group.students.includes(req.user.userId)) {
-        await group.updateOne({ $push: { students: req.user.userId } });
-        await User.updateOne(
-          { _id: req.user.userId },
-          { $push: { groups: group._id } },
-        );
-        res.status(200).json("student joined the group");
-      } else {
-        res.status(200).json("student already in the group");
-      }
-    } catch (err) {
-      res.status(500).json(err);
-    }
-  },
-);
-//leave a group
-router.put(
-  "/:id/leave",
-  verifyToken,
-  authorize("student"),
-  async (req, res) => {
-    try {
-      const group = await Group.findById(req.params.id);
+// get joined groups
+router.get("/JoinedGroups/:userId", verifyToken, authorize("student"), getJoinedGroups);
 
-      if (group.students.includes(req.user.userId)) {
-        await group.updateOne({ $pull: { students: req.user.id } });
-        res.status(200).json("student left the group");
-      } else {
-        res.status(200).json("student was not in the group");
-      }
-    } catch (err) {
-      res.status(500).json(err);
-    }
-  },
-);
+// get groups based on teacher (Changed from /getGroups/:userId to avoid conflicts)
+router.get("/teacher/:userId", verifyToken, getGroupsByTeacher);
 
-//get ALL groups
-router.get("/getGroups", verifyToken, async (req, res) => {
-  try {
-    const groups = await Group.find({});
+// get groups based on invite link (Changed to /invite/:inviteToken so it doesn't conflict with /:id)
+router.get("/invite/:inviteToken", verifyToken, getGroupByInviteToken);
 
-    res.status(200).json(groups);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
+// get specific group
+router.get("/:id", verifyToken, getGroupById);
 
-//get joined groups
-router.get("/JoinedGroups/:userId", verifyToken, authorize("student"), async (req, res) => {
-  try {
-    const groups = await Group.find({ students: req.params.userId });
-    res.status(200).json(groups);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
+// edit group
+router.put("/:id", verifyToken, authorize("teacher"), updateGroup);
 
-//get specific group
-router.get("/:id", verifyToken, async (req, res) => {
-  try {
-    const group = await Group.findById(req.params.id);
-
-    res.status(200).json(group);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-//get groups based on invite link
-router.get("/:inviteToken", verifyToken, async (req, res) => {
-  try {
-    const group = await Group.findById(req.params.inviteToken);
-
-    res.status(200).json(group);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-
-//edit group
-router.put("/:id", verifyToken, authorize("teacher"), async (req, res) => {
-  try {
-    const updatedGroup = await Group.findByIdAndUpdate(
-      req.params.id,
-      { $set: { title: req.body.title } },
-      { new: true },
-    );
-    res.status(200).json(updatedGroup);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
-
-router.delete("/:id", verifyToken, authorize("teacher"), async (req, res) => {
-  try {
-    await Group.findByIdAndDelete(req.params.id);
-    res.status(200).json("Group has been deleted");
-  } catch (err) {
-    res.status(500).json(err);
-  }
-});
+// delete group
+router.delete("/:id", verifyToken, authorize("teacher"), deleteGroup);
 
 module.exports = router;

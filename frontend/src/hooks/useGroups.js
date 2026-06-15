@@ -1,8 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useContext } from "react";
 import api from '../services/api';
+import { AuthContext } from "../context/AuthContext";
 
 export function useGroups() {
-
+  const {user}  = useContext(AuthContext)
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,8 +13,15 @@ export function useGroups() {
     const fetchGroups = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/group/getGroups');
-        setGroups(response.data);
+        const response = await api.get(`/group/getGroups/${user.id}`);
+        const groupIds  = response.data;
+        const Groups = []
+        groupIds.map(async (groupId)=>{
+          const group = (await api.get(`/group/${groupId}`));
+          Groups.append(group)
+
+        })
+        setGroups(Groups);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -21,7 +29,7 @@ export function useGroups() {
       }
     };
     fetchGroups();
-  }, []);
+  }, [user]);
 
   // Use useCallback to memorize these functions so they don't trigger unnecessary re-renders in child components
   const addGroup = useCallback(async (newTitle) => {
