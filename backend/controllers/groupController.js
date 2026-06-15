@@ -72,10 +72,21 @@ const getAllGroups = async (req, res) => {
   }
 };
 
-const getJoinedGroups = async (req, res) => {
+const getMyGroups = async (req, res) => {
   try {
-    const groups = await Group.find({ students: req.params.userId });
-    res.status(200).json(groups);
+    const userId = req.user.userId;
+    const role = req.user.role;
+
+    if (role === "teacher") {
+      const user = await User.findById(userId).populate('groups');
+      if (!user) return res.status(404).json({ message: "User not found" });
+      return res.status(200).json(user.groups);
+    } else if (role === "student") {
+      const groups = await Group.find({ students: userId });
+      return res.status(200).json(groups);
+    } else {
+      return res.status(403).json({ message: "Unauthorized role" });
+    }
   } catch (err) {
     res.status(500).json(err);
   }
@@ -103,20 +114,6 @@ const getGroupByInviteToken = async (req, res) => {
       return res.status(404).json({ message: "Group not found" });
     }
     res.status(200).json(group);
-  } catch (err) {
-    res.status(500).json(err);
-  }
-};
-
-const getGroupsByTeacher = async (req, res) => {
-  try {
-    // Populate is safer than returning raw IDs if the frontend expects group details.
-    // Preserving the original behavior: returning the populated groups.
-    const user = await User.findById(req.params.userId).populate('groups');
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    res.status(200).json(user.groups);
   } catch (err) {
     res.status(500).json(err);
   }
@@ -161,10 +158,9 @@ module.exports = {
   joinGroup,
   leaveGroup,
   getAllGroups,
-  getJoinedGroups,
+  getMyGroups,
   getGroupById,
   getGroupByInviteToken,
-  getGroupsByTeacher,
   updateGroup,
   deleteGroup
 };

@@ -13,9 +13,9 @@ export function useGroups() {
     const fetchGroups = async () => {
       try {
         setLoading(true);
-        // Updated to use the new route naming: /group/teacher/:userId
-        // Since the backend now uses .populate('groups'), we get the full group objects directly!
-        const response = await api.get(`/group/teacher/${user.id}`);
+        // Updated to use the new unified route: /group/my-groups
+        // The backend automatically knows we are a teacher from our auth token!
+        const response = await api.get(`/group/my-groups`);
         setGroups(response.data);
       } catch (err) {
         setError(err.message);

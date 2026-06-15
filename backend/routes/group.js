@@ -7,10 +7,9 @@ const {
   joinGroup,
   leaveGroup,
   getAllGroups,
-  getJoinedGroups,
+  getMyGroups,
   getGroupById,
   getGroupByInviteToken,
-  getGroupsByTeacher,
   updateGroup,
   deleteGroup
 } = require("../controllers/groupController");
@@ -27,11 +26,8 @@ router.put("/:id/leave", verifyToken, authorize("student"), leaveGroup);
 // get ALL groups
 router.get("/getGroups", verifyToken, getAllGroups);
 
-// get joined groups
-router.get("/JoinedGroups/:userId", verifyToken, authorize("student"), getJoinedGroups);
-
-// get groups based on teacher (Changed from /getGroups/:userId to avoid conflicts)
-router.get("/teacher/:userId", verifyToken, getGroupsByTeacher);
+// get my groups (handles both student and teacher logic)
+router.get("/my-groups", verifyToken, getMyGroups);
 
 // get groups based on invite link (Changed to /invite/:inviteToken so it doesn't conflict with /:id)
 router.get("/invite/:inviteToken", verifyToken, getGroupByInviteToken);

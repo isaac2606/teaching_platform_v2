@@ -23,7 +23,8 @@ export default function StudentDashboard() {
   useEffect(()=>{
         const getStudentGroups = async () => {
             try{
-                const response = await api.get(`/group/JoinedGroups/${user._id }`)
+                // Uses the new unified route. Backend knows we are a student from the token.
+                const response = await api.get(`/group/my-groups`)
                 setGroups(response.data);
 
             }catch(err){
