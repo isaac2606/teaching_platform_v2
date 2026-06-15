@@ -13,22 +13,19 @@ export function useGroups() {
     const fetchGroups = async () => {
       try {
         setLoading(true);
-        const response = await api.get(`/group/getGroups/${user.id}`);
-        const groupIds  = response.data;
-        const Groups = []
-        groupIds.map(async (groupId)=>{
-          const group = (await api.get(`/group/${groupId}`));
-          Groups.append(group)
-
-        })
-        setGroups(Groups);
+        // Updated to use the new route naming: /group/teacher/:userId
+        // Since the backend now uses .populate('groups'), we get the full group objects directly!
+        const response = await api.get(`/group/teacher/${user.id}`);
+        setGroups(response.data);
       } catch (err) {
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
-    fetchGroups();
+    if (user?.id) {
+      fetchGroups();
+    }
   }, [user]);
 
   // Use useCallback to memorize these functions so they don't trigger unnecessary re-renders in child components
