@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 
-export default function JoinGroup() {
+export default function JoinHub() {
   
   const {inviteToken} = useParams();
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ export default function JoinGroup() {
   useEffect(()=>{
     const joinClass = async ()=>{
         try{
-            await api.post(`/group/join/${inviteToken}`);
+            await api.post(`/class/join/${inviteToken}`);
             setStatus("Successfully joined! Redirecting to your Dashboard...");
 
             setTimeout(()=>{
@@ -20,7 +20,7 @@ export default function JoinGroup() {
             },2000)
         }catch(err){
             console.error(err.message)
-            setStatus("Failed to join group. The link might be invalid or expired.");
+            setStatus("Failed to join class. The link might be invalid or expired.");
         }
 
         };

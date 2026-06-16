@@ -14,9 +14,9 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 // Note: TeacherHub has been refactored into pages/Dashboard.jsx!
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
-const GroupFeed = lazy(() => import("./pages/GroupFeed"));
+const HubWorkspace = lazy(() => import("./pages/HubWorkspace"));
 const StudentDashboard = lazy(() => import("./pages/StudentDashboard"));
-const JoinGroup = lazy(() => import("./pages/JoinGroup"));
+const JoinHub = lazy(() => import("./pages/JoinHub"));
 
 // Fallback loader component
 const Loader = () => (
@@ -57,8 +57,8 @@ const router = createBrowserRouter([
             loader: dashboardLoader
           },
           { 
-            path: "groupFeed/:id", 
-            element: <Suspense fallback={<Loader />}><GroupFeed /></Suspense> 
+            path: "workspace/:id", 
+            element: <Suspense fallback={<Loader />}><HubWorkspace /></Suspense> 
           }
         ]
       }
@@ -66,7 +66,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/join/:inviteToken",
-    element: <ProtectedRoute><Suspense fallback={<Loader />}><JoinGroup /></Suspense></ProtectedRoute>
+    element: <ProtectedRoute><Suspense fallback={<Loader />}><JoinHub /></Suspense></ProtectedRoute>
   }
 ]);
 

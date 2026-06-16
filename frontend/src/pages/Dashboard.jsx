@@ -21,7 +21,7 @@ export default function Dashboard() {
       if (!newHubTitle.trim()) return;
       setIsCreating(true);
       try {
-          const response = await api.post("/group", { title: newHubTitle });
+          const response = await api.post("/hub", { title: newHubTitle });
           setLocalHubs([...localHubs, response.data]);
           setNewHubTitle("");
       } catch (err) {
@@ -33,7 +33,7 @@ export default function Dashboard() {
 
   const handleDeleteHub = async (id) => {
       try {
-          await api.delete(`/group/${id}`);
+          await api.delete(`/hub/${id}`);
           setLocalHubs(localHubs.filter(h => h._id !== id));
       } catch (err) {
           console.error("Failed to delete hub", err);
@@ -120,7 +120,7 @@ export default function Dashboard() {
                         </div>
 
                         <div className="flex justify-center mt-auto w-full">
-                            <Link to={`/groupFeed/${hub._id}`} className="w-full">
+                            <Link to={`/workspace/${hub._id}`} className="w-full">
                                 <Button className="w-full" variant="secondary">
                                     Open Workspace
                                 </Button>

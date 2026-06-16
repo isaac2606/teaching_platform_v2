@@ -4,13 +4,13 @@ import { AuthContext } from "../context/AuthContext";
 import api from "../services/api";
 
 
-export default function GroupFeed() {
+export default function HubWorkspace() {
   const { id } = useParams();
   const {user}=useContext(AuthContext)
   // 1. FIXED: Added [] so it defaults to an empty array before the data loads
   const [feed, setFeed] = useState([]);
   const [classes, setClasses] = useState([]);
-  const [group, setGroup] = useState({});
+  const [hub, setHub] = useState({});
   const [teacher, setTeacher] = useState({});
 
   const [newTitle,setNewTitle]= useState("");
@@ -24,17 +24,17 @@ export default function GroupFeed() {
   useEffect(() => {
     const getFeed = async () => {
       try {
-        const response = await api.get(`/announcement/group/${id}`);
+        const response = await api.get(`/announcement/hub/${id}`);
         setFeed(response.data);
       } catch (err) {
         console.error(err.message);
       }
     };
 
-    const getGroup = async () =>{
+    const getHub = async () =>{
       try{
-        const response = await api.get(`/group/${id}`);
-        setGroup(response.data);
+        const response = await api.get(`/hub/${id}`);
+        setHub(response.data);
       } catch (err) {
         console.error(err.message);
       }
@@ -51,7 +51,7 @@ export default function GroupFeed() {
 
     
     getFeed();
-    getGroup();
+    getHub();
     getClasses();
     
   }, [id]); 
@@ -71,7 +71,7 @@ export default function GroupFeed() {
 
     formData.append("title",newTitle)
     formData.append("description",newDesc)
-    formData.append("groupsIds",id)
+    formData.append("hubIds",id)
 
     
     if(file){
@@ -111,7 +111,7 @@ export default function GroupFeed() {
     const formData = new FormData();
 
     formData.append("title",newTitle)
-    formData.append("groupId",id)
+    formData.append("hubId",id)
 
 
     if(date || time){
@@ -164,14 +164,14 @@ export default function GroupFeed() {
         <div className="relative z-10">
           <div className="flex items-center gap-3 mb-2">
             <span className="px-3 py-1 bg-brand-primary/20 text-brand-primary text-xs font-bold uppercase tracking-wider rounded-full border border-brand-primary/30">
-              Group Workspace
+              Hub Workspace
             </span>
           </div>
           <h1 className="text-4xl sm:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 tracking-tight">
-            {group.title || "Loading..."}
+            {hub.title || "Loading..."}
           </h1>
           <p className="text-text-secondary mt-2 font-medium">
-            Taught by: <span className="text-white">{group.teacher?.username || "Unknown"}</span>
+            Taught by: <span className="text-white">{hub.teacher?.username || "Unknown"}</span>
           </p>
         </div>
 
@@ -224,10 +224,10 @@ export default function GroupFeed() {
                 <div className="flex justify-between items-start mb-5 relative z-10">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-primary to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                      {group.teacher?.username?.[0]?.toUpperCase() || "?"}
+                      {hub.teacher?.username?.[0]?.toUpperCase() || "?"}
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-white tracking-wide">{group.teacher?.username || "Teacher"}</p>
+                      <p className="text-sm font-bold text-white tracking-wide">{hub.teacher?.username || "Teacher"}</p>
                       <p className="text-xs text-text-secondary mt-0.5">
                         {new Date(announcement.createdAt).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}
                       </p>
@@ -301,11 +301,11 @@ export default function GroupFeed() {
             <h2 className="text-2xl font-bold text-white flex items-center gap-2">
               <span className="text-brand-primary">👥</span> Enrolled Students
             </h2>
-            <span className="text-sm text-text-secondary font-medium">{group.students?.length || 0} total</span>
+            <span className="text-sm text-text-secondary font-medium">{hub.students?.length || 0} total</span>
           </div>
 
           <div className="bg-bg-surface/50 rounded-2xl border border-white/5 shadow-inner p-2 max-h-[350px] overflow-y-auto">
-            {!group.students || group.students.length === 0 ? (
+            {!hub.students || hub.students.length === 0 ? (
               <div className="text-center text-text-secondary py-8">
                 <span className="text-3xl mb-2 opacity-30 block">🧑‍🎓</span>
                 <p className="text-sm">No students joined yet.</p>
@@ -313,7 +313,7 @@ export default function GroupFeed() {
               </div>
             ) : (
               <div className="flex flex-col gap-2">
-                {group.students.map((student) => (
+                {hub.students.map((student) => (
                   <div key={student._id} className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/5 transition-colors">
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-md">
                       {student.username?.[0]?.toUpperCase() || "?"}

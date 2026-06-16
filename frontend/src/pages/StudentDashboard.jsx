@@ -1,5 +1,5 @@
 import { useState,useContext,useEffect } from "react";
-import GroupCard from "../components/GroupCard";
+import HubCard from "../components/HubCard";
 
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
@@ -10,36 +10,36 @@ import { AuthContext } from "../context/AuthContext";
 
 export default function StudentDashboard() {
   //const { groups, addGroup, deleteGroup, editGroup, loading, error } = useGroups([]);
-  const [newGroupTitle, setNewGroupTitle] = useState("");
+  const [newHubTitle, setNewHubTitle] = useState("");
   const [filter, setFilter] = useState("all");
   const [loading, setLoading] = useState(false) 
   const [error, setError] = useState(null)
 
-  const [groups,setGroups]=useState([])
+  const [hubs,setHubs]=useState([])
 
   const {user}= useContext(AuthContext);
 
  
   useEffect(()=>{
-        const getStudentGroups = async () => {
+        const getStudentHubs = async () => {
             try{
                 // Uses the new unified route. Backend knows we are a student from the token.
-                const response = await api.get(`/group/my-groups`)
-                setGroups(response.data);
+                const response = await api.get(`/hub/my-hubs`)
+                setHubs(response.data);
 
             }catch(err){
                 console.error(err.message)
             }
         }
-        getStudentGroups();
+        getStudentHubs();
 
     }
   ,[user])
 
-  //Filter groups based on the active filter state
-  const filteredGroups = groups?.filter((group) => {
+  //Filter hubs based on the active filter state
+  const filteredHubs = hubs?.filter((hub) => {
     if (filter === "all") return true;
-    return group.status === filter;
+    return hub.status === filter;
   }) || [];
 
   const filters = ["all", "done", "not done"];
@@ -49,7 +49,7 @@ export default function StudentDashboard() {
         
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8 bg-bg-surface border border-white/5 p-6 rounded-xl shadow-lg backdrop-blur-xl">
             <h1 className="text-3xl font-bold tracking-tight text-white">
-                My Groups
+                My Hubs
             </h1>
             
             <div className="flex bg-black/20 p-1 rounded-lg border border-white/5">
@@ -71,19 +71,19 @@ export default function StudentDashboard() {
             <div className="flex gap-2 w-full lg:w-auto">
                 <Input 
                     type="text"
-                    placeholder="Enter invite Link to join a new group"
+                    placeholder="Enter invite Link to join a new hub"
                     className="w-full lg:w-64"
-                    value={newGroupTitle}
-                    onChange={(e) => setNewGroupTitle(e.target.value)}
+                    value={newHubTitle}
+                    onChange={(e) => setNewHubTitle(e.target.value)}
                 />
                 
                 <Button 
                     variant="primary"
                     onClick={async () => {
                             try {
-                                const token = newGroupTitle.trim();
-                                await api.post(`/group/join/${token}`);
-                                setNewGroupTitle("");
+                                const token = newHubTitle.trim();
+                                await api.post(`/class/join/${token}`);
+                                setNewHubTitle("");
                                 window.location.reload();
                                 
                             } catch (err) {
@@ -99,7 +99,7 @@ export default function StudentDashboard() {
 
         {error && (
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl">
-                Failed to load groups: {error}
+                Failed to load hubs: {error}
             </div>
         )}
 
@@ -109,16 +109,16 @@ export default function StudentDashboard() {
             </div>
         ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredGroups.map((group) => (
+                {filteredHubs.map((hub) => (
                     
-                    <GroupCard key={group._id} group={group}  />   
+                    <HubCard key={hub._id} hub={hub}  />   
 
                 ))}
 
-                {filteredGroups.length === 0 && (
+                {filteredHubs.length === 0 && (
                     <div className="col-span-full flex flex-col items-center justify-center text-text-secondary py-16 bg-bg-surface border border-white/5 rounded-xl">
                         <span className="text-4xl mb-4 opacity-50">📚</span>
-                        <p>No groups found for the selected filter.</p>
+                        <p>No hubs found for the selected filter.</p>
                     </div>
                 )}
             </div>

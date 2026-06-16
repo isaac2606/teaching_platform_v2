@@ -1,14 +1,13 @@
 const User = require("../models/User");
-const Group = require("../models/Group");
+const Hub = require("../models/Hub");
 const Class = require("../models/Class");
 const crypto = require("crypto");
 
 const createClass = async (req, res) => {
     try {
-        // Verify the group exists before trying to add a class to it
-        const groupExists = await Group.findById(req.body.groupId);
-        if (!groupExists) {
-            return res.status(404).json({ message: "Group not found" });
+        const hubExists = await Hub.findById(req.body.hubId);
+        if (!hubExists) {
+            return res.status(404).json({ message: "Hub not found" });
         }
 
         const imagePath = req.file ? req.file.filename : "";
@@ -17,7 +16,7 @@ const createClass = async (req, res) => {
         const newClass = new Class({
             title: req.body.title,
             teacher: req.user.userId,
-            group: req.body.groupId,
+            hub: req.body.hubId,
             date: req.body.date || "",
             imageUrl: imagePath,
             inviteToken: inviteToken,
@@ -26,7 +25,7 @@ const createClass = async (req, res) => {
 
         const savedClass = await newClass.save();
 
-        await Group.findByIdAndUpdate(req.body.groupId, { 
+        await Hub.findByIdAndUpdate(req.body.hubId, { 
             $push: { classes: savedClass._id } 
         });
         
@@ -40,15 +39,14 @@ const createClass = async (req, res) => {
     }
 };
 
-const getClassesByGroup = async (req, res) => {
+const getClassesByHub = async (req, res) => {
     try {
-        // Optional: Check if group exists
-        const groupExists = await Group.findById(req.params.groupId);
-        if (!groupExists) {
-            return res.status(404).json({ message: "Group not found" });
+        const hubExists = await Hub.findById(req.params.hubId);
+        if (!hubExists) {
+            return res.status(404).json({ message: "Hub not found" });
         }
 
-        const classes = await Class.find({ group: req.params.groupId });
+        const classes = await Class.find({ hub: req.params.hubId });
         res.status(200).json(classes);
     } catch (err) {
         res.status(500).json({ message: "Error fetching classes", error: err.message });
@@ -84,17 +82,17 @@ const joinClass = async (req, res) => {
             // Add student to the Cohort
             await classObj.updateOne({ $push: { students: req.user.userId } });
             
-            // Add student to the Hub (Group) if not already there
-            await Group.updateOne(
-                { _id: classObj.group },
+            // Add student to the Hub if not already there
+            await Hub.updateOne(
+                { _id: classObj.hub },
                 { $addToSet: { students: req.user.userId } }
             );
 
-            // Add Group and Class to User's list
+            // Add Hub and Class to User's list
             await User.updateOne(
                 { _id: req.user.userId },
                 { 
-                    $addToSet: { groups: classObj.group },
+                    $addToSet: { hubs: classObj.hub },
                     $push: { classes: classObj._id }
                 }
             );
@@ -110,7 +108,7 @@ const joinClass = async (req, res) => {
 
 module.exports = {
     createClass,
-    getClassesByGroup,
+    getClassesByHub,
     assignStudent,
     joinClass
 };

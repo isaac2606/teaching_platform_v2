@@ -14,9 +14,9 @@ const AnnouncementSchema = new mongoose.Schema({
         ref:"User",
         required:true
     },
-    groups:[{
+    hubs:[{
         type:mongoose.Schema.Types.ObjectId,
-        ref:"Group",
+        ref:"Hub",
         required:true
  
     }],

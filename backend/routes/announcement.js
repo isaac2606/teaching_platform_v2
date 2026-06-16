@@ -6,7 +6,7 @@ const upload = require("../middleware/upload");
 const {
   addAnnouncement,
   getAllAnnouncements,
-  getGroupFeed
+  getHubFeed
 } = require("../controllers/announcementController");
 
 // create an announcement
@@ -15,7 +15,7 @@ router.post("/add", verifyToken, upload.single("image"), addAnnouncement);
 // get all announcements
 router.get("/getAnounc", verifyToken, getAllAnnouncements);
 
-// get group feed
-router.get("/group/:groupId", verifyToken, getGroupFeed);
+// get hub feed
+router.get("/hub/:hubId", verifyToken, getHubFeed);
 
 module.exports = router;

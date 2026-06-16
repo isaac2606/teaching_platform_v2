@@ -19,9 +19,9 @@ const UserSchema = new mongoose.Schema(
       enum: ["student", "teacher", "admin"],
       default: "student",
     },
-    groups:[{
+    hubs:[{
         type:mongoose.Schema.Types.ObjectId,
-        ref:"Group" 
+        ref:"Hub" 
     }],
     refreshToken: { type: String },
   },

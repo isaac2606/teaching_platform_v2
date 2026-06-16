@@ -1,10 +1,9 @@
 const Announcement = require("../models/Announcement");
-const Group = require("../models/Group");
+const Hub = require("../models/Hub");
 
 const addAnnouncement = async (req, res) => {
     try {
-        // Ensure groupsIds is an array just in case a single string is sent
-        const groupsIds = Array.isArray(req.body.groupsIds) ? req.body.groupsIds : [req.body.groupsIds];
+        const hubIds = Array.isArray(req.body.hubIds) ? req.body.hubIds : [req.body.hubIds];
         const imagePath = req.file ? req.file.filename : "";
 
         const announcement = new Announcement({
@@ -12,14 +11,13 @@ const addAnnouncement = async (req, res) => {
             description: req.body.description,
             teacher: req.user.userId,
             imageUrl: imagePath,
-            groups: groupsIds
+            hubs: hubIds
         });
 
         const savedAnnouncement = await announcement.save();
         
-        // Update all associated groups efficiently in one query
-        await Group.updateMany(
-            { _id: { $in: groupsIds } },
+        await Hub.updateMany(
+            { _id: { $in: hubIds } },
             { $push: { announcements: savedAnnouncement._id } }
         );
 
@@ -41,16 +39,14 @@ const getAllAnnouncements = async (req, res) => {
     }
 };
 
-const getGroupFeed = async (req, res) => {
+const getHubFeed = async (req, res) => {
     try {
-        // Find all announcements where the groups array contains this groupId
-        const feed = await Announcement.find({ groups: req.params.groupId })
+        const feed = await Announcement.find({ hubs: req.params.hubId })
             .populate("teacher", "email");
             
-        // We could optionally check if the group exists first, but an empty feed is also valid.
-        const group = await Group.findById(req.params.groupId);
-        if (!group) {
-            return res.status(404).json({ message: "Group not found" });
+        const hub = await Hub.findById(req.params.hubId);
+        if (!hub) {
+            return res.status(404).json({ message: "Hub not found" });
         }
         
         res.status(200).json(feed);
@@ -62,5 +58,5 @@ const getGroupFeed = async (req, res) => {
 module.exports = {
     addAnnouncement,
     getAllAnnouncements,
-    getGroupFeed
+    getHubFeed
 };

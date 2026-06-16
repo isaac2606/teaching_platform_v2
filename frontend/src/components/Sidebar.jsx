@@ -8,7 +8,7 @@ export default function Sidebar() {
 
   const navItems = [
     { name: "Dashboard", path: "/dashboard" },
-    { name: "Groups", path: "/groups" },
+    { name: "Hubs", path: "/hubs" },
     { name: "Schedule", path: "/schedule" },
     { name: "Messages", path: "/messages" },
     { name: "Materials", path: "/materials" },

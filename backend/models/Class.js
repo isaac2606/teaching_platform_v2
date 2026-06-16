@@ -11,9 +11,9 @@ const ClassSchema = new mongoose.Schema({
         ref:"User",
         required:true
     },
-    group:{
+    hub:{
         type:mongoose.Schema.Types.ObjectId,
-        ref:"Group",
+        ref:"Hub",
         required:true
  
     },

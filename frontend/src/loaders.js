@@ -9,8 +9,8 @@ export async function dashboardLoader() {
         if (user.role === "teacher") {
             // Fetch stats and hubs simultaneously for teacher
             const [statsResponse, hubsResponse] = await Promise.all([
-                api.get('/group/stats'),
-                api.get('/group/my-groups')
+                api.get('/hub/stats'),
+                api.get('/hub/my-hubs')
             ]);
             
             return {
@@ -20,7 +20,7 @@ export async function dashboardLoader() {
             };
         } else {
             // Student just gets their enrolled hubs
-            const hubsResponse = await api.get('/group/my-groups');
+            const hubsResponse = await api.get('/hub/my-hubs');
             return {
                 role: "student",
                 hubs: hubsResponse.data

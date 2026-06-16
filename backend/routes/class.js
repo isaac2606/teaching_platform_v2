@@ -7,7 +7,7 @@ const upload = require("../middleware/upload");
 
 const {
     createClass,
-    getClassesByGroup,
+    getClassesByHub,
     assignStudent,
     joinClass
 } = require("../controllers/classController");
@@ -15,8 +15,8 @@ const {
 // create a class
 router.post("/createClass", verifyToken, roleMiddleware("teacher"), upload.single("imageUrl"), createClass);
 
-// get classes for a specific group
-router.get("/getClasses/:groupId", verifyToken, roleMiddleware("teacher"), getClassesByGroup);
+// get classes for a specific hub
+router.get("/getClasses/:hubId", verifyToken, roleMiddleware("teacher"), getClassesByHub);
 
 // assign student to a class
 router.post("/:classId/assign", verifyToken, roleMiddleware("teacher"), assignStudent);

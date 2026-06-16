@@ -4,13 +4,13 @@ import Button from "./ui/Button";
 import Input from "./ui/Input";
 import { AuthContext } from "../context/AuthContext";
 
-const GroupCard = memo(function GroupCard({ group, onDelete, onEdit }) {
+const HubCard = memo(function HubCard({ hub, onDelete, onEdit }) {
     const {user} = useContext(AuthContext)
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState("");
 
     const handleCopy = () => {
-        navigator.clipboard.writeText(`http://localhost:5173/join/${group.inviteToken}`)
+        navigator.clipboard.writeText(`http://localhost:5173/join/${hub.inviteToken}`)
     }
     
     return(
@@ -23,14 +23,14 @@ const GroupCard = memo(function GroupCard({ group, onDelete, onEdit }) {
                 {/* Header / Actions */}
                 <div className="flex justify-between items-start">
                     <div className="bg-white/10 px-3 py-1 rounded-full text-xs font-semibold text-brand-primary capitalize border border-brand-primary/20">
-                        {group.status || "active"}
+                        {hub.status || "active"}
                     </div>
                     <div className="flex gap-1 opacity-0 hover:opacity-100 transition-opacity" style={{ opacity: 1 }}>
                         {user.role === "teacher" && <button 
                             className="p-1.5 text-text-secondary hover:text-white hover:bg-white/10 rounded-md transition-colors"
                             onClick={() => {
                                 setIsEditing(true);
-                                setEditValue(group.title);
+                                setEditValue(hub.title);
                             }}
                         >
                             {/* Simple SVG Edit Icon */}
@@ -38,7 +38,7 @@ const GroupCard = memo(function GroupCard({ group, onDelete, onEdit }) {
                         </button>}
                         {user.role === "teacher" && <button 
                             className="p-1.5 text-text-secondary hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors"
-                            onClick={() => onDelete(group._id)}
+                            onClick={() => onDelete(hub._id)}
                         >
                             {/* Simple SVG Delete Icon */}
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
@@ -49,13 +49,13 @@ const GroupCard = memo(function GroupCard({ group, onDelete, onEdit }) {
                 {/* Content */}
                 <div className="text-center my-4">
                     <h3 className="text-2xl font-bold text-white capitalize truncate drop-shadow-md">
-                        {group.title || "test"}
+                        {hub.title || "test"}
                     </h3>
                 </div>
 
                 {/* Footer Action */}
                 <div className="flex justify-center mt-auto w-full">
-                    <Link to={`/groupFeed/${group._id}`} className="w-full">
+                    <Link to={`/workspace/${hub._id}`} className="w-full">
                         <Button className="w-full" variant="secondary">
                             View Feed
                         </Button>
@@ -70,7 +70,7 @@ const GroupCard = memo(function GroupCard({ group, onDelete, onEdit }) {
             {isEditing && (
                 <div className="absolute inset-0 bg-bg-surface/95 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-4">
                     <Input 
-                        placeholder="Group Title"
+                        placeholder="Hub Title"
                         value={editValue}
                         onChange={(e) => setEditValue(e.target.value)}
                         className="w-full mb-3"
@@ -81,7 +81,7 @@ const GroupCard = memo(function GroupCard({ group, onDelete, onEdit }) {
                             variant="primary" 
                             className="flex-1"
                             onClick={() => {
-                                onEdit(group._id, editValue);
+                                onEdit(hub._id, editValue);
                                 setIsEditing(false);
                             }}
                         >
@@ -101,4 +101,4 @@ const GroupCard = memo(function GroupCard({ group, onDelete, onEdit }) {
     );
 });
 
-export default GroupCard;
+export default HubCard;

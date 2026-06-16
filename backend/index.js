@@ -10,7 +10,7 @@ dotenv.config();
 
 const authRoute = require("./routes/auth");
 const userRoute = require("./routes/user");
-const groupRoute = require("./routes/group");
+const hubRoute = require("./routes/hub");
 const announcementRoute = require("./routes/announcement");
 const classRoute = require("./routes/class");
 
@@ -39,7 +39,7 @@ app.use(morgan("common"));
 app.use("/api/auth",authRoute);
 app.use("/images", express.static(path.join(__dirname, "uploads")));
 app.use("/api/user",userRoute);
-app.use("/api/group", groupRoute);
+app.use("/api/hub", hubRoute);
 app.use("/api/announcement",announcementRoute);
 app.use("/api/class",classRoute)
 app.get("/test", (req, res) => {

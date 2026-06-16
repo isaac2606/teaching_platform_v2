@@ -1,6 +1,6 @@
 const mongoose  = require('mongoose');
 
-const GroupSchema = new mongoose.Schema({
+const HubSchema = new mongoose.Schema({
     
     title:{
         type:String,
@@ -30,4 +30,4 @@ const GroupSchema = new mongoose.Schema({
     { timestamps:true })
 
 
-module.exports= mongoose.model('Group',GroupSchema);
+module.exports= mongoose.model('Hub',HubSchema);
