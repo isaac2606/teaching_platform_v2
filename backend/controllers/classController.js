@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const Group = require("../models/Group");
 const Class = require("../models/Class");
+const crypto = require("crypto");
 
 const createClass = async (req, res) => {
     try {
@@ -11,13 +12,16 @@ const createClass = async (req, res) => {
         }
 
         const imagePath = req.file ? req.file.filename : "";
+        const inviteToken = crypto.randomBytes(8).toString("hex");
 
         const newClass = new Class({
             title: req.body.title,
             teacher: req.user.userId,
             group: req.body.groupId,
             date: req.body.date || "",
-            imageUrl: imagePath
+            imageUrl: imagePath,
+            inviteToken: inviteToken,
+            dues: req.body.dues || 0
         });
 
         const savedClass = await newClass.save();
@@ -69,8 +73,44 @@ const assignStudent = async (req, res) => {
     }
 };
 
+const joinClass = async (req, res) => {
+    try {
+        const classObj = await Class.findOne({ inviteToken: req.params.inviteToken });
+        if (!classObj) {
+            return res.status(404).json({ message: "Class not found or invalid invite token." });
+        }
+
+        if (!classObj.students.includes(req.user.userId)) {
+            // Add student to the Cohort
+            await classObj.updateOne({ $push: { students: req.user.userId } });
+            
+            // Add student to the Hub (Group) if not already there
+            await Group.updateOne(
+                { _id: classObj.group },
+                { $addToSet: { students: req.user.userId } }
+            );
+
+            // Add Group and Class to User's list
+            await User.updateOne(
+                { _id: req.user.userId },
+                { 
+                    $addToSet: { groups: classObj.group },
+                    $push: { classes: classObj._id }
+                }
+            );
+
+            res.status(200).json({ message: "Student joined the class successfully" });
+        } else {
+            res.status(200).json({ message: "Student already in the class" });
+        }
+    } catch (err) {
+        res.status(500).json(err);
+    }
+};
+
 module.exports = {
     createClass,
     getClassesByGroup,
-    assignStudent
+    assignStudent,
+    joinClass
 };

@@ -1,10 +1,9 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import DashboardLayout from "./layouts/DashboardLayout";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { useContext } from "react";
-import { AuthContext } from "./context/AuthContext";
+import { dashboardLoader } from "./loaders";
 
 import './App.css';
 // TeacherFeed has been refactored into pages/GroupFeed.jsx and lazy loaded below
@@ -26,42 +25,55 @@ const Loader = () => (
   </div>
 );
 
-// We must create a small wrapper component here because we cannot use AuthContext 
-// inside the same App component that provides the AuthProvider!
-function RoleBasedDashboard() {
-  const { user } = useContext(AuthContext);
-  return user?.role === "teacher" ? <Dashboard /> : <StudentDashboard />;
+
+
+import { useLoaderData } from "react-router-dom";
+function RoleBasedDashboardWrapper() {
+  const data = useLoaderData();
+  return data?.role === "teacher" ? <Dashboard /> : <StudentDashboard />;
 }
+
+const router = createBrowserRouter([
+  {
+    path: "/login",
+    element: <Suspense fallback={<Loader />}><Login /></Suspense>,
+  },
+  {
+    path: "/register",
+    element: <Suspense fallback={<Loader />}><Register /></Suspense>,
+  },
+  {
+    path: "/",
+    element: <ProtectedRoute />, // Wrap everything in ProtectedRoute
+    children: [
+      {
+        path: "/",
+        element: <DashboardLayout />,
+        children: [
+          { index: true, element: <Navigate to="/dashboard" replace /> },
+          { 
+            path: "dashboard", 
+            element: <Suspense fallback={<Loader />}><RoleBasedDashboardWrapper /></Suspense>,
+            loader: dashboardLoader
+          },
+          { 
+            path: "groupFeed/:id", 
+            element: <Suspense fallback={<Loader />}><GroupFeed /></Suspense> 
+          }
+        ]
+      }
+    ]
+  },
+  {
+    path: "/join/:inviteToken",
+    element: <ProtectedRoute><Suspense fallback={<Loader />}><JoinGroup /></Suspense></ProtectedRoute>
+  }
+]);
 
 export default function App() {
   return (
     <AuthProvider>
-        <Suspense fallback={<Loader />}>
-          <Routes>
-            {/* Public Routes */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-
-            {/* Protected Routes inside the Layout */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/" element={<DashboardLayout />}>
-                <Route index element={<Navigate to="/dashboard" replace />} />
-                
-                {/* 1. THE DASHBOARD ROUTE (Using our new wrapper) */}
-                <Route path="dashboard" element={<RoleBasedDashboard />} />
-                
-                <Route path="groupFeed/:id" element={<GroupFeed />} />
-              </Route>
-            </Route>
-
-            {/* 2. THE JOIN ROUTE (This only loads the JoinGroup teleporter) */}
-            <Route path="/join/:inviteToken" element={
-              <ProtectedRoute>
-                <JoinGroup />
-              </ProtectedRoute>
-            } />
-          </Routes>
-        </Suspense>
+      <RouterProvider router={router} />
     </AuthProvider>
   );
 }

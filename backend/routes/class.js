@@ -8,7 +8,8 @@ const upload = require("../middleware/upload");
 const {
     createClass,
     getClassesByGroup,
-    assignStudent
+    assignStudent,
+    joinClass
 } = require("../controllers/classController");
 
 // create a class
@@ -19,5 +20,8 @@ router.get("/getClasses/:groupId", verifyToken, roleMiddleware("teacher"), getCl
 
 // assign student to a class
 router.post("/:classId/assign", verifyToken, roleMiddleware("teacher"), assignStudent);
+
+// join a class via invite link
+router.post("/join/:inviteToken", verifyToken, roleMiddleware("student"), joinClass);
 
 module.exports = router;

@@ -35,9 +35,14 @@ const ClassSchema = new mongoose.Schema({
     },
     inviteToken:{
         type:String,
-        
-        unique:true
+        unique:true,
+        sparse:true
     },
+    dues:{
+        type:Number,
+        default:0
+    },
+
     
   },
 

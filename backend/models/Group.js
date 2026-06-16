@@ -11,11 +11,7 @@ const GroupSchema = new mongoose.Schema({
         ref:"User",
         required:true
     },
-    inviteToken:{
-        type:String,
-        
-        unique:true
-    },
+
     students:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
