@@ -132,4 +132,51 @@ const register = async (req,res)=> {
     }
 }
 
-module.exports = { register, logout, login };
+const refresh = async (req, res) => {
+    try {
+        const { refreshToken } = req.body;
+        if (!refreshToken) return res.status(401).json({ message: "Refresh token is missing" });
+
+        jwt.verify(refreshToken, REFRESH_TOKEN_SECRET, async (err, payload) => {
+            if (err) return res.status(403).json({ message: "Refresh token is invalid or expired" });
+
+            const user = await User.findById(payload.userId);
+            if (!user || user.refreshToken !== refreshToken) {
+                return res.status(403).json({ message: "Invalid refresh token" });
+            }
+
+            const newAccessToken = jwt.sign(
+                {
+                    userId: user._id,
+                    email: user.email,
+                    username: user.username,
+                    role: user.role
+                },
+                JWT_SECRET,
+                { expiresIn: "15d" }
+            );
+
+            const newRefreshToken = jwt.sign(
+                { userId: user._id },
+                REFRESH_TOKEN_SECRET
+            );
+            user.refreshToken = newRefreshToken;
+            await user.save();
+
+            res.status(200).json({
+                accessToken: newAccessToken,
+                refreshToken: newRefreshToken
+            });
+        });
+    } catch (err) {
+        res.status(500).json(err);
+    }
+};
+
+
+
+
+
+
+
+module.exports = { register, logout, login, refresh };

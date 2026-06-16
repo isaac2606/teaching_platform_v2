@@ -34,11 +34,11 @@ api.interceptors.response.use(
       try {
         const refreshToken = localStorage.getItem("refreshToken");
         // Example refresh logic (you will need a refresh endpoint on backend)
-        // const res = await axios.post(`${API_URL}/auth/refresh`, { token: refreshToken });
-        // localStorage.setItem("accessToken", res.data.accessToken);
-        // originalRequest.headers.Authorization = `Bearer ${res.data.accessToken}`;
-        // return api(originalRequest);
-        return Promise.reject(error); // fallback until refresh endpoint exists
+        const res = await axios.post(`${API_URL}/auth/refresh`, { refreshToken });
+        localStorage.setItem("accessToken", res.data.accessToken);
+        localStorage.setItem("refreshToken", res.data.refreshToken);
+        originalRequest.headers.Authorization = `Bearer ${res.data.accessToken}`;
+        return api(originalRequest);
       } catch (err) {
         // Refresh failed, user needs to login again
         return Promise.reject(err);

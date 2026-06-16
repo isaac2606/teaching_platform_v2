@@ -5,7 +5,7 @@ import { AuthContext } from "../context/AuthContext";
 export function useGroups() {
   const {user}  = useContext(AuthContext)
   const [groups, setGroups] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   // Initial load
@@ -23,7 +23,7 @@ export function useGroups() {
         setLoading(false);
       }
     };
-    if (user?.id) {
+    if (user) {
       fetchGroups();
     }
   }, [user]);
@@ -45,6 +45,7 @@ export function useGroups() {
     if (!newTitle.trim()) return;
     try {
       // This will connect to the new PUT route we will write
+      setLoading(true);
       const response = await api.put(`/group/${groupId}`, { title: newTitle });
       const savedGroup = response.data; 
       setGroups((prevGroups) =>
@@ -62,6 +63,7 @@ export function useGroups() {
   const deleteGroup = useCallback(async (groupId) => {
     try {
       // This will connect to the new DELETE route we will write
+      setLoading(true);
       await api.delete(`/group/${groupId}`);
       setGroups((prevGroups) =>
         prevGroups.filter((group) => group._id !== groupId)

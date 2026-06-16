@@ -1,4 +1,4 @@
-const { register, logout, login } = require('../controllers/authControllers.js');
+const { register, logout, login, refresh } = require('../controllers/authControllers.js');
 
 
 const router = require("express").Router()
@@ -21,6 +21,7 @@ router.post("/login", login)
 
 router.post("/logout",verifyToken, logout)
 
+router.post("/refresh",refresh)
 
 
 module.exports = router;
