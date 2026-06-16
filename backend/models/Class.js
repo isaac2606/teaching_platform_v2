@@ -32,7 +32,13 @@ const ClassSchema = new mongoose.Schema({
     imageUrl:{
         type:String,
         default:""
-    }
+    },
+    inviteToken:{
+        type:String,
+        
+        unique:true
+    },
+    
   },
 
     { timestamps:true })
