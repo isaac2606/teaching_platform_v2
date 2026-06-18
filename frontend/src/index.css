@@ -1,22 +1,50 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:is(.dark *));
+
 @theme {
-  --color-brand-primary: #3b82f6; /* blue-500 */
-  --color-brand-secondary: #1d4ed8; /* blue-700 */
-  --color-bg-base: #171717; /* neutral-900 */
-  --color-bg-surface: #262626; /* neutral-800 */
-  --color-text-primary: #f9fafb; /* gray-50 */
-  --color-text-secondary: #9ca3af; /* gray-400 */
+  --color-brand-primary: var(--theme-brand-primary);
+  --color-brand-secondary: var(--theme-brand-secondary);
+  --color-bg-base: var(--theme-bg-base);
+  --color-bg-surface: var(--theme-bg-surface);
+  --color-text-primary: var(--theme-text-primary);
+  --color-text-secondary: var(--theme-text-secondary);
+  --color-border-subtle: var(--theme-border-subtle);
+  --color-sidebar-bg: var(--theme-sidebar-bg);
+}
+
+:root {
+  /* Light Mode (Default) */
+  --theme-brand-primary: #2563eb; /* blue-600 */
+  --theme-brand-secondary: #1d4ed8; /* blue-700 */
+  --theme-bg-base: #f8fafc; /* slate-50 */
+  --theme-bg-surface: #ffffff; /* white */
+  --theme-text-primary: #0f172a; /* slate-900 */
+  --theme-text-secondary: #64748b; /* slate-500 */
+  --theme-border-subtle: #e2e8f0; /* slate-200 */
+  --theme-sidebar-bg: #0B132B; /* Dark Navy for Sidebar always */
+}
+
+.dark {
+  /* Dark Mode */
+  --theme-brand-primary: #3b82f6; /* blue-500 */
+  --theme-brand-secondary: #2563eb; /* blue-600 */
+  --theme-bg-base: #0f172a; /* slate-900 */
+  --theme-bg-surface: #1e293b; /* slate-800 */
+  --theme-text-primary: #f8fafc; /* slate-50 */
+  --theme-text-secondary: #94a3b8; /* slate-400 */
+  --theme-border-subtle: rgba(255, 255, 255, 0.1);
+  --theme-sidebar-bg: #0B132B; /* Keeps same navy blue */
 }
 
 @layer base {
   body {
-    @apply bg-bg-base text-text-primary font-sans antialiased;
+    @apply bg-bg-base text-text-primary font-sans antialiased transition-colors duration-300;
   }
 }
 
 @layer components {
   .glass-panel {
-    @apply bg-white/5 backdrop-blur-md border border-white/10 rounded-xl shadow-xl;
+    @apply bg-bg-surface border border-border-subtle rounded-xl shadow-lg transition-colors duration-300;
   }
 }

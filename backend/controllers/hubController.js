@@ -1,11 +1,14 @@
 const Hub = require("../models/Hub");
 const User = require("../models/User");
+const crypto = require("crypto");
 
 const createHub = async (req, res) => {
   try {
+    const inviteToken = crypto.randomBytes(8).toString("hex");
     const hub = new Hub({
       title: req.body.title,
       teacher: req.user.userId,
+      inviteToken:inviteToken
     });
     const savedHub = await hub.save();
 
@@ -176,6 +179,18 @@ const fixIndex = async (req, res) => {
   }
 };
 
+const getChatHistory = async (req,res)=>{
+    try{
+        const chatHistory = await Hub.findById(req.params.hubId).populate("sender","username").sort({createdAt:1});
+
+        res.status(200).json(chatHistory)
+
+    }catch(err){
+        res.status(500).json(err)
+    }
+}
+
+
 module.exports = {
   createHub,
   leaveHub,
@@ -186,5 +201,6 @@ module.exports = {
   updateHub,
   deleteHub,
   getDashboardStats,
-  fixIndex
+  fixIndex,
+  getChatHistory
 };

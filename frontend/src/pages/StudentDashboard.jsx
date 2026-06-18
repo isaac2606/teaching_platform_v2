@@ -45,14 +45,14 @@ export default function StudentDashboard() {
   const filters = ["all", "done", "not done"];
     
   return (
-    <div className="p-8 min-h-screen text-white font-sans flex-1 bg-bg-base">
+    <div className="p-8 min-h-screen text-text-primary font-sans flex-1 bg-bg-base transition-colors duration-300">
         
-        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8 bg-bg-surface border border-white/5 p-6 rounded-xl shadow-lg backdrop-blur-xl">
-            <h1 className="text-3xl font-bold tracking-tight text-white">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8 bg-bg-surface border border-border-subtle p-6 rounded-xl shadow-md transition-colors">
+            <h1 className="text-3xl font-bold tracking-tight text-text-primary">
                 My Hubs
             </h1>
             
-            <div className="flex bg-black/20 p-1 rounded-lg border border-white/5">
+            <div className="flex bg-black/5 dark:bg-black/20 p-1 rounded-lg border border-border-subtle">
                 {filters.map((f) => (
                     <button
                         key={f}
@@ -60,7 +60,7 @@ export default function StudentDashboard() {
                         className={`px-4 py-1.5 rounded-md text-sm font-medium capitalize transition-all duration-200 ${
                             filter === f 
                             ? "bg-brand-primary text-white shadow-sm" 
-                            : "text-text-secondary hover:text-white hover:bg-white/5"
+                            : "text-text-secondary hover:text-text-primary hover:bg-black/5 dark:hover:bg-white/5"
                         }`}
                     >
                         {f}
@@ -116,7 +116,7 @@ export default function StudentDashboard() {
                 ))}
 
                 {filteredHubs.length === 0 && (
-                    <div className="col-span-full flex flex-col items-center justify-center text-text-secondary py-16 bg-bg-surface border border-white/5 rounded-xl">
+                    <div className="col-span-full flex flex-col items-center justify-center text-text-secondary py-16 bg-bg-surface border border-border-subtle rounded-xl shadow-sm">
                         <span className="text-4xl mb-4 opacity-50">📚</span>
                         <p>No hubs found for the selected filter.</p>
                     </div>

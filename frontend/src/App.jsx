@@ -3,7 +3,8 @@ import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom"
 import DashboardLayout from "./layouts/DashboardLayout";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { dashboardLoader } from "./loaders";
+import { dashboardLoader , HubLoader} from "./loaders";
+import { ThemeProvider } from "./context/ThemeContext";
 
 import './App.css';
 // TeacherFeed has been refactored into pages/GroupFeed.jsx and lazy loaded below
@@ -14,9 +15,13 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 // Note: TeacherHub has been refactored into pages/Dashboard.jsx!
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
-const HubWorkspace = lazy(() => import("./pages/HubWorkspace"));
+const HubWorkspaceLayout = lazy(() => import("./layouts/HubWorkspaceLayout"));
 const StudentDashboard = lazy(() => import("./pages/StudentDashboard"));
 const JoinHub = lazy(() => import("./pages/JoinHub"));
+const FeedTab  = lazy(()=>import("./pages/tabs/FeedTab"))
+const ChatTab  = lazy(()=>import("./pages/tabs/ChatTab"))
+const ScheduleTab  = lazy(()=>import("./pages/tabs/ScheduleTab"))
+const RosterTab  = lazy(()=>import("./pages/tabs/RosterTab"))
 
 // Fallback loader component
 const Loader = () => (
@@ -28,6 +33,7 @@ const Loader = () => (
 
 
 import { useLoaderData } from "react-router-dom";
+
 function RoleBasedDashboardWrapper() {
   const data = useLoaderData();
   return data?.role === "teacher" ? <Dashboard /> : <StudentDashboard />;
@@ -57,8 +63,19 @@ const router = createBrowserRouter([
             loader: dashboardLoader
           },
           { 
+            id: "hub-workspace",
             path: "workspace/:id", 
-            element: <Suspense fallback={<Loader />}><HubWorkspace /></Suspense> 
+            element: <Suspense fallback={<Loader />}><HubWorkspaceLayout  /></Suspense> ,
+            loader: HubLoader,
+            children:[
+              {
+                index:true , element: <Navigate to="feed" replace />
+              },
+              { path: "feed", element: <FeedTab></FeedTab> },
+              { path: "chat", element: <ChatTab></ChatTab> },
+              { path: "schedule", element: <ScheduleTab></ScheduleTab> },
+              { path: "roster", element: <RosterTab></RosterTab>}
+            ]
           }
         ]
       }
@@ -73,7 +90,9 @@ const router = createBrowserRouter([
 export default function App() {
   return (
     <AuthProvider>
-      <RouterProvider router={router} />
+      <ThemeProvider>
+        <RouterProvider router={router} />
+      </ThemeProvider>
     </AuthProvider>
   );
 }

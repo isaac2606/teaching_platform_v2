@@ -24,7 +24,19 @@ const HubSchema = new mongoose.Schema({
     classes:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Class"
-    }]
+    }],
+    inviteToken:{
+        type:String,
+        unique:true,
+        
+    },
+    messages:[
+        {
+            type:mongoose.Schema.Types.ObjectId,
+            ref:"Message"
+        }
+    ]
+    
   },
 
     { timestamps:true })

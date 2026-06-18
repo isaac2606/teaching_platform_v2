@@ -12,7 +12,8 @@ const {
   updateHub,
   deleteHub,
   getDashboardStats,
-  fixIndex
+  fixIndex,
+  getChatHistory
 } = require("../controllers/hubController");
 
 // create a hub
@@ -44,5 +45,8 @@ router.put("/:id", verifyToken, authorize("teacher"), updateHub);
 
 // delete hub
 router.delete("/:id", verifyToken, authorize("teacher"), deleteHub);
+
+//get chat history
+router.get("/:hubId",verifyToken, getChatHistory)
 
 module.exports = router;

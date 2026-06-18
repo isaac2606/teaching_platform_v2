@@ -31,3 +31,13 @@ export async function dashboardLoader() {
         return { role: null, stats: {}, hubs: [] }; // Return empty data on failure
     }
 }
+
+
+export async function HubLoader({params}){
+    try{
+        const response = await api.get(`/hub/${params.id}`)
+        return response.data
+    }catch(err){
+        console.error("Hub loader error : ", err); 
+    }
+}

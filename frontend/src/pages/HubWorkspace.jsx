@@ -5,6 +5,7 @@ import api from "../services/api";
 
 
 export default function HubWorkspace() {
+  
   const { id } = useParams();
   const {user}=useContext(AuthContext)
   // 1. FIXED: Added [] so it defaults to an empty array before the data loads
