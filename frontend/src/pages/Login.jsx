@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate,useLocation } from "react-router-dom";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import api from "../services/api";
@@ -15,6 +15,9 @@ export default function Login() {
   
   const { login } = useContext(AuthContext);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const redirectPath = location.state?.from || "/dashboard";
 
   const handleChange = (e) => {
     setFormData({
@@ -36,7 +39,9 @@ export default function Login() {
         // Use the V2 AuthContext login function
         login(data.user, data.accessToken, data.refreshToken);
         
-        navigate("/dashboard");
+        
+
+        navigate(redirectPath)
       }
     } catch (err) {
       setError(err.response?.data?.message || "Invalid email or password.");

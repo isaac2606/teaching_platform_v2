@@ -13,8 +13,10 @@ const {
   deleteHub,
   getDashboardStats,
   fixIndex,
-  getChatHistory
+  getChatHistory,
+  joinHubByInviteToken
 } = require("../controllers/hubController");
+const { verify } = require("jsonwebtoken");
 
 // create a hub
 router.post("/", verifyToken, authorize("teacher"), createHub);
@@ -48,5 +50,9 @@ router.delete("/:id", verifyToken, authorize("teacher"), deleteHub);
 
 //get chat history
 router.get("/:hubId",verifyToken, getChatHistory)
+
+//join a hub by invtie
+
+router.post("/join/:inviteToken",verifyToken, joinHubByInviteToken)
 
 module.exports = router;

@@ -74,10 +74,12 @@ const assignStudent = async (req, res) => {
 const joinClass = async (req, res) => {
     try {
         const classObj = await Class.findOne({ inviteToken: req.params.inviteToken });
+        
         if (!classObj) {
+            
             return res.status(404).json({ message: "Class not found or invalid invite token." });
         }
-
+        
         if (!classObj.students.includes(req.user.userId)) {
             // Add student to the Cohort
             await classObj.updateOne({ $push: { students: req.user.userId } });

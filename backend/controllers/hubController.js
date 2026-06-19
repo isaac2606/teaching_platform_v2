@@ -97,6 +97,34 @@ const getHubByInviteToken = async (req, res) => {
   }
 };
 
+const joinHubByInviteToken = async (req, res) => {
+    try {
+        const hub = await Hub.findOne({ inviteToken: req.params.inviteToken });
+        if (!hub) {
+            return res.status(404).json({ message: "Hub not found or invalid invite token." });
+        }
+        
+        if (!hub.students.includes(req.user.userId)) {
+            // Add student to the Cohort
+            await hub.updateOne({ $push: { students: req.user.userId } });
+            
+            // Add Hub to User's list
+            await User.updateOne(
+                { _id: req.user.userId },
+                { 
+                    $addToSet: { hubs: hub._id },
+                }
+            );
+
+            res.status(200).json({ message: "Student joined the Hub successfully" });
+        } else {
+            res.status(200).json({ message: "Student already in the Hub" });
+        }
+    } catch (err) {
+        res.status(500).json(err);
+    }
+};
+
 const updateHub = async (req, res) => {
   try {
     const updatedHub = await Hub.findByIdAndUpdate(
@@ -202,5 +230,6 @@ module.exports = {
   deleteHub,
   getDashboardStats,
   fixIndex,
-  getChatHistory
+  getChatHistory,
+  joinHubByInviteToken
 };

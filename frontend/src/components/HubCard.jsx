@@ -10,7 +10,7 @@ const HubCard = memo(function HubCard({ hub, onDelete, onEdit }) {
     const handleCopy = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        navigator.clipboard.writeText(`http://localhost:5173/join/${hub.inviteToken}`);
+        navigator.clipboard.writeText(hub.inviteToken);
         alert("Invite Link Copied!");
     };
     

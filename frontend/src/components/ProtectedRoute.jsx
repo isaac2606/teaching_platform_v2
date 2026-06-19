@@ -1,9 +1,10 @@
 import { useContext } from "react";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet,useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 
 export default function ProtectedRoute({ children }) {
     const { user, loading } = useContext(AuthContext);
+    const location = useLocation();
 
     // If still checking localStorage, show a simple loader
     if (loading) {
@@ -16,7 +17,7 @@ export default function ProtectedRoute({ children }) {
 
     // If there is no user, instantly kick them to the login page!
     if (!user) {
-        return <Navigate to="/login" replace />;
+        return <Navigate to="/login" state={{from:location.pathname}} replace />;
     }
 
     // If they passed children (like <JoinGroup />), render the children.

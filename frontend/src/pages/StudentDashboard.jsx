@@ -82,7 +82,7 @@ export default function StudentDashboard() {
                     onClick={async () => {
                             try {
                                 const token = newHubTitle.trim();
-                                await api.post(`/class/join/${token}`);
+                                await api.post(`/hub/join/${token}`);
                                 setNewHubTitle("");
                                 window.location.reload();
                                 

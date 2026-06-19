@@ -1,8 +1,9 @@
 import { io } from "socket.io-client";
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useState, useRef } from "react";
 import { useRouteLoaderData } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
 import api from "../../services/api"
+import Button from "../../components/ui/Button";
 
 export default function ChatTab(){
     const hub  = useRouteLoaderData("hub-workspace");
@@ -10,6 +11,11 @@ export default function ChatTab(){
     const [socket,setSocket] = useState(null);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
+    const messagesEndRef = useRef(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
 
     useEffect( ()=>{
 
@@ -18,6 +24,7 @@ export default function ChatTab(){
 
                 const savedMessages  = await api.get(`/message/public/${hub._id}`);
                 setMessages(savedMessages.data)
+                setTimeout(scrollToBottom, 100);
 
             }catch(err){
                 console.error("error fetching history", err)
@@ -49,8 +56,7 @@ export default function ChatTab(){
         
         socket.on("receive_message", (message)=>{
             setMessages((prev)=> [...prev,message]);
-            
-
+            setTimeout(scrollToBottom, 50);
         })
         
         return () => socket.off("receive_message");
@@ -77,29 +83,64 @@ export default function ChatTab(){
     }
 
 
-        return (
-        <div className="p-4">
-            <div className="h-96 overflow-y-auto bg-bg-surface border border-border-subtle p-4 mb-4">
-                {messages.map((msg, index) => (
-                    <div key={index} className="mb-2">
-                        {msg.text}
-                    </div>
-                ))}
+    return (
+        <div className="flex flex-col h-[calc(100vh-16rem)] bg-bg-surface border border-border-subtle rounded-2xl shadow-md overflow-hidden">
+            
+            {/* Header */}
+            <div className="p-4 border-b border-border-subtle bg-bg-base flex justify-between items-center">
+                <h3 className="font-bold text-text-primary text-lg">Public Hub Chat</h3>
+                <span className="text-xs font-semibold bg-brand-primary/10 text-brand-primary px-3 py-1 rounded-full">
+                    {messages.length} Messages
+                </span>
             </div>
 
-            <form onSubmit={sendMessage} className="flex gap-2">
-                <input 
-                    type="text" 
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    className="border border-border-subtle p-2 flex-1 text-text-primary bg-bg-base"
-                    placeholder="Type a message..."
-                />
-                <button type="submit" className="bg-brand-primary text-white p-2 rounded">
-                    Send
-                </button>
-            </form>
+            {/* Chat Messages Area */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                {messages.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full text-text-secondary">
+                        <span className="text-4xl mb-3 opacity-50">💬</span>
+                        <p>No messages yet. Be the first to say hello!</p>
+                    </div>
+                ) : (
+                    messages.map((msg, index) => {
+                        // Check if I sent the message
+                        const isMe = msg.sender?._id === user._id || msg.sender === user._id;
+                        
+                        return (
+                            <div key={msg._id || index} className={`flex justify-start items-end gap-2`}>
+                                <div className="w-8 h-8 rounded-full bg-brand-primary flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm">
+                                    {msg.sender?.username?.[0]?.toUpperCase() || "?"}
+                                </div>
+                                
+                                <div className={`max-w-[70%] rounded-2xl px-5 py-3 bg-bg-base text-text-primary border border-border-subtle rounded-bl-none shadow-sm`}>
+                                    <p className="text-xs font-bold text-brand-primary mb-1">{msg.sender?.username || "Unknown"}</p>
+                                    <p className="text-sm leading-relaxed break-words">{msg.text}</p>
+                                    <p className={`text-[10px] mt-2 text-left text-text-secondary`}>
+                                        {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "Just now"}
+                                    </p>
+                                </div>
+                            </div>
+                        );
+                    })
+                )}
+                <div ref={messagesEndRef} />
+            </div>
+
+            {/* Message Input Area */}
+            <div className="p-4 bg-bg-base border-t border-border-subtle">
+                <form onSubmit={sendMessage} className="flex gap-3">
+                    <input
+                        type="text"
+                        placeholder="Type a message to the hub..."
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        className="flex-1 bg-bg-surface border border-border-subtle rounded-xl px-5 py-3 text-sm text-text-primary focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all"
+                    />
+                    <Button type="submit" disabled={!newMessage.trim()} className="px-6 rounded-xl shrink-0">
+                        Send <span className="ml-2">➤</span>
+                    </Button>
+                </form>
+            </div>
         </div>
     );
-
 }
