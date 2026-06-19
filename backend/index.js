@@ -72,7 +72,8 @@ io.on("connection", (socket)=>{
     socket.on("send_private_message",async (data)=>{
 
       try{
-        const newMessage = await Message.creat
+        const newMessage = await Message.create({
+
           receiver:data.receiver,
           sender:data.sender,
           text:data.text

@@ -77,12 +77,12 @@ const router = createBrowserRouter([
               { path: "schedule", element: <ScheduleTab></ScheduleTab> },
               { path: "roster", element: <RosterTab></RosterTab>}
             ]
+          },
+          {
+            path: "messages",
+            element : <Messages/>
           }
         ]
-      },
-      {
-        path: "/messages",
-        element : <Messages/>
       }
     ]
   },
