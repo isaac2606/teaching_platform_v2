@@ -9,7 +9,7 @@ const getPrivateChatHistory  = async (req,res)=>{
 
                 {receiver:req.user._id , sender:req.params.receiver}
             ]
-        }).sort({createdAt: 1});
+        }).populate("sender", "username").populate("receiver", "username").sort({createdAt: 1});
 
         res.status(200).json(messages);
     }catch(err){

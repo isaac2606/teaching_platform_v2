@@ -5,7 +5,7 @@ import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { dashboardLoader , HubLoader} from "./loaders";
 import { ThemeProvider } from "./context/ThemeContext";
-
+import { SocketProvider } from "./context/SocketContext";
 import './App.css';
 // TeacherFeed has been refactored into pages/GroupFeed.jsx and lazy loaded below
 
@@ -33,6 +33,7 @@ const Loader = () => (
 
 
 import { useLoaderData } from "react-router-dom";
+import Messages from "./pages/Messages";
 
 function RoleBasedDashboardWrapper() {
   const data = useLoaderData();
@@ -78,6 +79,10 @@ const router = createBrowserRouter([
             ]
           }
         ]
+      },
+      {
+        path: "/messages",
+        element : <Messages/>
       }
     ]
   },
@@ -90,9 +95,11 @@ const router = createBrowserRouter([
 export default function App() {
   return (
     <AuthProvider>
-      <ThemeProvider>
-        <RouterProvider router={router} />
-      </ThemeProvider>
+      <SocketProvider>
+        <ThemeProvider>
+          <RouterProvider router={router} />
+        </ThemeProvider>
+      </SocketProvider>
     </AuthProvider>
   );
 }

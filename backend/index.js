@@ -31,40 +31,67 @@ const messageRoute = require("./routes/message");
 io.on("connection", (socket)=>{
   console.log("A user connected:" , socket.id)
 
-socket.on("join_Hub", (hubId) => {
-    socket.join(hubId);
-    
-  });
+  socket.on("join_Hub", (hubId) => {
+      socket.join(hubId);
+      
+    });
 
-
-
- // Add 'async' here!
-socket.on("send_message", async (data) => {
-    try {
-        // 1. Save it to MongoDB
-        const newMessage = await Message.create({
-            sender: data.sender,
-            hubId: data.hubId,
-            text: data.text
-        });
-
-        // 2. We populate the sender so the frontend gets the username!
-        await newMessage.populate("sender", "username");
-        
-        
-        // 3. Now broadcast the permanently saved message!
-        io.to(data.hubId).emit("receive_message", newMessage);
-        
-    } catch (err) {
-        console.error("Error saving message:", err);
-    }
-});
-
-  socket.on("disconnect",()=>{
-    console.log("User disconnected ")
+  socket.on("join_private_room",(userId)=>{
+    socket.join(userId);
+    console.log("user joined private room :",userId)
   })
 
+
+
+  // Add 'async' here!
+  socket.on("send_message", async (data) => {
+      try {
+          // 1. Save it to MongoDB
+          const newMessage = await Message.create({
+              sender: data.sender,
+              hubId: data.hubId,
+              text: data.text
+          });
+
+          // 2. We populate the sender so the frontend gets the username!
+          await newMessage.populate("sender", "username");
+          
+          
+          // 3. Now broadcast the permanently saved message!
+          io.to(data.hubId).emit("receive_message", newMessage);
+          
+      } catch (err) {
+          console.error("Error saving message:", err);
+      }
+  });
+
+    socket.on("disconnect",()=>{
+      console.log("User disconnected ")
+    })
+    
+    socket.on("send_private_message",async (data)=>{
+
+      try{
+        const newMessage = await Message.creat
+          receiver:data.receiver,
+          sender:data.sender,
+          text:data.text
+
+        })
+        await newMessage.populate("sender","username");
+        await newMessage.populate("receiver","username");
+
+        io.to(data.receiver).emit("receive_private_message",newMessage);
+        io.to(data.sender).emit("receive_private_message",newMessage)
+
+      }catch(err){
+        console.error("Error saving message:", err)
+      }
+
+    })
 })
+
+
 
 
 mongoose
