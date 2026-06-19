@@ -2,7 +2,7 @@ import { io } from "socket.io-client";
 import { useContext, useEffect, useState } from "react";
 import { useRouteLoaderData } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
-
+import api from "../../services/api"
 
 export default function ChatTab(){
     const hub  = useRouteLoaderData("hub-workspace");
@@ -11,6 +11,23 @@ export default function ChatTab(){
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
 
+    useEffect( ()=>{
+
+        const getPublickChatHistory = async ()=>{
+            try{
+
+                const savedMessages  = await api.get(`/message/public/${hub._id}`);
+                setMessages(savedMessages.data)
+
+            }catch(err){
+                console.error("error fetching history", err)
+            }
+            
+        }
+        
+        getPublickChatHistory()
+
+    },[hub?._id])
 
     useEffect(()=>{
 
@@ -19,21 +36,26 @@ export default function ChatTab(){
 
         if(hub?._id){
             newSocket.emit("join_Hub",hub._id)
+            console.log("joined hub")
         }
 
         return () => newSocket.close();
 
     },[hub?._id])
 
+
     useEffect(()=>{
         if(!socket) return ;
+        
+        socket.on("receive_message", (message)=>{
+            setMessages((prev)=> [...prev,message]);
+            
 
-        socket.on("receive_message", (data)=>{
-            setMessages((prev)=> [...prev,data]);
         })
         
         return () => socket.off("receive_message");
     },[socket])
+
 
     const sendMessage =(e)=>{
         e.preventDefault();
@@ -50,10 +72,11 @@ export default function ChatTab(){
         }
 
         socket.emit("send_message", messageData);
-        console.log("good", messageData)
-        console.log("good boy", messages)
+        
         setNewMessage("");
     }
+
+
         return (
         <div className="p-4">
             <div className="h-96 overflow-y-auto bg-bg-surface border border-border-subtle p-4 mb-4">

@@ -11,6 +11,7 @@ const io = new Server(server, {
     methods: ["GET", "POST"]
   }
 });
+const Message = require("./models/Message");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const helmet = require("helmet");
@@ -30,32 +31,40 @@ const messageRoute = require("./routes/message");
 io.on("connection", (socket)=>{
   console.log("A user connected:" , socket.id)
 
-
-
-  socket.on("join_Hub", (hubId)=>{
+socket.on("join_Hub", (hubId) => {
     socket.join(hubId);
-    console.log("User joined hub: " ,hubId )
-  })
+    
+  });
 
-  socket.on("send_message", (data)=>{
-    io.to(data.hubId).emit("receive_message", data)
-  })
+
+
+ // Add 'async' here!
+socket.on("send_message", async (data) => {
+    try {
+        // 1. Save it to MongoDB
+        const newMessage = await Message.create({
+            sender: data.sender,
+            hubId: data.hubId,
+            text: data.text
+        });
+
+        // 2. We populate the sender so the frontend gets the username!
+        await newMessage.populate("sender", "username");
+        
+        
+        // 3. Now broadcast the permanently saved message!
+        io.to(data.hubId).emit("receive_message", newMessage);
+        
+    } catch (err) {
+        console.error("Error saving message:", err);
+    }
+});
 
   socket.on("disconnect",()=>{
     console.log("User disconnected ")
   })
 
 })
-
-
-
-
-
-
-
-
-
-
 
 
 mongoose
@@ -67,17 +76,6 @@ mongoose
         console.log(err);
 
     });
-
-
-
-
-
-
-
-
-
-
-
 
 
 app.use(cors());
