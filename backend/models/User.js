@@ -23,6 +23,10 @@ const UserSchema = new mongoose.Schema(
         type:mongoose.Schema.Types.ObjectId,
         ref:"Hub" 
     }],
+    recentUsers:[{
+      type:mongoose.Schema.Types.ObjectId,
+      ref:"User"
+    }],
     refreshToken: { type: String },
   },
   { timestamps: true },

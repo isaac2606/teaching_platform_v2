@@ -22,6 +22,20 @@ const getUserProfile = async (req, res) => {
     }
 };
 
+const getRecentUsers  = async (req,res)=>{
+
+    try{
+
+        const user = await User.findById(req.user.userId).populate("recentUsers");
+
+        res.status(200).json(user.recentUsers)
+
+    }catch(err){
+        res.status(500).json(err)
+    }
+}
+
+
 module.exports = {
     getAllUsers,
     getUserProfile

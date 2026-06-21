@@ -77,6 +77,7 @@ export default function Sidebar() {
           <div className="flex-1 min-w-0 hidden lg:block">
              <p className="text-white font-semibold text-sm truncate">{user?.username || "User"}</p>
              <p className="text-xs text-slate-400 truncate capitalize">{user?.role}</p>
+             <p className="text-xs text-slate-400"> {user?._id}</p>
           </div>
         </div>
 

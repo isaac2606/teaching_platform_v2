@@ -9,6 +9,7 @@ export default function Messages() {
     const { user } = useContext(AuthContext);
     
     const [activeReceiver, setActiveReceiver] = useState(null);
+    const [recentContacts, setRecentContacts] = useState([]);
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const [newReceiver, setNewReceiver] = useState("");
@@ -20,6 +21,20 @@ export default function Messages() {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
+    // Fetch Recent Contacts on mount
+    useEffect(() => {
+        const fetchContacts = async () => {
+            try {
+                const res = await api.get('/message/contacts');
+                setRecentContacts(res.data);
+            } catch (err) {
+                console.error("Failed to fetch recent contacts", err);
+            }
+        };
+        fetchContacts();
+    }, []);
+
+    // Fetch messages when activeReceiver changes
     useEffect(() => { 
         const getPrivateMessages = async () => {
             if (!activeReceiver?._id) return;
@@ -50,6 +65,9 @@ export default function Messages() {
                 setMessages((prev) => [...prev, message]);
                 setTimeout(scrollToBottom, 50);
             }
+            
+            // Optionally, we could refresh recentContacts here to bump the user to the top,
+            // but for simplicity, we'll leave it as is.
         };
 
         socket.on("receive_private_message", handleReceive);
@@ -66,6 +84,14 @@ export default function Messages() {
             const response = await api.get(`/user/${newReceiver}`);
             setActiveReceiver(response.data);
             setNewReceiver(""); 
+            
+            // Add to recent contacts if not already there
+            setRecentContacts(prev => {
+                if (!prev.find(c => c._id === response.data._id)) {
+                    return [response.data, ...prev];
+                }
+                return prev;
+            });
         } catch (err) {
             console.error("User not found!", err);
             setSearchError("User not found. Please check the ID.");
@@ -88,89 +114,86 @@ export default function Messages() {
     };
 
     return (
-        <div className="flex h-screen bg-bg-base overflow-hidden p-2 gap-2 pb-2">
+        <div className="flex h-screen bg-bg-surface overflow-hidden p-4 gap-4">
             
-            {/* Left Pane: Contacts & Search */}
-            <div className="w-80 flex flex-col bg-bg-surface border border-border-subtle rounded-l-2xl shadow-sm overflow-hidden shrink-0">
+            {/* Left Sidebar: Recent Contacts & Search */}
+            <div className="w-80 flex flex-col bg-bg-base border border-border-subtle rounded-xl shadow-sm shrink-0">
                 <div className="p-4 border-b border-border-subtle">
-                    <h2 className="text-lg font-bold text-text-primary mb-4">Direct Messages</h2>
+                    <h2 className="text-lg font-bold text-text-primary mb-3">Messages</h2>
                     
-                    <form onSubmit={handleSearchUser} className="relative">
-                        <div className="flex items-center bg-bg-base border border-border-subtle rounded-lg overflow-hidden focus-within:border-brand-primary focus-within:ring-1 focus-within:ring-brand-primary transition-all">
-                            <span className="pl-3 text-text-secondary text-sm">🔍</span>
+                    <form onSubmit={handleSearchUser} className="flex flex-col gap-2">
+                        <div className="flex gap-2">
                             <input 
-                                placeholder="Search by User ID..."
+                                placeholder="Search User ID..."
                                 value={newReceiver}
                                 onChange={(e) => setNewReceiver(e.target.value)}
-                                className="w-full bg-transparent px-3 py-2 text-sm text-text-primary focus:outline-none"
+                                className="flex-1 bg-bg-surface border border-border-subtle rounded px-3 py-2 text-sm text-text-primary focus:outline-none"
                             />
+                            <Button type="submit" variant="secondary" className="px-3 py-2 text-sm">Find</Button>
                         </div>
-                        {searchError && <p className="text-red-400 text-xs mt-2 ml-1">{searchError}</p>}
-                        <button type="submit" className="hidden">Search</button>
+                        {searchError && <span className="text-red-400 text-xs">{searchError}</span>}
                     </form>
                 </div>
 
-                {/* Contacts List */}
-                <div className="flex-1 overflow-y-auto p-3 space-y-2">
-                    {activeReceiver ? (
-                        <div className="p-3 bg-brand-primary/10 border border-brand-primary/30 rounded-lg cursor-pointer transition-all hover:bg-brand-primary/20 flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-brand-primary flex items-center justify-center text-white font-bold shadow-sm">
-                                {activeReceiver.username?.[0]?.toUpperCase() || "?"}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <h4 className="font-bold text-text-primary text-sm truncate">{activeReceiver.username}</h4>
-                                <p className="text-xs text-brand-primary font-medium truncate">Active Chat</p>
-                            </div>
-                        </div>
+                <div className="flex-1 overflow-y-auto p-2">
+                    <p className="text-xs font-bold text-text-secondary uppercase px-2 mb-2 mt-2">Recent Contacts</p>
+                    {recentContacts.length === 0 ? (
+                        <p className="text-sm text-text-secondary px-2">No recent chats.</p>
                     ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-text-secondary text-center opacity-60">
-                            <span className="text-2xl mb-2">👥</span>
-                            <p className="text-xs">Search for a user<br/>to start a conversation.</p>
-                        </div>
+                        recentContacts.map(contact => (
+                            <div 
+                                key={contact._id} 
+                                onClick={() => setActiveReceiver(contact)}
+                                className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${activeReceiver?._id === contact._id ? 'bg-brand-primary/10 border border-brand-primary/30' : 'hover:bg-bg-surface border border-transparent'}`}
+                            >
+                                <div className="w-10 h-10 rounded-full bg-brand-primary flex items-center justify-center text-white font-bold shrink-0">
+                                    {contact.username?.[0]?.toUpperCase() || "?"}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <h4 className="font-bold text-text-primary text-sm truncate">{contact.username}</h4>
+                                    <p className="text-xs text-text-secondary truncate capitalize">{contact.role || "Member"}</p>
+                                </div>
+                            </div>
+                        ))
                     )}
                 </div>
             </div>
 
-            {/* Middle Pane: Chat Window */}
-            <div className="flex-1 flex flex-col bg-bg-surface border-y border-r border-border-subtle shadow-sm overflow-hidden relative">
+            {/* Main Area: Chat Window */}
+            <div className="flex-1 flex flex-col bg-bg-base border border-border-subtle rounded-xl shadow-sm overflow-hidden">
                 
                 {!activeReceiver ? (
-                    // Empty State
                     <div className="flex flex-col items-center justify-center h-full text-text-secondary">
-                        <div className="w-20 h-20 mb-4 rounded-full bg-bg-base flex items-center justify-center border border-border-subtle shadow-inner">
-                            <span className="text-3xl">💬</span>
-                        </div>
-                        <h3 className="text-lg font-bold text-text-primary mb-1">Your Messages</h3>
-                        <p className="text-sm">Select a conversation to start chatting.</p>
+                        <p className="text-lg">Select a contact to start chatting.</p>
                     </div>
                 ) : (
-                    // Active Chat State
                     <>
-                        {/* Chat Header */}
-                        <div className="px-6 py-4 border-b border-border-subtle bg-bg-base/50 flex items-center gap-3 z-10">
-                            <h3 className="font-bold text-text-primary">{activeReceiver.username}</h3>
-                            <span className="w-2 h-2 rounded-full bg-green-500 inline-block shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
+                        {/* Top Header: User Info */}
+                        <div className="p-4 border-b border-border-subtle bg-bg-surface flex items-center gap-4">
+                            <div className="w-12 h-12 rounded-full bg-brand-primary flex items-center justify-center text-white text-lg font-bold shrink-0">
+                                {activeReceiver.username?.[0]?.toUpperCase() || "?"}
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-text-primary text-lg">{activeReceiver.username}</h3>
+                                <p className="text-sm text-text-secondary capitalize">{activeReceiver.role || "Member"} • ID: {activeReceiver._id}</p>
+                            </div>
                         </div>
 
-                        {/* Chat Messages Area */}
-                        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                        {/* Chat Messages */}
+                        <div className="flex-1 overflow-y-auto p-6 space-y-4">
                             {messages.length === 0 ? (
                                 <div className="flex flex-col items-center justify-center h-full text-text-secondary">
-                                    <p className="text-sm">This is the beginning of your chat history with {activeReceiver.username}.</p>
+                                    <p>Say hello to {activeReceiver.username}!</p>
                                 </div>
                             ) : (
                                 messages.map((msg, index) => {
                                     const isMe = msg.sender?._id === user._id || msg.sender === user._id;
                                     
                                     return (
-                                        <div key={msg._id || index} className={`flex ${isMe ? "justify-end" : "justify-start"} group`}>
-                                            <div className={`max-w-[75%] flex flex-col ${isMe ? "items-end" : "items-start"}`}>
-                                                <div className={`px-4 py-2.5 rounded-2xl ${isMe ? "bg-brand-primary text-white rounded-br-sm shadow-md" : "bg-bg-base text-text-primary border border-border-subtle rounded-bl-sm shadow-sm"}`}>
-                                                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
-                                                </div>
-                                                <span className="text-[10px] text-text-secondary mt-1 opacity-0 group-hover:opacity-100 transition-opacity px-1">
-                                                    {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "Just now"}
-                                                </span>
+                                        <div key={msg._id || index} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+                                            <div className={`max-w-[70%] rounded-lg px-4 py-2 ${isMe ? "bg-brand-primary text-white" : "bg-bg-surface text-text-primary border border-border-subtle"}`}>
+                                                {!isMe && <p className="text-xs font-bold mb-1 opacity-70">{msg.sender?.username}</p>}
+                                                <p className="text-sm">{msg.text}</p>
                                             </div>
                                         </div>
                                     );
@@ -179,17 +202,17 @@ export default function Messages() {
                             <div ref={messagesEndRef} />
                         </div>
 
-                        {/* Message Input Area */}
-                        <div className="p-4 bg-bg-base border-t border-border-subtle">
+                        {/* Message Input */}
+                        <div className="p-4 bg-bg-surface border-t border-border-subtle">
                             <form onSubmit={sendMessage} className="flex gap-2">
                                 <input
                                     type="text"
-                                    placeholder={`Message @${activeReceiver.username}...`}
+                                    placeholder="Type a message..."
                                     value={newMessage}
                                     onChange={(e) => setNewMessage(e.target.value)}
-                                    className="flex-1 bg-bg-surface border border-border-subtle rounded-lg px-4 py-3 text-sm text-text-primary focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all shadow-inner"
+                                    className="flex-1 bg-bg-base border border-border-subtle rounded-lg px-4 py-2 text-sm text-text-primary focus:outline-none"
                                 />
-                                <Button type="submit" disabled={!newMessage.trim()} className="px-5 rounded-lg shrink-0">
+                                <Button type="submit" disabled={!newMessage.trim()} className="px-6">
                                     Send
                                 </Button>
                             </form>
@@ -197,35 +220,7 @@ export default function Messages() {
                     </>
                 )}
             </div>
-
-            {/* Right Pane: User Profile Details (Only visible when chatting) */}
-            {activeReceiver && (
-                <div className="w-72 flex flex-col bg-bg-surface border border-border-subtle rounded-r-2xl shadow-sm overflow-hidden shrink-0">
-                    <div className="p-6 flex flex-col items-center border-b border-border-subtle">
-                        <div className="w-24 h-24 rounded-full bg-brand-primary flex items-center justify-center text-white text-3xl font-bold shadow-lg mb-4 ring-4 ring-bg-base">
-                            {activeReceiver.username?.[0]?.toUpperCase() || "?"}
-                        </div>
-                        <h3 className="font-bold text-text-primary text-xl">{activeReceiver.username}</h3>
-                        <p className="text-sm text-text-secondary capitalize mt-1">{activeReceiver.role || "Member"}</p>
-                    </div>
-
-                    <div className="p-6 flex-1 bg-bg-base/30">
-                        <h4 className="text-xs font-bold text-text-secondary uppercase tracking-wider mb-3">User Details</h4>
-                        
-                        <div className="space-y-4">
-                            <div className="bg-bg-surface p-3 rounded-lg border border-border-subtle">
-                                <p className="text-xs text-text-secondary mb-1">User ID</p>
-                                <p className="text-xs font-mono text-text-primary break-all">{activeReceiver._id}</p>
-                            </div>
-                            
-                            <div className="bg-bg-surface p-3 rounded-lg border border-border-subtle">
-                                <p className="text-xs text-text-secondary mb-1">Email</p>
-                                <p className="text-sm text-text-primary truncate">{activeReceiver.email}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+            
         </div>
     );
 }

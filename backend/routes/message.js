@@ -6,15 +6,17 @@ const authorize = require("../middleware/roleMiddleware");
 
 const {
     getPrivateChatHistory,
-    getPublicChatHistory
+    getPublicChatHistory,
+    getUsersMessaging
 } = require("../controllers/messageController");
 
 
 
 router.get("/private/:receiverId", verifyToken , getPrivateChatHistory);
 
-router.get("/public/:hubId",verifyToken , getPublicChatHistory)
+router.get("/public/:hubId",verifyToken , getPublicChatHistory);
 
+router.get("/contacts", verifyToken, getUsersMessaging);
 
 
 module.exports = router;
