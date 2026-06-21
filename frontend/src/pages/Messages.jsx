@@ -9,38 +9,56 @@ export default function Messages() {
     const { user } = useContext(AuthContext);
     
     const [activeReceiver, setActiveReceiver] = useState(null);
-    const [recentContacts, setRecentContacts] = useState([]);
+    const [recentContacts,setRecentContacts] = useState([])
+
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const [newReceiver, setNewReceiver] = useState("");
     const [searchError, setSearchError] = useState("");
-    
+
     const messagesEndRef = useRef(null);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    // Fetch Recent Contacts on mount
-    useEffect(() => {
-        const fetchContacts = async () => {
-            try {
-                const res = await api.get('/message/contacts');
-                setRecentContacts(res.data);
-            } catch (err) {
-                console.error("Failed to fetch recent contacts", err);
-            }
-        };
-        fetchContacts();
-    }, []);
+    // TODO: Add your useEffect here to fetch the recent contacts from the backend on mount!
 
     // Fetch messages when activeReceiver changes
+
+    //SET CONTACTS
+    useEffect(()=>{
+        const getContacts =async ()=>{
+            try{
+                const newContacts= await api.get("/user/getContact");
+                console.log("FETCHED RECENT CONTACTS:", newContacts.data);
+                
+                // Filter out any null values just in case Mongoose returned null for deleted users
+                const validContacts = Array.isArray(newContacts.data) 
+                    ? newContacts.data.filter(c => c !== null) 
+                    : [];
+                    
+                setRecentContacts(validContacts);
+
+            }catch(err){
+                console.error("GET CONTACTS ERROR:", err.response?.data || err.message)
+            }
+        }
+        getContacts()
+
+    },[user])
+
+    
+
+
+
     useEffect(() => { 
         const getPrivateMessages = async () => {
             if (!activeReceiver?._id) return;
             
             try {
                 const savedMessages = await api.get(`/message/private/${activeReceiver._id}`);
+                console.log(activeReceiver._id)
                 setMessages(savedMessages.data);
                 setTimeout(scrollToBottom, 100);
             } catch (err) {
@@ -49,23 +67,31 @@ export default function Messages() {
         };
         
         getPrivateMessages();
-    }, [activeReceiver?._id, user]);
+    }, [activeReceiver?._id, user,socket]);
+
+
 
     useEffect(() => {
         if (!socket) return;
         
-        const handleReceive = (message) => {
+        const handleReceive = async (message) => {
             const belongsToCurrentChat = 
                 message.sender._id === activeReceiver?._id || 
                 message.receiver._id === activeReceiver?._id ||
                 message.sender === activeReceiver?._id ||
                 message.receiver === activeReceiver?._id;
 
-            if (belongsToCurrentChat || message.sender._id === user._id) {
+            if (belongsToCurrentChat) {
                 setMessages((prev) => [...prev, message]);
                 setTimeout(scrollToBottom, 50);
             }
             
+            if(!recentContacts.some(c => c._id === message.sender._id) && message.sender._id != user._id){
+                await api.post("/user/addContact",{
+                    newContact: message.sender._id
+                })
+                setRecentContacts(prev => [...prev, message.sender]);
+            }
             // Optionally, we could refresh recentContacts here to bump the user to the top,
             // but for simplicity, we'll leave it as is.
         };
@@ -73,7 +99,12 @@ export default function Messages() {
         socket.on("receive_private_message", handleReceive);
         
         return () => socket.off("receive_private_message", handleReceive);
-    }, [socket, activeReceiver?._id, user._id]);
+    }, [socket, activeReceiver?._id, user._id,recentContacts]);
+
+
+    
+
+
 
     const handleSearchUser = async (e) => {
         e.preventDefault();
@@ -84,14 +115,19 @@ export default function Messages() {
             const response = await api.get(`/user/${newReceiver}`);
             setActiveReceiver(response.data);
             setNewReceiver(""); 
-            
-            // Add to recent contacts if not already there
+
+            const newContact = response.data;
+
+            await api.post(`/user/addContact`,{
+                newContact:newContact._id
+            })
             setRecentContacts(prev => {
-                if (!prev.find(c => c._id === response.data._id)) {
-                    return [response.data, ...prev];
+                if (!prev.some(c => c._id === newContact._id) ) {
+                    return [...prev, newContact];
                 }
                 return prev;
             });
+            // TODO: Update your recent contacts state here when a new user is searched!
         } catch (err) {
             console.error("User not found!", err);
             setSearchError("User not found. Please check the ID.");
@@ -137,8 +173,10 @@ export default function Messages() {
 
                 <div className="flex-1 overflow-y-auto p-2">
                     <p className="text-xs font-bold text-text-secondary uppercase px-2 mb-2 mt-2">Recent Contacts</p>
+                    
+                    {/* The UI is ready for you to map over your recentContacts state! */}
                     {recentContacts.length === 0 ? (
-                        <p className="text-sm text-text-secondary px-2">No recent chats.</p>
+                        <p className="text-sm text-text-secondary px-2">No recent chats. Search for a user above!</p>
                     ) : (
                         recentContacts.map(contact => (
                             <div 

@@ -22,15 +22,43 @@ const getUserProfile = async (req, res) => {
     }
 };
 
-const getRecentUsers  = async (req,res)=>{
+const getContact  = async (req,res)=>{
 
     try{
-
+        
         const user = await User.findById(req.user.userId).populate("recentUsers");
+        
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
 
-        res.status(200).json(user.recentUsers)
+        res.status(200).json(user.recentUsers || [])
 
     }catch(err){
+        console.error("GET CONTACT ERROR:", err);
+        res.status(500).json({ message: err.message, stack: err.stack })
+    }
+}
+
+
+const addNewContact  =async (req,res)=>{
+
+    try{
+        console.log("ADD NEW CONTACT HIT!");
+        console.log("User ID:", req.user.userId);
+        console.log("Contact to add:", req.body.newContact);
+
+        const updatedUser = await User.findByIdAndUpdate(
+            req.user.userId,
+            { $addToSet: { recentUsers: req.body.newContact } },
+            { new: true } // Return updated doc
+        );
+        
+        console.log("Updated user recentUsers array:", updatedUser.recentUsers);
+
+        res.status(200).json({message: "Contact added", recentUsers: updatedUser.recentUsers});
+    }catch(err){
+        console.error("Error in addNewContact:", err);
         res.status(500).json(err)
     }
 }
@@ -38,5 +66,7 @@ const getRecentUsers  = async (req,res)=>{
 
 module.exports = {
     getAllUsers,
-    getUserProfile
+    getUserProfile,
+    addNewContact,
+    getContact
 };
