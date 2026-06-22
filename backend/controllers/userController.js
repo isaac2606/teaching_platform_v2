@@ -44,19 +44,18 @@ const getContact  = async (req,res)=>{
 const addNewContact  =async (req,res)=>{
 
     try{
-        console.log("ADD NEW CONTACT HIT!");
-        console.log("User ID:", req.user.userId);
-        console.log("Contact to add:", req.body.newContact);
-
-        const updatedUser = await User.findByIdAndUpdate(
-            req.user.userId,
-            { $addToSet: { recentUsers: req.body.newContact } },
-            { new: true } // Return updated doc
-        );
+        const newContact = await User.findById(req.body.newContact);
+        if(req.user.role === "student" && newContact.role ==="student")
+            res.status(403).json({message: "cannot contact student privatly"})
+        else{
+            const updatedUser = await User.findByIdAndUpdate(
+                req.user.userId,
+                { $addToSet: { recentUsers: newContact._id } },
+                { new: true } // Return updated doc
+            );
+            res.status(200).json({message: "Contact added", recentUsers: updatedUser.recentUsers});
+        }
         
-        console.log("Updated user recentUsers array:", updatedUser.recentUsers);
-
-        res.status(200).json({message: "Contact added", recentUsers: updatedUser.recentUsers});
     }catch(err){
         console.error("Error in addNewContact:", err);
         res.status(500).json(err)

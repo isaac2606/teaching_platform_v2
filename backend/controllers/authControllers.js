@@ -121,7 +121,7 @@ const register = async (req,res)=> {
             accessToken:accessToken,
             refreshToken:refreshToken,
             user:{
-                id:user._id,
+                _id:user._id,
                 username:user.username,
                 email:user.email,
                 role:user.role

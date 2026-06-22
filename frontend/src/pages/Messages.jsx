@@ -3,9 +3,9 @@ import { AuthContext } from "../context/AuthContext";
 import { SocketContext } from "../context/SocketContext";
 import api from "../services/api";
 import Button from "../components/ui/Button";
-
 export default function Messages() {
-    const { socket } = useContext(SocketContext);
+    const { socket ,setUnreadCount,unreadCount} = useContext(SocketContext);
+
     const { user } = useContext(AuthContext);
     
     const [activeReceiver, setActiveReceiver] = useState(null);
@@ -28,10 +28,13 @@ export default function Messages() {
 
     //SET CONTACTS
     useEffect(()=>{
+        setUnreadCount(0);
+    },[setUnreadCount])
+    useEffect(()=>{
         const getContacts =async ()=>{
             try{
                 const newContacts= await api.get("/user/getContact");
-                console.log("FETCHED RECENT CONTACTS:", newContacts.data);
+               
                 
                 // Filter out any null values just in case Mongoose returned null for deleted users
                 const validContacts = Array.isArray(newContacts.data) 
@@ -82,23 +85,33 @@ export default function Messages() {
                 message.receiver === activeReceiver?._id;
 
             if (belongsToCurrentChat) {
+                
                 setMessages((prev) => [...prev, message]);
                 setTimeout(scrollToBottom, 50);
             }
             
             if(!recentContacts.some(c => c._id === message.sender._id) && message.sender._id != user._id){
+               
                 await api.post("/user/addContact",{
                     newContact: message.sender._id
                 })
                 setRecentContacts(prev => [...prev, message.sender]);
             }
-            // Optionally, we could refresh recentContacts here to bump the user to the top,
-            // but for simplicity, we'll leave it as is.
+           
+            
         };
 
         socket.on("receive_private_message", handleReceive);
         
-        return () => socket.off("receive_private_message", handleReceive);
+        const handleError = (errorMsg) => {
+            alert("Security Warning: " + errorMsg);
+        };
+        socket.on("private_message_error", handleError);
+        
+        return () => {
+            socket.off("receive_private_message", handleReceive);
+            socket.off("private_message_error", handleError);
+        };
     }, [socket, activeReceiver?._id, user._id,recentContacts]);
 
 
@@ -113,6 +126,13 @@ export default function Messages() {
 
         try {
             const response = await api.get(`/user/${newReceiver}`);
+            
+            // UI Safety Check: Block Student to Student
+            if (user.role === "student" && response.data.role === "student") {
+                setSearchError("Students cannot message other students privately.");
+                return;
+            }
+
             setActiveReceiver(response.data);
             setNewReceiver(""); 
 
@@ -127,7 +147,7 @@ export default function Messages() {
                 }
                 return prev;
             });
-            // TODO: Update your recent contacts state here when a new user is searched!
+            
         } catch (err) {
             console.error("User not found!", err);
             setSearchError("User not found. Please check the ID.");
@@ -137,7 +157,9 @@ export default function Messages() {
     const sendMessage = (e) => {
         e.preventDefault();
 
-        if (!newMessage.trim() || !socket || !activeReceiver) return;
+        if (!newMessage.trim() || !socket || !activeReceiver) {
+            console.log("no text")
+            return;}
 
         const messageData = {
             receiver: activeReceiver._id,
@@ -191,6 +213,7 @@ export default function Messages() {
                                     <h4 className="font-bold text-text-primary text-sm truncate">{contact.username}</h4>
                                     <p className="text-xs text-text-secondary truncate capitalize">{contact.role || "Member"}</p>
                                 </div>
+                                
                             </div>
                         ))
                     )}

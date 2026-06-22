@@ -2,10 +2,12 @@ import { NavLink } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
+import {useSocket} from "../context/SocketContext"
 
 export default function Sidebar() {
   const { user, logout } = useContext(AuthContext);
   const { isDarkMode, toggleTheme } = useTheme();
+  const {unreadCount} = useSocket();
 
   const navItems = [
     { name: "Dashboard", path: "/dashboard", icon: "M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" },
@@ -44,12 +46,19 @@ export default function Sidebar() {
               }
             `}
             title={item.name}
-          >
-            <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={item.icon} />
-            </svg>
-            <span className="hidden lg:block">{item.name}</span>
-          </NavLink>
+            >
+              <div className="relative">
+                <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={item.icon} />
+                </svg>
+                {item.name === "Messages" && unreadCount > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full border-2 border-[var(--color-sidebar-bg)]">
+                      {unreadCount}
+                    </span>
+                )}
+              </div>
+              <span className="hidden lg:block">{item.name}</span>
+            </NavLink>
         ))}
       </nav>
 

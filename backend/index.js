@@ -12,6 +12,7 @@ const io = new Server(server, {
   }
 });
 const Message = require("./models/Message");
+const User = require("./models/User");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const helmet = require("helmet");
@@ -72,6 +73,14 @@ io.on("connection", (socket)=>{
     socket.on("send_private_message",async (data)=>{
 
       try{
+        // Enforce role-based safety: Students cannot message other students
+        const senderUser = await User.findById(data.sender);
+        const receiverUser = await User.findById(data.receiver);
+
+        if (senderUser.role === "student" && receiverUser.role === "student") {
+            return socket.emit("private_message_error", "Students cannot message other students privately.");
+        }
+
         const newMessage = await Message.create({
 
           receiver:data.receiver,
