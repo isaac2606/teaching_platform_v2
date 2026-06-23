@@ -20,6 +20,10 @@ const MessageSchema = new mongoose.Schema({
    receiver:{
     type:mongoose.Schema.Types.ObjectId,
     ref: "User"
+   },
+   imageUrl:{
+    type:String,
+    default:""
    }
     
   },

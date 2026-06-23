@@ -6,7 +6,7 @@ const upload = require("../middleware/upload");
 const {
   addAnnouncement,
   getAllAnnouncements,
-  getHubFeed
+  getHubFeed,
 } = require("../controllers/announcementController");
 
 // create an announcement

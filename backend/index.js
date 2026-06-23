@@ -26,7 +26,40 @@ const hubRoute = require("./routes/hub");
 const announcementRoute = require("./routes/announcement");
 const classRoute = require("./routes/class");
 const messageRoute = require("./routes/message");
+const uploadRoute = require("./routes/upload")
 
+mongoose
+    .connect(process.env.MONGO_URL)
+    .then(()=>{
+        console.log("connected to mongo");
+    })
+    .catch((err)=>{
+        console.log(err);
+
+    });
+
+
+app.use(cors());
+/*app.use(
+  cors({
+    origin: "http://127.0.0.1:5500", // your frontend's exact origin
+    credentials: true, // include if you're sending cookies/auth headers
+  }),
+);*/
+app.use(express.json());
+app.use(helmet({
+  crossOriginResourcePolicy: false,
+}));
+app.use(morgan("common"));
+
+app.use("/api/auth",authRoute);
+app.use("/images", express.static(path.join(__dirname, "uploads")));
+app.use("/api/user",userRoute);
+app.use("/api/hub", hubRoute);
+app.use("/api/announcement",announcementRoute);
+app.use("/api/class",classRoute)
+app.use("/api/message",messageRoute)
+app.use("/api/upload",uploadRoute)
 
 
 io.on("connection", (socket)=>{
@@ -43,7 +76,6 @@ io.on("connection", (socket)=>{
   })
 
 
-
   // Add 'async' here!
   socket.on("send_message", async (data) => {
       try {
@@ -51,8 +83,10 @@ io.on("connection", (socket)=>{
           const newMessage = await Message.create({
               sender: data.sender,
               hubId: data.hubId,
-              text: data.text
+              text: data.text,
+              imageUrl:data.imageUrl || ""
           });
+
 
           // 2. We populate the sender so the frontend gets the username!
           await newMessage.populate("sender", "username");
@@ -85,7 +119,8 @@ io.on("connection", (socket)=>{
 
           receiver:data.receiver,
           sender:data.sender,
-          text:data.text
+          text:data.text,
+          imageUrl:data.imageUrl || ""
 
         })
         await newMessage.populate("sender","username");
@@ -133,6 +168,8 @@ app.use("/api/hub", hubRoute);
 app.use("/api/announcement",announcementRoute);
 app.use("/api/class",classRoute)
 app.use("/api/message",messageRoute)
+
+
 
 
 

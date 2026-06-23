@@ -15,6 +15,7 @@ export default function Messages() {
     const [newMessage, setNewMessage] = useState("");
     const [newReceiver, setNewReceiver] = useState("");
     const [searchError, setSearchError] = useState("");
+    const [file,setFile]= useState(null);
 
     const messagesEndRef = useRef(null);
 
@@ -154,21 +155,35 @@ export default function Messages() {
         }
     };
 
-    const sendMessage = (e) => {
+    const sendMessage = async (e) => {
         e.preventDefault();
 
-        if (!newMessage.trim() || !socket || !activeReceiver) {
+        if ((!newMessage.trim() &&!file) || !socket || !activeReceiver) {
             console.log("no text")
             return;}
 
         const messageData = {
             receiver: activeReceiver._id,
             text: newMessage,
-            sender: user._id
+            sender: user._id,
+            imageUrl:""
         };
+        if(file){
+            const formData = new FormData();
+            formData.append("image",file);
+            
+            const uploadRes = await api.post("/upload", formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data"
+                }
+            });
+            
+            messageData.imageUrl = uploadRes.data.filename;
+        }
 
         socket.emit("send_private_message", messageData);
         setNewMessage("");
+        setFile(null)
     };
 
     return (
@@ -255,7 +270,15 @@ export default function Messages() {
                                             <div className={`max-w-[70%] rounded-lg px-4 py-2 ${isMe ? "bg-brand-primary text-white" : "bg-bg-surface text-text-primary border border-border-subtle"}`}>
                                                 {!isMe && <p className="text-xs font-bold mb-1 opacity-70">{msg.sender?.username}</p>}
                                                 <p className="text-sm">{msg.text}</p>
+
+                                                {msg.imageUrl &&
+                                                <img  src={`http://localhost:3000/images/${msg.imageUrl}`}
+                                                    alt="attachment"
+                                                    className="mt-2 rounded-md max-w-full h-auto max-h-64 object-cover"
+                                                    />
+                                                }
                                             </div>
+                                            
                                         </div>
                                     );
                                 })
@@ -273,7 +296,12 @@ export default function Messages() {
                                     onChange={(e) => setNewMessage(e.target.value)}
                                     className="flex-1 bg-bg-base border border-border-subtle rounded-lg px-4 py-2 text-sm text-text-primary focus:outline-none"
                                 />
-                                <Button type="submit" disabled={!newMessage.trim()} className="px-6">
+                                <input
+                                    type="file"
+                                    onChange={(e) => setFile(e.target.files[0])}
+                                    className="text-sm text-text-secondary file:mr-4 file:py-2.5 file:px-5 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-primary/10 file:text-brand-primary hover:file:bg-brand-primary/20 cursor-pointer transition-colors"
+                                    />
+                                <Button type="submit" disabled={!newMessage.trim() && !file} className="px-6">
                                     Send
                                 </Button>
                             </form>
