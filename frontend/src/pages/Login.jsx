@@ -39,9 +39,8 @@ export default function Login() {
         // Use the V2 AuthContext login function
         login(data.user, data.accessToken, data.refreshToken);
         
-        
-
-        navigate(redirectPath)
+        const finalRedirect = location.state?.from || (data.user.role === "teacher" ? "/dashboard/teacher" : "/dashboard/student");
+        navigate(finalRedirect)
       }
     } catch (err) {
       setError(err.response?.data?.message || "Invalid email or password.");
@@ -98,7 +97,7 @@ export default function Login() {
 
         <p className="mt-6 text-center text-text-secondary text-sm">
           Don't have an account?{" "}
-          <Link to="/register" className="text-brand-primary hover:text-brand-hover font-medium transition-colors">
+          <Link to="/auth/register" className="text-brand-primary hover:text-brand-hover font-medium transition-colors">
             Sign up here
           </Link>
         </p>

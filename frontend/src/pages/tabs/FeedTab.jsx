@@ -29,11 +29,15 @@ export default function FeedTab(){
         getFeed();
     }, [hub._id]);
 
+    const [isUploading, setIsUploading] = useState(false);
+
     const handlePostAnnouncement = async (e)=>{
     e.preventDefault();
     if(!newTitle){
       return;
     }
+    
+    setIsUploading(true);
     const formData = new FormData();
 
     formData.append("title",newTitle)
@@ -60,9 +64,9 @@ export default function FeedTab(){
       setFeed([response.data.announcement, ...feed])
     }catch(err){
       console.error(err.message)
+    } finally {
+      setIsUploading(false);
     }
-
-    
     }
     return (
         <div className="w-full lg:w-2/3 flex flex-col gap-6">
@@ -124,7 +128,7 @@ export default function FeedTab(){
                         {announcement.imageUrl && (
                             <div className="mt-4 relative z-10 border-t border-border-subtle pt-5">
                                 <a 
-                                    href={`http://localhost:3000/images/${announcement.imageUrl}`} 
+                                    href={announcement.imageUrl} 
                                     target="_blank" 
                                     rel="noreferrer"
                                     className="inline-flex items-center gap-3 px-5 py-3 bg-black/5 dark:bg-white/5 hover:bg-brand-primary/10 border border-border-subtle hover:border-brand-primary/40 text-text-primary hover:text-brand-primary rounded-xl transition-all duration-300 text-sm font-semibold group/btn"
@@ -171,9 +175,10 @@ export default function FeedTab(){
                             />
                             <button
                             type="submit"
-                            className="bg-brand-primary hover:bg-brand-secondary text-white px-8 py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(var(--brand-primary),0.3)] hover:shadow-[0_0_25px_rgba(var(--brand-primary),0.5)] hover:-translate-y-0.5"
+                            disabled={isUploading}
+                            className={`bg-brand-primary text-white px-8 py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(var(--brand-primary),0.3)] ${isUploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-brand-secondary hover:shadow-[0_0_25px_rgba(var(--brand-primary),0.5)] hover:-translate-y-0.5'}`}
                             >
-                            Post
+                            {isUploading ? "Uploading..." : "Post"}
                             </button>
                         </div>
                         </form>

@@ -25,7 +25,7 @@ export default function Announcements({ feed = [] }) {
                   {announcement.imageUrl && (
                     <div className="mt-4 border-t border-white/5 pt-4">
                       <a 
-                        href={`http://localhost:3000/images/${announcement.imageUrl}`} 
+                        href={announcement.imageUrl} 
                         target="_blank" 
                         rel="noreferrer"
                         className="inline-flex items-center gap-2 px-4 py-2 bg-brand-primary/10 hover:bg-brand-primary/20 text-brand-primary rounded-lg transition-colors text-sm font-medium"

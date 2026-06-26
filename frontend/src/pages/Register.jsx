@@ -42,7 +42,7 @@ export default function Register() {
 
         login(data.user, data.accessToken, data.refreshToken);
           
-        navigate("/dashboard");
+        navigate(data.user.role === "teacher" ? "/dashboard/teacher" : "/dashboard/student");
         
       }
     } catch (err) {
@@ -146,7 +146,7 @@ export default function Register() {
 
         <p className="mt-6 text-center text-text-secondary text-sm">
           Already have an account?{" "}
-          <Link to="/login" className="text-brand-primary hover:text-brand-hover font-medium transition-colors">
+          <Link to="/auth/login" className="text-brand-primary hover:text-brand-hover font-medium transition-colors">
             Log in here
           </Link>
         </p>

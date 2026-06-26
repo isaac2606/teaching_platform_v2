@@ -81,7 +81,7 @@ const HubCard = memo(function HubCard({ hub, onDelete, onEdit }) {
 
                 {/* Buttons */}
                 <div className="flex items-center gap-3 mt-auto pt-2">
-                    <Link to={`/workspace/${hub._id}`} className="flex-1">
+                    <Link to={`/hubs/${hub._id}`} className="flex-1">
                         <button className="w-full bg-[#0F172A] hover:bg-[#1E293B] text-white py-2.5 rounded-xl font-bold transition-colors shadow-sm">
                             Open Workspace
                         </button>

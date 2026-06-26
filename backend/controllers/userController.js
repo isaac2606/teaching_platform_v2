@@ -62,10 +62,34 @@ const addNewContact  =async (req,res)=>{
     }
 }
 
+const getAllStudents = async (req,res)=>{
+  try{
+    const user = await User.findById(req.user.userId).populate("students");
+
+    res.status(200).json(user.students)
+
+  }catch(err){
+    res.status(500).json(err)
+  }
+}
+
+const getAllTeachers = async (req,res)=>{
+  try{
+    const user = await User.findById(req.user.userId).populate("teachers");
+
+    res.status(200).json(user.teachers)
+
+  }catch(err){
+    res.status(500).json(err)
+  }
+}
+
 
 module.exports = {
     getAllUsers,
     getUserProfile,
     addNewContact,
-    getContact
+    getContact,
+    getAllStudents,
+    getAllTeachers
 };

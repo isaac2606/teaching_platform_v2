@@ -41,6 +41,32 @@ const leaveHub = async (req, res) => {
   }
 };
 
+
+const kickStudent = async(req,res)=>{
+  try {
+    const hub = await Hub.findById(req.params.id);
+    if (!hub) {
+      return res.status(404).json({ message: "Hub not found" });
+    }
+     if (hub.teacher.toString() !== req.user.userId) {
+      return res.status(403).json({ message: "You do not have permission to modify this hub's roster." });
+    }
+
+    if (hub.students.includes(req.params.studentId)) {
+      await hub.updateOne({ $pull: { students: req.params.studentId} });
+      await User.updateOne(
+        { _id: req.params.studentId },
+        { $pull: { hubs: hub._id } }
+      );
+      res.status(200).json({ message: "Student kicked from the hub" });
+    } else {
+      res.status(200).json({ message: "Student was not in the hub" });
+    }
+  } catch (err) {
+    res.status(500).json(err);
+  }
+}
+
 const getAllHubs = async (req, res) => {
   try {
     const hubs = await Hub.find({});
@@ -219,6 +245,19 @@ const getChatHistory = async (req,res)=>{
 }
 
 
+const getStudents = async (req,res)=>{
+  try{
+    const hub = await Hub.findById(req.params.hubId).populate("students");
+
+    res.status(200).json(hub.students)
+
+  }catch(err){
+    res.status(500).json(err)
+  }
+}
+
+
+
 module.exports = {
   createHub,
   leaveHub,
@@ -231,5 +270,7 @@ module.exports = {
   getDashboardStats,
   fixIndex,
   getChatHistory,
-  joinHubByInviteToken
+  joinHubByInviteToken,
+  getStudents,
+  kickStudent
 };

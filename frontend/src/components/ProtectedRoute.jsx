@@ -17,7 +17,7 @@ export default function ProtectedRoute({ children }) {
 
     // If there is no user, instantly kick them to the login page!
     if (!user) {
-        return <Navigate to="/login" state={{from:location.pathname}} replace />;
+        return <Navigate to="/auth/login" state={{from:location.pathname}} replace />;
     }
 
     // If they passed children (like <JoinGroup />), render the children.

@@ -35,9 +35,32 @@ export async function dashboardLoader() {
 
 export async function HubLoader({params}){
     try{
-        const response = await api.get(`/hub/${params.id}`)
+        const response = await api.get(`/hub/${params.hubId}`)
         return response.data
     }catch(err){
         console.error("Hub loader error : ", err); 
     }
+}
+
+export async function StudentsLoader({params}){
+    try{
+        const response = await api.get(`/hub/getStudents/${params.hubId}`);
+        return response.data
+    }catch(err){
+        console.error("Student Loader Error ", err)
+    }
+
+}
+
+export async function AllStudentsLoader(){
+    const userStr = localStorage.getItem("user");
+    if (!userStr) return { role: null, hubs: [] };
+    const user = JSON.parse(userStr);
+    try{
+        const response = await api.get(`/user/getAllStudents/${user._id}`);
+        return response.data
+    }catch(err){
+        console.error("All Student Loader Error ", err)
+    }
+
 }

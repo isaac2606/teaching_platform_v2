@@ -3,7 +3,7 @@ import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom"
 import DashboardLayout from "./layouts/DashboardLayout";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { dashboardLoader , HubLoader} from "./loaders";
+import { dashboardLoader , HubLoader,AllStudentsLoader,StudentsLoader} from "./loaders";
 import { ThemeProvider } from "./context/ThemeContext";
 import { SocketProvider } from "./context/SocketContext";
 import './App.css';
@@ -11,17 +11,21 @@ import './App.css';
 
 
 // Lazy loading pages for performance
+const LandingPage = lazy(() => import("./pages/public/LandingPage"));
+const GlobalSearch = lazy(() => import("./pages/public/GlobalSearch"));
+const TeacherProfile = lazy(() => import("./pages/public/TeacherProfile"));
+
 const Dashboard = lazy(() => import("./pages/Dashboard"));
-// Note: TeacherHub has been refactored into pages/Dashboard.jsx!
 const Login = lazy(() => import("./pages/Login"));
 const Register = lazy(() => import("./pages/Register"));
 const HubWorkspaceLayout = lazy(() => import("./layouts/HubWorkspaceLayout"));
 const StudentDashboard = lazy(() => import("./pages/StudentDashboard"));
 const JoinHub = lazy(() => import("./pages/JoinHub"));
-const FeedTab  = lazy(()=>import("./pages/tabs/FeedTab"))
-const ChatTab  = lazy(()=>import("./pages/tabs/ChatTab"))
-const ScheduleTab  = lazy(()=>import("./pages/tabs/ScheduleTab"))
-const RosterTab  = lazy(()=>import("./pages/tabs/RosterTab"))
+const FeedTab = lazy(() => import("./pages/tabs/FeedTab"));
+const ChatTab = lazy(() => import("./pages/tabs/ChatTab"));
+const ScheduleTab = lazy(() => import("./pages/tabs/ScheduleTab"));
+const RosterTab = lazy(() => import("./pages/tabs/RosterTab"));
+const VaultTab = lazy(() => import("./pages/tabs/VaultTab"));
 
 // Fallback loader component
 const Loader = () => (
@@ -30,57 +34,81 @@ const Loader = () => (
   </div>
 );
 
-
-
 import { useLoaderData } from "react-router-dom";
 import Messages from "./pages/Messages";
 
-function RoleBasedDashboardWrapper() {
-  const data = useLoaderData();
-  return data?.role === "teacher" ? <Dashboard /> : <StudentDashboard />;
-}
-
 const router = createBrowserRouter([
+  // --- Public Acquisition Layer ---
   {
-    path: "/login",
+    path: "/",
+    element: <Suspense fallback={<Loader />}><LandingPage /></Suspense>,
+  },
+  {
+    path: "/search",
+    element: <Suspense fallback={<Loader />}><GlobalSearch /></Suspense>,
+  },
+  {
+    path: "/teacher/:username",
+    element: <Suspense fallback={<Loader />}><TeacherProfile /></Suspense>,
+  },
+  
+  // --- Auth Layer ---
+  {
+    path: "/auth/login",
     element: <Suspense fallback={<Loader />}><Login /></Suspense>,
   },
   {
-    path: "/register",
+    path: "/auth/register",
     element: <Suspense fallback={<Loader />}><Register /></Suspense>,
   },
+
+  // --- Protected Workspaces ---
   {
     path: "/",
-    element: <ProtectedRoute />, // Wrap everything in ProtectedRoute
+    element: <ProtectedRoute />, // Wraps all below in auth check
     children: [
       {
         path: "/",
         element: <DashboardLayout />,
         children: [
-          { index: true, element: <Navigate to="/dashboard" replace /> },
-          { 
-            path: "dashboard", 
-            element: <Suspense fallback={<Loader />}><RoleBasedDashboardWrapper /></Suspense>,
+          // If they hit the protected root, send them to login or their dashboard (handled in logic or we can just navigate to dashboard)
+          // For now, if they somehow get here, we can redirect to their specific dashboard, but DashboardLayout handles UI.
+          {
+            path: "dashboard/teacher",
+            element: <Suspense fallback={<Loader />}><Dashboard /></Suspense>,
             loader: dashboardLoader
           },
-          { 
+          {
+            path: "dashboard/student",
+            element: <Suspense fallback={<Loader />}><StudentDashboard /></Suspense>,
+            loader: dashboardLoader
+          },
+          // Alias for backward compatibility or simple redirect
+          {
+            path: "dashboard",
+            element: <Navigate to="/dashboard/student" replace /> // In a real scenario, this would dynamically check role.
+          },
+          {
             id: "hub-workspace",
-            path: "workspace/:id", 
-            element: <Suspense fallback={<Loader />}><HubWorkspaceLayout  /></Suspense> ,
+            path: "hubs/:hubId",
+            element: <Suspense fallback={<Loader />}><HubWorkspaceLayout /></Suspense>,
             loader: HubLoader,
-            children:[
-              {
-                index:true , element: <Navigate to="feed" replace />
+            children: [
+              { index: true, element: <Navigate to="feed" replace /> },
+              { path: "feed", element: <FeedTab /> },
+              { path: "chat", element: <ChatTab /> },
+              { path: "schedule", element: <ScheduleTab /> },
+              { 
+                path: "roster", 
+                element: <RosterTab />,
+                loader: StudentsLoader // <-- Attached specifically to the Roster Tab!
               },
-              { path: "feed", element: <FeedTab></FeedTab> },
-              { path: "chat", element: <ChatTab></ChatTab> },
-              { path: "schedule", element: <ScheduleTab></ScheduleTab> },
-              { path: "roster", element: <RosterTab></RosterTab>}
+              { path: "vault", element: <VaultTab /> }
             ]
           },
           {
             path: "messages",
-            element : <Messages/>
+            element: <Messages />
           }
         ]
       }

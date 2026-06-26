@@ -6,7 +6,8 @@ const Upload = require("../middleware/upload");
 
 router.post("/", verifyToken, Upload.single("image"), (req, res) => {
   try {
-    res.status(200).json({ filename: req.file.filename });
+    // Cloudinary returns the full absolute HTTPS URL in req.file.path
+    res.status(200).json({ filename: req.file.path });
   } catch (err) {
     res.status(500).json(err);
   }

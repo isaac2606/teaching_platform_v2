@@ -245,7 +245,7 @@ export default function HubWorkspace() {
                 {announcement.imageUrl && (
                   <div className="mt-4 relative z-10 border-t border-white/5 pt-5">
                     <a 
-                      href={`http://localhost:3000/images/${announcement.imageUrl}`} 
+                      href={announcement.imageUrl} 
                       target="_blank" 
                       rel="noreferrer"
                       className="inline-flex items-center gap-3 px-5 py-3 bg-white/5 hover:bg-brand-primary/20 border border-white/10 hover:border-brand-primary/40 text-white hover:text-brand-primary rounded-xl transition-all duration-300 text-sm font-semibold group/btn"
