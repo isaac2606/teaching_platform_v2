@@ -2,6 +2,7 @@ import { useContext, useState, useRef, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { SocketContext } from "../context/SocketContext";
 import api from "../services/api";
+import { useLocation } from "react-router-dom";
 import Button from "../components/ui/Button";
 export default function Messages() {
     const { socket ,setUnreadCount,unreadCount} = useContext(SocketContext);
@@ -19,6 +20,49 @@ export default function Messages() {
 
     const messagesEndRef = useRef(null);
 
+    const location = useLocation();
+    
+    
+   
+
+    useEffect(()=>{
+        const autoSelectUserId = location.state?.autoSelectUserId;
+        if(autoSelectUserId){
+            const fetchAndSelectUser = async ()=>{
+                try {
+                    const response = await api.get(`/user/${autoSelectUserId}`);
+                    
+                    // UI Safety Check: Block Student to Student
+                    if (user.role === "student" && response.data.role === "student") {
+                        setSearchError("Students cannot message other students privately.");
+                        return;
+                    }
+
+                    setActiveReceiver(response.data);
+                     
+                    const newContact = response.data
+
+                    await api.post(`/user/addContact`,{
+                        newContact:newContact._id
+                    })
+                    setRecentContacts(prev => {
+                        if (!prev.some(c => c._id === newContact._id)) {
+                            return [...prev, newContact];
+                        }
+                        return prev;
+                    });
+                    
+                } catch (err) {
+                    console.error("Auto-select user not found!", err);
+                    setSearchError("User not found from auto-select.");
+                }
+            }
+            fetchAndSelectUser();
+        }
+    },[location.state?.autoSelectUserId, user.role])
+    
+
+
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
@@ -31,6 +75,7 @@ export default function Messages() {
     useEffect(()=>{
         setUnreadCount(0);
     },[setUnreadCount])
+
     useEffect(()=>{
         const getContacts =async ()=>{
             try{
@@ -137,7 +182,7 @@ export default function Messages() {
             setActiveReceiver(response.data);
             setNewReceiver(""); 
 
-            const newContact = response.data;
+            const newContact = response.data
 
             await api.post(`/user/addContact`,{
                 newContact:newContact._id
