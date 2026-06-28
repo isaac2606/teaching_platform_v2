@@ -28,7 +28,7 @@ export default function Messages() {
     useEffect(()=>{
         const autoSelectUserId = location.state?.autoSelectUserId;
         if(autoSelectUserId){
-            const fetchAndSelectUser = async ()=>{
+            const fetchAndSelectUser = async () =>{
                 try {
                     const response = await api.get(`/user/${autoSelectUserId}`);
                     

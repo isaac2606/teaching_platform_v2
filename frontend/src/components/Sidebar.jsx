@@ -23,8 +23,8 @@ export default function Sidebar() {
       {/* 1. Header */}
       <div className="p-4 lg:p-6 border-b border-white/10 flex justify-center lg:justify-start items-center">
         <h1 className="text-2xl font-bold tracking-tight hidden lg:block">
-          <span className="text-brand-primary">teach</span>
-          <span className="text-white">space</span>
+          <span className="text-brand-primary">Edu</span>
+          <span className="text-white">Space</span>
         </h1>
         {/* Mobile Icon */}
         <div className="lg:hidden text-brand-primary font-bold text-2xl">

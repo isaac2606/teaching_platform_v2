@@ -198,67 +198,7 @@ export default function HubWorkspace() {
 
       <div className="max-w-7xl mx-auto flex flex-col lg:flex-row gap-8 items-start">
         
-        {/* Left Column: Announcements Feed */}
-        <div className="w-full lg:w-2/3 flex flex-col gap-6">
-          <div className="flex items-center justify-between mb-2">
-            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-              <span className="text-brand-primary">📢</span> Latest Announcements
-            </h2>
-            <span className="text-sm text-text-secondary font-medium">{feed.length} updates</span>
-          </div>
-
-          {feed.length === 0 ? (
-            <div className="flex flex-col items-center justify-center text-text-secondary py-20 bg-bg-surface/50 rounded-2xl border border-white/5 backdrop-blur-sm shadow-inner">
-              <span className="text-5xl mb-4 opacity-40 hover:scale-110 transition-transform cursor-default">📭</span>
-              <p className="text-lg font-medium text-white/70">No announcements yet.</p>
-              {user.role === "teacher" && <p className="text-sm mt-2 opacity-50">Click "+ Announcement" to share an update with your students.</p>}
-            </div>
-          ) : (
-            feed.map((announcement, index) => (
-              <div
-                key={announcement._id || index}
-                className="group bg-bg-surface rounded-2xl p-6 md:p-8 border border-white/5 hover:border-brand-primary/40 transition-all duration-300 shadow-xl hover:shadow-brand-primary/5 hover:-translate-y-1 relative overflow-hidden"
-              >
-                {/* Glow effect on hover */}
-                <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-
-                <div className="flex justify-between items-start mb-5 relative z-10">
-                  <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-primary to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                      {hub.teacher?.username?.[0]?.toUpperCase() || "?"}
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-white tracking-wide">{hub.teacher?.username || "Teacher"}</p>
-                      <p className="text-xs text-text-secondary mt-0.5">
-                        {new Date(announcement.createdAt).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'short', day: 'numeric' })}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-xs font-mono font-bold text-brand-primary/60 bg-brand-primary/10 px-2.5 py-1 rounded-md border border-brand-primary/20">
-                    #{String(feed.length - index).padStart(2, "0")}
-                  </span>
-                </div>
-                
-                <h3 className="text-xl font-bold text-white mb-3 relative z-10 leading-tight">{announcement.title}</h3>
-                <p className="text-text-secondary text-base leading-relaxed mb-6 relative z-10 whitespace-pre-wrap">{announcement.description}</p>
-
-                {announcement.imageUrl && (
-                  <div className="mt-4 relative z-10 border-t border-white/5 pt-5">
-                    <a 
-                      href={announcement.imageUrl} 
-                      target="_blank" 
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-3 px-5 py-3 bg-white/5 hover:bg-brand-primary/20 border border-white/10 hover:border-brand-primary/40 text-white hover:text-brand-primary rounded-xl transition-all duration-300 text-sm font-semibold group/btn"
-                    >
-                      <span className="text-brand-primary group-hover/btn:scale-125 group-hover/btn:-rotate-12 transition-all duration-300">📎</span> 
-                      View Attached Resource
-                    </a>
-                  </div>
-                )}
-              </div>
-            ))
-          )}
-        </div>
+        
 
         {/* Right Column: Classes & Info */}
         <div className="w-full lg:w-1/3 flex flex-col gap-6 lg:sticky lg:top-8">

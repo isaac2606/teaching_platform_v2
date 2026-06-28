@@ -33,6 +33,14 @@ const ClassSchema = new mongoose.Schema({
         type:String,
         default:""
     },
+    type: {
+        type: String,
+        default: "Live Video"
+    },
+    duration: {
+        type: String,
+        default: "1h 00m"
+    },
     inviteToken:{
         type:String,
         unique:true,
@@ -42,6 +50,13 @@ const ClassSchema = new mongoose.Schema({
         type:Number,
         default:0
     },
+    type:{
+        type:String
+    },
+    duration:{
+        type:String
+    },
+    
 
     
   },

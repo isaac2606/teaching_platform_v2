@@ -32,41 +32,41 @@ export default function FeedTab(){
     const [isUploading, setIsUploading] = useState(false);
 
     const handlePostAnnouncement = async (e)=>{
-    e.preventDefault();
-    if(!newTitle){
-      return;
-    }
-    
-    setIsUploading(true);
-    const formData = new FormData();
-
-    formData.append("title",newTitle)
-    formData.append("description",newDesc)
-    formData.append("hubIds", hub._id);
-
-    if(file){
-      formData.append("image",file);
-
-    }
-    try{
-      const response = await api.post("/announcement/add",formData,{
-        headers:{
-          "Content-Type":"multipart/form-data"
+        e.preventDefault();
+        if(!newTitle){
+        return;
         }
-      });
+        
+        setIsUploading(true);
+        const formData = new FormData();
 
-      setNewTitle("");
-      setNewDesc("");
-      setFile(null);
-      setIsModalOpen(false);
+        formData.append("title",newTitle)
+        formData.append("description",newDesc)
+        formData.append("hubIds", hub._id);
 
-      
-      setFeed([response.data.announcement, ...feed])
-    }catch(err){
-      console.error(err.message)
-    } finally {
-      setIsUploading(false);
-    }
+        if(file){
+        formData.append("image",file);
+
+        }
+        try{
+        const response = await api.post("/announcement/add",formData,{
+            headers:{
+            "Content-Type":"multipart/form-data"
+            }
+        });
+
+        setNewTitle("");
+        setNewDesc("");
+        setFile(null);
+        setIsModalOpen(false);
+
+        
+        setFeed([response.data.announcement, ...feed])
+        }catch(err){
+        console.error(err.message)
+        } finally {
+        setIsUploading(false);
+        }
     }
     return (
         <div className="w-full lg:w-2/3 flex flex-col gap-6">

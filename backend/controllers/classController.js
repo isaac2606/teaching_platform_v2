@@ -10,6 +10,18 @@ const createClass = async (req, res) => {
             return res.status(404).json({ message: "Hub not found" });
         }
 
+        // Schedule Conflict Check
+        const conflictingClass = await Class.findOne({ 
+             teacher: req.user.userId, 
+             date: req.body.date
+        });
+
+        if (conflictingClass) {
+             return res.status(400).json({ 
+                 message: "Schedule conflict: You already have a group scheduled at this time!" 
+             });
+        }
+
         const imagePath = req.file ? req.file.filename : "";
         const inviteToken = crypto.randomBytes(8).toString("hex");
 
@@ -20,7 +32,9 @@ const createClass = async (req, res) => {
             date: req.body.date || "",
             imageUrl: imagePath,
             inviteToken: inviteToken,
-            dues: req.body.dues || 0
+            dues: req.body.dues || 0,
+            duration: req.body.duration || "1h 00m",
+            type: req.body.type || "Live Video"
         });
 
         const savedClass = await newClass.save();

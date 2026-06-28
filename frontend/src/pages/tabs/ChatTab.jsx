@@ -107,15 +107,28 @@ export default function ChatTab(){
                         const isMe = msg.sender?._id === user._id || msg.sender === user._id;
                         
                         return (
-                            <div key={msg._id || index} className={`flex justify-start items-end gap-2`}>
-                                <div className="w-8 h-8 rounded-full bg-brand-primary flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm">
-                                    {msg.sender?.username?.[0]?.toUpperCase() || "?"}
-                                </div>
+                            <div key={msg._id || index} className={`flex ${isMe ? "justify-end" : "justify-start"} items-end gap-2`}>
                                 
-                                <div className={`max-w-[70%] rounded-2xl px-5 py-3 bg-bg-base text-text-primary border border-border-subtle rounded-bl-none shadow-sm`}>
-                                    <p className="text-xs font-bold text-brand-primary mb-1">{msg.sender?.username || "Unknown"}</p>
+                                {/* Avatar (Hide for 'Me', or show on left for 'Them') */}
+                                {!isMe && (
+                                    <div className="w-8 h-8 rounded-full bg-brand-primary flex items-center justify-center text-white text-xs font-bold shrink-0 shadow-sm">
+                                        {msg.sender?.username?.[0]?.toUpperCase() || "?"}
+                                    </div>
+                                )}
+                                
+                                {/* Chat Bubble */}
+                                <div className={`max-w-[70%] rounded-2xl px-5 py-3 shadow-sm ${
+                                    isMe 
+                                        ? "bg-brand-primary text-white rounded-br-none" 
+                                        : "bg-bg-base text-text-primary border border-border-subtle rounded-bl-none"
+                                }`}>
+                                    {!isMe && (
+                                        <p className="text-xs font-bold text-brand-primary mb-1">
+                                            {msg.sender?.username || "Unknown"}
+                                        </p>
+                                    )}
                                     <p className="text-sm leading-relaxed break-words">{msg.text}</p>
-                                    <p className={`text-[10px] mt-2 text-left text-text-secondary`}>
+                                    <p className={`text-[10px] mt-2 ${isMe ? "text-right text-white/70" : "text-left text-text-secondary"}`}>
                                         {msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : "Just now"}
                                     </p>
                                 </div>
