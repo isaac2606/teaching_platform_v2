@@ -23,7 +23,7 @@ export function SocketProvider({ children }) {
 
     useEffect(()=>{
         if(user){
-            const newSocket = io("http://localhost:3000");
+            const newSocket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:3000");
             setSocket(newSocket);
 
             newSocket.emit("join_private_room",user._id)

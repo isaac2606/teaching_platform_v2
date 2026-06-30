@@ -21,51 +21,31 @@ const {
 } = require("../controllers/hubController");
 const { verify } = require("jsonwebtoken");
 
-// create a hub
 router.post("/", verifyToken, authorize("teacher"), createHub);
 
-// leave a hub
 router.put("/:id/leave", verifyToken, authorize("student"), leaveHub);
 
-// kick a student
 router.put("/:id/kick/:studentId", verifyToken, authorize("teacher"), kickStudent);
 
-
-// get ALL hubs
 router.get("/getHubs", verifyToken, getAllHubs);
 
-// fix index
 router.get("/fix-index", fixIndex);
 
-// get dashboard stats
 router.get("/stats", verifyToken, authorize("teacher"), getDashboardStats);
 
-// get my hubs (handles both student and teacher logic)
 router.get("/my-hubs", verifyToken, getMyHubs);
-
-
 
 router.get("/getStudents/:hubId",verifyToken,authorize("teacher"),getStudents)
 
-
-// get hubs based on invite link (Changed to /invite/:inviteToken so it doesn't conflict with /:id)
 router.get("/invite/:inviteToken", verifyToken, getHubByInviteToken);
 
-
-
-// get specific hub
 router.get("/:id", verifyToken, getHubById);
 
-// edit hub
 router.put("/:id", verifyToken, authorize("teacher"), updateHub);
 
-// delete hub
 router.delete("/:id", verifyToken, authorize("teacher"), deleteHub);
 
-//get chat history
 router.get("/:hubId",verifyToken, getChatHistory)
-
-//join a hub by invite
 
 router.post("/join/:inviteToken",verifyToken, joinHubByInviteToken)
 

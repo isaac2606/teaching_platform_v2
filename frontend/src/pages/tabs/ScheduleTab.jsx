@@ -3,9 +3,9 @@ import { AuthContext } from "../../context/AuthContext";
 import { useRouteLoaderData } from "react-router-dom";
 import api from "../../services/api"
 
-import CreateCohortModal from "../../components/ui/CreateCohortModal";
-import EditCohortModal from "../../components/ui/EditCohortModal";
-import ClassCard from "../../components/ClassCard";
+import CreateCohortModal from "../../features/cohorts/CreateCohortModal";
+import EditCohortModal from "../../features/cohorts/EditCohortModal";
+import ClassCard from "../../features/cohorts/ClassCard";
 
 export default function ScheduleTab() {
 

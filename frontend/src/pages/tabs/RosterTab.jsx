@@ -3,7 +3,7 @@ import { useContext , useState, useEffect } from "react"
 import api from  "../../services/api"
 import { useRouteLoaderData } from "react-router-dom";
 import { useLoaderData } from "react-router-dom";
-import StudentCard from "../../components/StudentCard";
+import StudentCard from "../../features/students/StudentCard";
 export default function RosterTab(){
 
     const { user } = useContext(AuthContext);

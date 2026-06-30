@@ -14,7 +14,6 @@ const {
   deleteClass,
 } = require("../controllers/classController");
 
-// create a class
 router.post(
   "/createClass",
   verifyToken,
@@ -23,15 +22,13 @@ router.post(
   createClass,
 );
 
-// get classes for a specific hub
 router.get(
   "/getClasses/:hubId",
   verifyToken,
-  
+  roleMiddleware("teacher"),
   getClassesByHub,
 );
 
-// assign student to a class
 router.post(
   "/:classId/assign",
   verifyToken,
@@ -39,7 +36,6 @@ router.post(
   assignStudent,
 );
 
-// join a class via invite link
 router.post(
   "/join/:inviteToken",
   verifyToken,
@@ -47,7 +43,6 @@ router.post(
   joinClass,
 );
 
-// edit a class (title only for now)
 router.put(
   "/editClass/:classId",
   verifyToken,
@@ -55,7 +50,6 @@ router.put(
   editClass
 );
 
-// delete a class
 router.delete(
   "/deleteClass/:classId",
   verifyToken,

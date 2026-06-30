@@ -3,7 +3,7 @@ import { Link, useLoaderData } from "react-router-dom";
 import api from "../services/api";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
-import HubCard from "../components/HubCard";
+import HubCard from "../features/hubs/HubCard";
 
 export default function Dashboard() {
   const data = useLoaderData();

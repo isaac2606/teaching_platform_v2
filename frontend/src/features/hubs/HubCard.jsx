@@ -1,6 +1,6 @@
 import { useState, memo, useContext } from "react";
 import { Link } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../../context/AuthContext";
 
 const HubCard = memo(function HubCard({ hub, onDelete, onEdit }) {
     const { user } = useContext(AuthContext);

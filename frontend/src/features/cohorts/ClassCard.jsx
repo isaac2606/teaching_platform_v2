@@ -1,10 +1,10 @@
 import { useState, memo,useContext } from "react";
 import { Link } from "react-router-dom";
-import Button from "./ui/Button";
-import Input from "./ui/Input";
-import Toast from "./ui/Toast";
-import { AuthContext } from "../context/AuthContext";
-import api from "../services/api"
+import Button from "../../components/ui/Button";
+import Input from "../../components/ui/Input";
+import Toast from "../../components/ui/Toast";
+import { AuthContext } from "../../context/AuthContext";
+import api from "../../services/api";
 
 const ClassCard = memo(function ClassCard({ group, onDelete, onEdit, onUpdate }) {
     const {user} = useContext(AuthContext);
@@ -14,7 +14,7 @@ const ClassCard = memo(function ClassCard({ group, onDelete, onEdit, onUpdate })
     const [toastMsg, setToastMsg] = useState("");
 
     const handleCopy = () => {
-        navigator.clipboard.writeText(`http://localhost:5173/join/${group.inviteToken}`)
+        navigator.clipboard.writeText(`${window.location.origin}/join/${group.inviteToken}`)
         setToastMsg("Invite link copied to clipboard!");
     }
 

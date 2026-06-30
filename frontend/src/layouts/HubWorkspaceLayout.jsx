@@ -55,7 +55,7 @@ export default function HubWorkspaceLayout() {
                             {/* Invite Link Pill */}
                             {user?.role === "teacher" && (
                                 <button 
-                                    onClick={() => navigator.clipboard.writeText(`http://localhost:5173/join/${hub.inviteToken}`)}
+                                    onClick={() => navigator.clipboard.writeText(`${window.location.origin}/join/${hub.inviteToken}`)}
                                     className="flex items-center gap-2 px-3 py-1 bg-brand-primary/10 text-brand-primary hover:bg-brand-primary/20 rounded-md text-sm font-bold transition-colors"
                                     title="Copy Invite Link"
                                 >

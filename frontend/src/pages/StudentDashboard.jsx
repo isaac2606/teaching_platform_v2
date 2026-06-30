@@ -1,5 +1,5 @@
 import { useState,useContext,useEffect } from "react";
-import HubCard from "../components/HubCard";
+import HubCard from "../features/hubs/HubCard";
 
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
