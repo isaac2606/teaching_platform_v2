@@ -122,9 +122,55 @@ const joinClass = async (req, res) => {
     }
 };
 
+const editClass = async (req, res) => {
+    try {
+        const updatedClass = await Class.findOneAndUpdate(
+            { _id: req.params.classId, teacher: req.user.userId },
+            { $set: { title: req.body.title } },
+            { new: true }
+        );
+
+        if (!updatedClass) {
+            return res.status(404).json({ message: "Class not found or unauthorized" });
+        }
+
+        res.status(200).json(updatedClass);
+    } catch (err) {
+        res.status(500).json({ message: "Error editing class", error: err.message });
+    }
+};
+
+const deleteClass = async (req, res) => {
+    try {
+        const classObj = await Class.findOne({ _id: req.params.classId, teacher: req.user.userId });
+        
+        if (!classObj) {
+            return res.status(404).json({ message: "Class not found or unauthorized" });
+        }
+
+        // Remove from Hub's classes array
+        await Hub.findByIdAndUpdate(classObj.hub, {
+            $pull: { classes: classObj._id }
+        });
+
+        // Remove from Teacher's classes array
+        await User.findByIdAndUpdate(req.user.userId, {
+            $pull: { classes: classObj._id }
+        });
+
+        await Class.findByIdAndDelete(req.params.classId);
+
+        res.status(200).json({ message: "Class deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ message: "Error deleting class", error: err.message });
+    }
+};
+
 module.exports = {
     createClass,
     getClassesByHub,
     assignStudent,
-    joinClass
+    joinClass,
+    editClass,
+    deleteClass
 };

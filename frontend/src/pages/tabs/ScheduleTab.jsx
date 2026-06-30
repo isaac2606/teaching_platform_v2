@@ -2,7 +2,7 @@ import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { useRouteLoaderData } from "react-router-dom";
 import api from "../../services/api"
-import api from "../../services/api";
+
 import CreateCohortModal from "../../components/ui/CreateCohortModal";
 import ClassCard from "../../components/ClassCard";
 
@@ -31,14 +31,28 @@ export default function ScheduleTab() {
     setUpcomingClasses([...upcomingClasses, newCohort]);
   };
 
-  const handleDelete = (classId) => {
-    // TODO: implement delete endpoint call
-    console.log("Delete class", classId);
+  const handleDelete = async (classId) => {
+    try {
+      await api.delete(`/class/deleteClass/${classId}`);
+      // Remove the deleted class from state
+      setUpcomingClasses((prev) => prev.filter(cls => cls._id !== classId));
+    } catch (err) {
+      console.error("Failed to delete class", err);
+      alert("Failed to delete the group. Please try again.");
+    }
   };
 
-  const handleEdit = (classId, newValue) => {
-    // TODO: implement edit endpoint call
-    console.log("Edit class", classId, newValue);
+  const handleEdit = async (classId, newTitle) => {
+    try {
+      const response = await api.put(`/class/editClass/${classId}`, { title: newTitle });
+      // Update the class in state
+      setUpcomingClasses((prev) => 
+        prev.map(cls => cls._id === classId ? { ...cls, title: response.data.title } : cls)
+      );
+    } catch (err) {
+      console.error("Failed to edit class", err);
+      alert("Failed to update the group title. Please try again.");
+    }
   };
 
   return (

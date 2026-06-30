@@ -10,6 +10,8 @@ const {
   getClassesByHub,
   assignStudent,
   joinClass,
+  editClass,
+  deleteClass,
 } = require("../controllers/classController");
 
 // create a class
@@ -43,6 +45,22 @@ router.post(
   verifyToken,
   roleMiddleware("student"),
   joinClass,
+);
+
+// edit a class (title only for now)
+router.put(
+  "/editClass/:classId",
+  verifyToken,
+  roleMiddleware("teacher"),
+  editClass
+);
+
+// delete a class
+router.delete(
+  "/deleteClass/:classId",
+  verifyToken,
+  roleMiddleware("teacher"),
+  deleteClass
 );
 
 module.exports = router;
