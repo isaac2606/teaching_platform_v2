@@ -10,7 +10,7 @@ export default function Dashboard() {
   
   // React Router v7 Loader Data
   const hubs = data?.hubs || [];
-  const stats = data?.stats || { totalStudents: 0, activeHubs: 0, outstandingDues: 0, sessionsToday: 0 };
+  //const stats = data?.stats || { totalStudents: 0, activeHubs: 0, outstandingDues: 0, sessionsToday: 0 };
   const isTeacher = data?.role === "teacher";
 
   // Local state for fast UI updates (though we should eventually move to React 19 Actions)
@@ -45,27 +45,7 @@ export default function Dashboard() {
   return (
     <div className="p-8 min-h-screen text-text-primary font-sans flex-1 bg-bg-base transition-colors duration-300">
         
-        {/* STATS BANNER */}
-        {isTeacher && (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-                <div className="bg-bg-surface p-6 rounded-xl border border-border-subtle flex flex-col justify-between shadow-sm">
-                    <p className="text-text-secondary text-sm font-medium mb-2">Total Students</p>
-                    <p className="text-3xl font-bold text-text-primary">{stats.totalStudents}</p>
-                </div>
-                <div className="bg-bg-surface p-6 rounded-xl border border-border-subtle flex flex-col justify-between shadow-sm">
-                    <p className="text-text-secondary text-sm font-medium mb-2">Active Hubs</p>
-                    <p className="text-3xl font-bold text-text-primary">{localHubs.length}</p>
-                </div>
-                <div className="bg-bg-surface p-6 rounded-xl border border-border-subtle flex flex-col justify-between shadow-sm">
-                    <p className="text-text-secondary text-sm font-medium mb-2">Outstanding Dues</p>
-                    <p className="text-3xl font-bold text-brand-primary">${stats.outstandingDues}</p>
-                </div>
-                <div className="bg-bg-surface p-6 rounded-xl border border-border-subtle flex flex-col justify-between shadow-sm">
-                    <p className="text-text-secondary text-sm font-medium mb-2">Sessions Today</p>
-                    <p className="text-3xl font-bold text-text-primary">{stats.sessionsToday}</p>
-                </div>
-            </div>
-        )}
+        
 
         {/* CONTROLS */}
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8 bg-bg-surface border border-border-subtle p-6 rounded-xl shadow-md transition-colors">

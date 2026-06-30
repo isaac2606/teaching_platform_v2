@@ -12,7 +12,7 @@ export default function JoinHub() {
   useEffect(()=>{
     const joinClass = async ()=>{
         try{
-            await api.post(`/hub/join/${inviteToken}`);
+            await api.post(`/class/join/${inviteToken}`);
             setStatus("Successfully joined! Redirecting to your Dashboard...");
 
             setTimeout(()=>{

@@ -2,15 +2,44 @@ import { useState, memo,useContext } from "react";
 import { Link } from "react-router-dom";
 import Button from "./ui/Button";
 import Input from "./ui/Input";
+import Toast from "./ui/Toast";
 import { AuthContext } from "../context/AuthContext";
+import api from "../services/api"
 
-const ClassCard = memo(function ClassCard({ group, onDelete, onEdit }) {
-    const {user} = useContext(AuthContext)
-    const [isEditing, setIsEditing] = useState(false);
-    const [editValue, setEditValue] = useState("");
+const ClassCard = memo(function ClassCard({ group, onDelete, onEdit, onUpdate }) {
+    const {user} = useContext(AuthContext);
+    const [addValue,setAddValue] = useState("")
+    const [show,setShow]= useState(false)
+    const [errorMsg, setErrorMsg] = useState("");
+    const [toastMsg, setToastMsg] = useState("");
 
     const handleCopy = () => {
-        navigator.clipboard.writeText(`http://localhost:5173/join/${group.inviteToken }`)
+        navigator.clipboard.writeText(`http://localhost:5173/join/${group.inviteToken}`)
+        setToastMsg("Invite link copied to clipboard!");
+    }
+
+    const handleAddStudent = async (e)=>{
+        e.preventDefault();
+        setErrorMsg("");
+        try{
+            const response = await api.post(`/class/${group._id}/assign`,{
+                studentId:addValue
+            })
+            setAddValue("");
+            setShow(false);
+            setToastMsg("Student successfully added to the group!");
+            if (onUpdate && response.data.class) {
+                onUpdate(response.data.class);
+            }
+        }catch(err){
+            console.error(err);
+            if (err.response && err.response.data && err.response.data.message) {
+                setErrorMsg(err.response.data.message);
+            } else {
+                setErrorMsg("Invalid ID or unexpected error.");
+            }
+        }
+        
     }
     
     return(
@@ -27,11 +56,25 @@ const ClassCard = memo(function ClassCard({ group, onDelete, onEdit }) {
                     </div>
                     <div className="flex gap-1 opacity-0 hover:opacity-100 transition-opacity" style={{ opacity: 1 }}>
                         {user.role === "teacher" && <button 
-                            className="p-1.5 text-text-secondary hover:text-white hover:bg-white/10 rounded-md transition-colors"
+                            className="p-1.5 text-text-secondary hover:text-white hover:bg-white/10 rounded-md transition-colors flex items-center justify-center"
                             onClick={() => {
-                                setIsEditing(true);
-                                setEditValue(group.title);
+                                setShow(true);
+                                setErrorMsg("");
                             }}
+                            title="Assign Student to Group"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4"></path></svg>
+                        </button>}
+                        {user.role === "teacher" && <button 
+                            className="p-1.5 text-text-secondary hover:text-white hover:bg-white/10 rounded-md transition-colors flex items-center justify-center"
+                            onClick={handleCopy}
+                            title="Copy Invite Link"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                        </button>}
+                        {user.role === "teacher" && <button 
+                            className="p-1.5 text-text-secondary hover:text-white hover:bg-white/10 rounded-md transition-colors"
+                            onClick={() => onEdit(group)}
                         >
                             {/* Simple SVG Edit Icon */}
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
@@ -43,6 +86,7 @@ const ClassCard = memo(function ClassCard({ group, onDelete, onEdit }) {
                             {/* Simple SVG Delete Icon */}
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button> }
+                        
                     </div>
                 </div>
 
@@ -77,43 +121,45 @@ const ClassCard = memo(function ClassCard({ group, onDelete, onEdit }) {
                             View Feed
                         </Button>
                     </Link>
-                    {user.role === "teacher" && <Button className="" variant="secondary" onClick={handleCopy}>
-                            Link
-                    </Button>}
                 </div>
             </div>
-
-            {/* Edit Modal Overlay */}
-            {isEditing && (
-                <div className="absolute inset-0 bg-bg-surface/95 backdrop-blur-sm z-10 flex flex-col items-center justify-center p-4">
-                    <Input 
-                        placeholder="Group Title"
-                        value={editValue}
-                        onChange={(e) => setEditValue(e.target.value)}
-                        className="w-full mb-3"
+            {show && (
+                <div className="absolute inset-0 bg-bg-surface/95 backdrop-blur-sm z-20 flex flex-col items-center justify-center p-5">
+                    {errorMsg && (
+                        <div className="w-full mb-3 text-xs font-semibold text-red-500 bg-red-500/10 border border-red-500/30 p-2 rounded-lg text-center">
+                            {errorMsg}
+                        </div>
+                    )}
+                    <input 
+                        placeholder="Enter Student Id..."
+                        value={addValue}
+                        onChange={(e) => setAddValue(e.target.value)}
+                        className={`w-full mb-4 px-4 py-2 border rounded-xl bg-bg-base text-text-primary focus:outline-none transition-colors ${errorMsg ? 'border-red-500 focus:border-red-500' : 'border-border-subtle focus:border-brand-primary'}`}
                         autoFocus
                     />
                     <div className="flex gap-2 w-full">
-                        <Button 
-                            variant="primary" 
-                            className="flex-1"
-                            onClick={() => {
-                                onEdit(group._id, editValue);
-                                setIsEditing(false);
-                            }}
+                        <button 
+                            className="flex-1 bg-brand-primary hover:bg-brand-secondary text-white py-2 rounded-xl font-bold transition-colors"
+                            onClick={handleAddStudent}
                         >
-                            Save
-                        </Button>
-                        <Button 
-                            variant="ghost" 
-                            className="flex-1"
-                            onClick={() => setIsEditing(false)}
+                            Add Student
+                        </button>
+                        <button 
+                            className="flex-1 bg-white/5 border border-border-subtle hover:bg-white/10 text-text-primary py-2 rounded-xl font-bold transition-colors"
+                            onClick={() => setShow(false)}
                         >
                             Cancel
-                        </Button>
+                        </button>
                     </div>
                 </div>
             )}
+            
+            <Toast 
+                open={!!toastMsg} 
+                message={toastMsg} 
+                type="success" 
+                onClose={() => setToastMsg("")} 
+            />
         </div>
     );
 });

@@ -69,15 +69,42 @@ const getClassesByHub = async (req, res) => {
 
 const assignStudent = async (req, res) => {
     try {
+        // First verify the student actually exists
+        const student = await User.findById(req.body.studentId);
+        if (!student || student.role !== "student") {
+            return res.status(404).json({ message: "Student not found. Please check the ID." });
+        }
+
+        // Verify the class exists and check if student is already in it
+        const targetClass = await Class.findById(req.params.classId);
+        if (!targetClass) {
+            return res.status(404).json({ message: "Class not found" });
+        }
+
+        if (targetClass.students.includes(req.body.studentId)) {
+            return res.status(400).json({ message: "Student is already enrolled in this group." });
+        }
+
         const updatedClass = await Class.findByIdAndUpdate(
             req.params.classId,
             { $addToSet: { students: req.body.studentId } },
             { new: true }
         );
 
-        if (!updatedClass) {
-            return res.status(404).json({ message: "Class not found" });
-        }
+        // Add student to the parent Hub
+        await Hub.updateOne(
+            { _id: updatedClass.hub },
+            { $addToSet: { students: req.body.studentId } }
+        );
+
+        // Add Hub and Class to Student's User document
+        await User.updateOne(
+            { _id: req.body.studentId },
+            { 
+                $addToSet: { hubs: updatedClass.hub._id },
+                $push: { classes: updatedClass._id }
+            }
+        );
 
         res.status(200).json({ message: "Student assigned successfully", class: updatedClass });
     } catch (err) {
@@ -123,10 +150,26 @@ const joinClass = async (req, res) => {
 };
 
 const editClass = async (req, res) => {
+    const conflictingClass = await Class.findOne({ 
+             _id: { $ne: req.params.classId },
+             teacher: req.user.userId, 
+             date: req.body.date
+        });
+
+    if (conflictingClass) {
+        return res.status(400).json({ 
+            message: "Schedule conflict: You already have a group scheduled at this time!" 
+        });
+    }
     try {
         const updatedClass = await Class.findOneAndUpdate(
             { _id: req.params.classId, teacher: req.user.userId },
-            { $set: { title: req.body.title } },
+            { $set: { 
+                title: req.body.title,
+                date: req.body.date || "",
+                duration: req.body.duration || "1h 00m",
+                type: req.body.type || "Live Video"
+            } },
             { new: true }
         );
 

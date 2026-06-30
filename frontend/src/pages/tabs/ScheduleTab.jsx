@@ -4,14 +4,18 @@ import { useRouteLoaderData } from "react-router-dom";
 import api from "../../services/api"
 
 import CreateCohortModal from "../../components/ui/CreateCohortModal";
+import EditCohortModal from "../../components/ui/EditCohortModal";
 import ClassCard from "../../components/ClassCard";
 
 export default function ScheduleTab() {
+
   const { user } = useContext(AuthContext);
   const hub = useRouteLoaderData("hub-workspace");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingGroup, setEditingGroup] = useState(null);
   const [upcomingClasses, setUpcomingClasses] = useState([]);
+
   useEffect(() => {
     const getUpcomingClasses = async () => {
       try {
@@ -42,17 +46,17 @@ export default function ScheduleTab() {
     }
   };
 
-  const handleEdit = async (classId, newTitle) => {
-    try {
-      const response = await api.put(`/class/editClass/${classId}`, { title: newTitle });
-      // Update the class in state
-      setUpcomingClasses((prev) => 
-        prev.map(cls => cls._id === classId ? { ...cls, title: response.data.title } : cls)
-      );
-    } catch (err) {
-      console.error("Failed to edit class", err);
-      alert("Failed to update the group title. Please try again.");
-    }
+  const handleEdit = (newClass) => {
+    setUpcomingClasses((prev) => 
+        prev.map(cls => cls._id === newClass._id ? newClass : cls)
+    );
+    setEditingGroup(null);
+  };
+
+  const handleUpdate = (updatedClass) => {
+    setUpcomingClasses((prev) => 
+        prev.map(cls => cls._id === updatedClass._id ? updatedClass : cls)
+    );
   };
 
   return (
@@ -84,7 +88,8 @@ export default function ScheduleTab() {
             key={cls._id} 
             group={cls} 
             onDelete={handleDelete} 
-            onEdit={handleEdit} 
+            onEdit={setEditingGroup} 
+            onUpdate={handleUpdate}
           />
         ))}
       </div>
@@ -95,6 +100,14 @@ export default function ScheduleTab() {
         hubId={hub?._id}
         onCohortCreated={handleCohortCreated}
       />
+
+      {editingGroup && (
+        <EditCohortModal
+          group={editingGroup}
+          onClose={() => setEditingGroup(null)}
+          onEdit={handleEdit}
+        />
+      )}
     </div>
   );
 }

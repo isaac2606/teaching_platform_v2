@@ -4,7 +4,7 @@ const Hub = require("../models/Hub");
 const addAnnouncement = async (req, res) => {
     try {
         const hubIds = Array.isArray(req.body.hubIds) ? req.body.hubIds : [req.body.hubIds];
-        const imagePath = req.file ? req.file.path : "";
+        const imagePath = req.file ? req.file.filename : "";
 
         const announcement = new Announcement({
             title: req.body.title,

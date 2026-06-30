@@ -8,14 +8,12 @@ export async function dashboardLoader() {
         
         if (user.role === "teacher") {
             // Fetch stats and hubs simultaneously for teacher
-            const [statsResponse, hubsResponse] = await Promise.all([
-                api.get('/hub/stats'),
+            const [ hubsResponse] = await Promise.all([
                 api.get('/hub/my-hubs')
             ]);
             
             return {
                 role: "teacher",
-                stats: statsResponse.data,
                 hubs: hubsResponse.data
             };
         } else {

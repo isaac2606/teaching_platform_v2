@@ -27,7 +27,7 @@ router.post(
 router.get(
   "/getClasses/:hubId",
   verifyToken,
-  roleMiddleware("teacher"),
+  
   getClassesByHub,
 );
 
@@ -62,5 +62,7 @@ router.delete(
   roleMiddleware("teacher"),
   deleteClass
 );
+
+
 
 module.exports = router;

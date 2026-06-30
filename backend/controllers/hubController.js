@@ -28,11 +28,23 @@ const leaveHub = async (req, res) => {
 
     if (hub.students.includes(req.user.userId)) {
       await hub.updateOne({ $pull: { students: req.user.userId } });
+      
+      const classesInHub = await Class.find({ hub: hub._id });
+      const classIds = classesInHub.map(c => c._id);
+
+      await Class.updateMany(
+        { hub: hub._id },
+        { $pull: { students: req.user.userId } }
+      );
+
       await User.updateOne(
         { _id: req.user.userId },
-        { $pull: { hubs: hub._id } }
+        { 
+            $pull: { hubs: hub._id },
+            $pullAll: { classes: classIds } 
+        }
       );
-      res.status(200).json({ message: "Student left the hub" });
+      res.status(200).json({ message: "Student left the hub and its groups" });
     } else {
       res.status(200).json({ message: "Student was not in the hub" });
     }
@@ -54,11 +66,23 @@ const kickStudent = async(req,res)=>{
 
     if (hub.students.includes(req.params.studentId)) {
       await hub.updateOne({ $pull: { students: req.params.studentId} });
+      
+      const classesInHub = await Class.find({ hub: hub._id });
+      const classIds = classesInHub.map(c => c._id);
+
+      await Class.updateMany(
+        { hub: hub._id },
+        { $pull: { students: req.params.studentId } }
+      );
+
       await User.updateOne(
         { _id: req.params.studentId },
-        { $pull: { hubs: hub._id } }
+        { 
+            $pull: { hubs: hub._id },
+            $pullAll: { classes: classIds }
+        }
       );
-      res.status(200).json({ message: "Student kicked from the hub" });
+      res.status(200).json({ message: "Student kicked from the hub and all its groups" });
     } else {
       res.status(200).json({ message: "Student was not in the hub" });
     }
@@ -125,26 +149,50 @@ const getHubByInviteToken = async (req, res) => {
 
 const joinHubByInviteToken = async (req, res) => {
     try {
+
         const hub = await Hub.findOne({ inviteToken: req.params.inviteToken });
-        if (!hub) {
-            return res.status(404).json({ message: "Hub not found or invalid invite token." });
-        }
-        
-        if (!hub.students.includes(req.user.userId)) {
+        const group = await Class.findOne({ inviteToken: req.params.inviteToken });
+
+
+        if(!hub && group){
+          if (!group.students.includes(req.user.userId)) {
             // Add student to the Cohort
-            await hub.updateOne({ $push: { students: req.user.userId } });
+            await group.updateOne({ $push: { students: req.user.userId } });
             
             // Add Hub to User's list
             await User.updateOne(
                 { _id: req.user.userId },
                 { 
-                    $addToSet: { hubs: hub._id },
+                    $addToSet: { hubs: group.hub._id },
+                    $push: { classes: group._id }
                 }
             );
 
-            res.status(200).json({ message: "Student joined the Hub successfully" });
-        } else {
-            res.status(200).json({ message: "Student already in the Hub" });
+            res.status(200).json({ message: "Student joined the Class successfully" });
+          } else {
+            res.status(200).json({ message: "Student already in the Class" });
+        }
+        }else if (!hub) {
+            return res.status(404).json({ message: "Hub not found or invalid invite token." });
+
+
+        }else{
+          if (!hub.students.includes(req.user.userId)) {
+              // Add student to the Cohort
+              await hub.updateOne({ $push: { students: req.user.userId } });
+              
+              // Add Hub to User's list
+              await User.updateOne(
+                  { _id: req.user.userId },
+                  { 
+                      $addToSet: { hubs: hub._id },
+                  }
+              );
+
+              res.status(200).json({ message: "Student joined the Hub successfully" });
+          } else {
+              res.status(200).json({ message: "Student already in the Hub" });
+          }
         }
     } catch (err) {
         res.status(500).json(err);
