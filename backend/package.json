@@ -25,5 +25,10 @@
     "multer-storage-cloudinary": "^4.0.0",
     "nodemon": "^3.1.14",
     "socket.io": "^4.8.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.1.0",
+    "typescript": "^6.0.3"
   }
 }

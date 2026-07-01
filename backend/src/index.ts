@@ -1,9 +1,9 @@
-const express = require("express");
-const cors = require("cors");
+import express from "express";
+import cors from "cors";
 const app = express();
 
-const http = require("http");
-const { Server } = require("socket.io");
+import http from "http";
+import { Server } from "socket.io";
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -11,22 +11,22 @@ const io = new Server(server, {
     methods: ["GET", "POST"]
   }
 });
-const Message = require("./models/Message");
-const User = require("./models/User");
-const mongoose = require("mongoose");
-const dotenv = require("dotenv");
-const helmet = require("helmet");
-const morgan = require("morgan"); 
-const path = require("path"); 
+import Message from "./models/Message";
+import User from "./models/User";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import helmet from "helmet";
+import morgan from "morgan";
+import path from "path";
 dotenv.config();
 
-const authRoute = require("./routes/auth");
-const userRoute = require("./routes/user");
-const hubRoute = require("./routes/hub");
-const announcementRoute = require("./routes/announcement");
-const classRoute = require("./routes/class");
-const messageRoute = require("./routes/message");
-const uploadRoute = require("./routes/upload")
+import authRoute from "./routes/auth";
+import userRoute from "./routes/user";
+import hubRoute from "./routes/hub";
+import announcementRoute from "./routes/announcement";
+import classRoute from "./routes/class";
+import messageRoute from "./routes/message";
+import uploadRoute from "./routes/upload";
 
 mongoose
     .connect(process.env.MONGO_URL)
