@@ -1,8 +1,9 @@
-const Hub = require("../models/Hub");
-const User = require("../models/User");
-const crypto = require("crypto");
+import { Request, Response } from "express";
+import Hub from "../models/Hub";
+import User from "../models/User";
+import crypto from "crypto";
 
-const createHub = async (req, res) => {
+const createHub = async (req: Request, res: Response) => {
   try {
     const inviteToken = crypto.randomBytes(8).toString("hex");
     const hub = new Hub({
@@ -19,7 +20,7 @@ const createHub = async (req, res) => {
   }
 };
 
-const leaveHub = async (req, res) => {
+const leaveHub = async (req: Request, res: Response) => {
   try {
     const hub = await Hub.findById(req.params.id);
     if (!hub) {
@@ -54,7 +55,7 @@ const leaveHub = async (req, res) => {
 };
 
 
-const kickStudent = async(req,res)=>{
+const kickStudent = async(req: Request, res: Response)=>{
   try {
     const hub = await Hub.findById(req.params.id);
     if (!hub) {
@@ -91,7 +92,7 @@ const kickStudent = async(req,res)=>{
   }
 }
 
-const getAllHubs = async (req, res) => {
+const getAllHubs = async (req: Request, res: Response) => {
   try {
     const hubs = await Hub.find({});
     res.status(200).json(hubs);
@@ -100,7 +101,7 @@ const getAllHubs = async (req, res) => {
   }
 };
 
-const getMyHubs = async (req, res) => {
+const getMyHubs = async (req: Request, res: Response) => {
   try {
     const userId = req.user.userId;
     const role = req.user.role;
@@ -120,7 +121,7 @@ const getMyHubs = async (req, res) => {
   }
 };
 
-const getHubById = async (req, res) => {
+const getHubById = async (req: Request, res: Response) => {
   try {
     const hub = await Hub.findById(req.params.id)
       .populate('teacher', 'username email')
@@ -135,7 +136,7 @@ const getHubById = async (req, res) => {
   }
 };
 
-const getHubByInviteToken = async (req, res) => {
+const getHubByInviteToken = async (req: Request, res: Response) => {
   try {
     const hub = await Hub.findOne({ inviteToken: req.params.inviteToken });
     if (!hub) {
@@ -147,7 +148,7 @@ const getHubByInviteToken = async (req, res) => {
   }
 };
 
-const joinHubByInviteToken = async (req, res) => {
+const joinHubByInviteToken = async (req: Request, res: Response) => {
     try {
 
         const hub = await Hub.findOne({ inviteToken: req.params.inviteToken });
@@ -199,7 +200,7 @@ const joinHubByInviteToken = async (req, res) => {
     }
 };
 
-const updateHub = async (req, res) => {
+const updateHub = async (req: Request, res: Response) => {
   try {
     const updatedHub = await Hub.findByIdAndUpdate(
       req.params.id,
@@ -215,7 +216,7 @@ const updateHub = async (req, res) => {
   }
 };
 
-const deleteHub = async (req, res) => {
+const deleteHub = async (req: Request, res: Response) => {
   try {
     const hub = await Hub.findByIdAndDelete(req.params.id);
     if (!hub) {
@@ -233,7 +234,7 @@ const deleteHub = async (req, res) => {
   }
 };
 
-const getDashboardStats = async (req, res) => {
+const getDashboardStats = async (req: Request, res: Response) => {
   try {
     const userId = req.user.userId;
     
@@ -269,7 +270,7 @@ const getDashboardStats = async (req, res) => {
   }
 };
 
-const fixIndex = async (req, res) => {
+const fixIndex = async (req: Request, res: Response) => {
   try {
     const result = await Hub.collection.dropIndex('inviteToken_1');
     res.status(200).json({ message: "Index dropped successfully", result });
@@ -281,7 +282,7 @@ const fixIndex = async (req, res) => {
   }
 };
 
-const getChatHistory = async (req,res)=>{
+const getChatHistory = async (req: Request, res: Response)=>{
     try{
         const chatHistory = await Hub.findById(req.params.hubId).populate("sender","username").sort({createdAt:1});
 
@@ -293,7 +294,7 @@ const getChatHistory = async (req,res)=>{
 }
 
 
-const getStudents = async (req,res)=>{
+const getStudents = async (req: Request, res: Response)=>{
   try{
     const hub = await Hub.findById(req.params.hubId).populate("students");
 
@@ -306,7 +307,7 @@ const getStudents = async (req,res)=>{
 
 
 
-module.exports = {
+export {
   createHub,
   leaveHub,
   getAllHubs,

@@ -1,7 +1,8 @@
-const Announcement = require("../models/Announcement");
-const Hub = require("../models/Hub");
+import { Request, Response } from "express";
+import Announcement from "../models/Announcement";
+import Hub from "../models/Hub";
 
-const addAnnouncement = async (req, res) => {
+const addAnnouncement = async (req: Request, res: Response) => {
     try {
         const hubIds = Array.isArray(req.body.hubIds) ? req.body.hubIds : [req.body.hubIds];
         const imagePath = req.file ? req.file.filename : "";
@@ -30,7 +31,7 @@ const addAnnouncement = async (req, res) => {
     }
 };
 
-const getAllAnnouncements = async (req, res) => {
+const getAllAnnouncements = async (req: Request, res: Response) => {
     try {
         const anounc = await Announcement.find({});
         res.status(200).json(anounc);
@@ -39,7 +40,7 @@ const getAllAnnouncements = async (req, res) => {
     }
 };
 
-const getHubFeed = async (req, res) => {
+const getHubFeed = async (req: Request, res: Response) => {
     try {
         const feed = await Announcement.find({ hubs: req.params.hubId })
             .populate("teacher", "email");
@@ -55,7 +56,7 @@ const getHubFeed = async (req, res) => {
     }
 };
 
-module.exports = {
+export {
     addAnnouncement,
     getAllAnnouncements,
     getHubFeed

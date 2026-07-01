@@ -1,4 +1,20 @@
-const mongoose  = require('mongoose');
+import mongoose, { Document, Schema } from "mongoose";
+export interface IClass extends Document {
+  title: string;
+  teacher: mongoose.Types.ObjectId;
+  hub: mongoose.Types.ObjectId;
+  students: mongoose.Types.ObjectId[];
+  announcements: mongoose.Types.ObjectId[];
+  date?: string;
+  imageUrl?: string;
+  type?: string;
+  duration?: string;
+  inviteToken?: string;
+  dues?: number;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 
 const ClassSchema = new mongoose.Schema({
     
@@ -50,12 +66,7 @@ const ClassSchema = new mongoose.Schema({
         type:Number,
         default:0
     },
-    type:{
-        type:String
-    },
-    duration:{
-        type:String
-    },
+    
     
 
     
@@ -64,4 +75,4 @@ const ClassSchema = new mongoose.Schema({
     { timestamps:true })
 
 
-module.exports= mongoose.model('Class',ClassSchema);
+export default mongoose.model<IClass>("Class",ClassSchema );

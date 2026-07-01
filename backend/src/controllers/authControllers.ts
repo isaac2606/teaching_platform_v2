@@ -1,12 +1,13 @@
-const express = require("express")
-const User = require("../models/User")
-const bcrypt = require("bcrypt")
-const jwt = require("jsonwebtoken")
-const verifyToken = require("../middleware/verifyToken")
+import { Request, Response } from "express";
+import express from "express";
+import User from "../models/User";
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import verifyToken from "../middleware/verifyToken";
 const JWT_SECRET = process.env.JWT_SECRET
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || "your-refresh-secret-key-change-this"
 
-const logout= async (req,res)=>{
+const logout= async (req: Request, res: Response)=>{
     try{
     const userId = req.user.userId;
 
@@ -18,7 +19,7 @@ const logout= async (req,res)=>{
     }
 }
 
-const login = async (req,res)=>{
+const login = async (req: Request, res: Response)=>{
     try{
         
         const user = await User.findOne({
@@ -72,7 +73,7 @@ const login = async (req,res)=>{
 }
 
 
-const register = async (req,res)=> {
+const register = async (req: Request, res: Response)=> {
     try{
         const existingUser = await User.findOne({ email: req.body.email });
         if (existingUser) {
@@ -132,7 +133,7 @@ const register = async (req,res)=> {
     }
 }
 
-const refresh = async (req, res) => {
+const refresh = async (req: Request, res: Response) => {
     try {
         const { refreshToken } = req.body;
         if (!refreshToken) return res.status(401).json({ message: "Refresh token is missing" });
@@ -179,4 +180,4 @@ const refresh = async (req, res) => {
 
 
 
-module.exports = { register, logout, login, refresh };
+export { register, logout, login, refresh };

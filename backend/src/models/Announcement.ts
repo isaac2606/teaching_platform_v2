@@ -1,4 +1,14 @@
-const mongoose  = require('mongoose');
+import mongoose, { Document, Schema } from "mongoose";
+export interface IAnnouncement extends Document {
+  title: string;
+  description?: string;
+  teacher: mongoose.Types.ObjectId;
+  hubs: mongoose.Types.ObjectId[];
+  imageUrl?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 
 const AnnouncementSchema = new mongoose.Schema({
     
@@ -31,4 +41,4 @@ const AnnouncementSchema = new mongoose.Schema({
     { timestamps:true })
 
 
-module.exports= mongoose.model('Announcement',AnnouncementSchema);
+export default mongoose.model<IAnnouncement>("Announcement",AnnouncementSchema );

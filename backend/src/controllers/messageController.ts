@@ -1,7 +1,8 @@
-const Message = require("../models/Message");
+import { Request, Response } from "express";
+import Message from "../models/Message";
 
 
-const getPrivateChatHistory  = async (req,res)=>{
+const getPrivateChatHistory  = async (req: Request, res: Response)=>{
     try{
         const messages = await Message.find({
             $or:[
@@ -17,7 +18,7 @@ const getPrivateChatHistory  = async (req,res)=>{
     }
 }
 
-const getPublicChatHistory  = async (req,res)=>{
+const getPublicChatHistory  = async (req: Request, res: Response)=>{
     try{
         const messages = await Message.find({hubId : req.params.hubId}).populate("sender","username").sort({createdAt:1})
 
@@ -30,7 +31,7 @@ const getPublicChatHistory  = async (req,res)=>{
 
 
 
-module.exports = {
+export {
   getPrivateChatHistory,
   getPublicChatHistory
 };

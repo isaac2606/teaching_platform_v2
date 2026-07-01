@@ -1,4 +1,14 @@
-const mongoose  = require('mongoose');
+import mongoose, { Document, Schema } from "mongoose";
+export interface IMessage extends Document {
+  sender: mongoose.Types.ObjectId;
+  text: string;
+  hubId?: mongoose.Types.ObjectId;
+  receiver?: mongoose.Types.ObjectId;
+  imageUrl?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 
 const MessageSchema = new mongoose.Schema({
     
@@ -31,4 +41,4 @@ const MessageSchema = new mongoose.Schema({
     { timestamps:true })
 
 
-module.exports= mongoose.model('Message',MessageSchema);
+export default mongoose.model<IMessage>("Message",MessageSchema  );

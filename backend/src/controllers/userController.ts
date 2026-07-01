@@ -1,6 +1,7 @@
-const User = require("../models/User");
+import { Request, Response } from "express";
+import User from "../models/User";
 
-const getAllUsers = async (req, res) => {
+const getAllUsers = async (req: Request, res: Response) => {
     try {
         const users = await User.find({});
         res.status(200).json(users);
@@ -9,7 +10,7 @@ const getAllUsers = async (req, res) => {
     }
 };
 
-const getUserProfile = async (req, res) => {
+const getUserProfile = async (req: Request, res: Response) => {
     try {
         const user = await User.findById(req.params.id);
         if (!user) {
@@ -22,7 +23,7 @@ const getUserProfile = async (req, res) => {
     }
 };
 
-const getContact  = async (req,res)=>{
+const getContact  = async (req: Request, res: Response)=>{
 
     try{
         
@@ -41,7 +42,7 @@ const getContact  = async (req,res)=>{
 }
 
 
-const addNewContact  =async (req,res)=>{
+const addNewContact  =async (req: Request, res: Response)=>{
 
     try{
         const newContact = await User.findById(req.body.newContact);
@@ -62,7 +63,7 @@ const addNewContact  =async (req,res)=>{
     }
 }
 
-const getAllStudents = async (req,res)=>{
+const getAllStudents = async (req: Request, res: Response)=>{
   try{
     const user = await User.findById(req.user.userId).populate("students");
 
@@ -73,7 +74,7 @@ const getAllStudents = async (req,res)=>{
   }
 }
 
-const getAllTeachers = async (req,res)=>{
+const getAllTeachers = async (req: Request, res: Response)=>{
   try{
     const user = await User.findById(req.user.userId).populate("teachers");
 
@@ -85,7 +86,7 @@ const getAllTeachers = async (req,res)=>{
 }
 
 
-module.exports = {
+export {
     getAllUsers,
     getUserProfile,
     addNewContact,

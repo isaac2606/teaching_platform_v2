@@ -1,4 +1,16 @@
-const mongoose  = require('mongoose');
+import mongoose, { Document, Schema } from "mongoose";
+export interface IHub extends Document {
+  title: string;
+  teacher: mongoose.Types.ObjectId;
+  students: mongoose.Types.ObjectId[];
+  announcements: mongoose.Types.ObjectId[];
+  classes: mongoose.Types.ObjectId[];
+  inviteToken?: string;
+  messages: mongoose.Types.ObjectId[];
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 
 const HubSchema = new mongoose.Schema({
     
@@ -42,4 +54,4 @@ const HubSchema = new mongoose.Schema({
     { timestamps:true })
 
 
-module.exports= mongoose.model('Hub',HubSchema);
+export default mongoose.model<IHub>("Hub", HubSchema );

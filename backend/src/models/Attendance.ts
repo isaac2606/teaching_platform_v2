@@ -1,4 +1,13 @@
-const mongoose = require('mongoose');
+import mongoose, { Document, Schema } from "mongoose";
+export interface IAttendance extends Document {
+  student: mongoose.Types.ObjectId;
+  classCohort: mongoose.Types.ObjectId;
+  date: Date;
+  status: "Present" | "Absent" | "Late";
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
 
 const AttendanceSchema = new mongoose.Schema({
     student: {
@@ -22,4 +31,4 @@ const AttendanceSchema = new mongoose.Schema({
     }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Attendance', AttendanceSchema);
+export default mongoose.model<IAttendance>("Attendance",AttendanceSchema );

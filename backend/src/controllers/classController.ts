@@ -1,9 +1,10 @@
-const User = require("../models/User");
-const Hub = require("../models/Hub");
-const Class = require("../models/Class");
-const crypto = require("crypto");
+import { Request, Response } from "express";
+import User from "../models/User";
+import Hub from "../models/Hub";
+import Class from "../models/Class";
+import crypto from "crypto";
 
-const createClass = async (req, res) => {
+const createClass = async (req: Request, res: Response) => {
     try {
         const hubExists = await Hub.findById(req.body.hubId);
         if (!hubExists) {
@@ -53,7 +54,7 @@ const createClass = async (req, res) => {
     }
 };
 
-const getClassesByHub = async (req, res) => {
+const getClassesByHub = async (req: Request, res: Response) => {
     try {
         const hubExists = await Hub.findById(req.params.hubId);
         if (!hubExists) {
@@ -67,7 +68,7 @@ const getClassesByHub = async (req, res) => {
     }
 };
 
-const assignStudent = async (req, res) => {
+const assignStudent = async (req: Request, res: Response) => {
     try {
         // First verify the student actually exists
         const student = await User.findById(req.body.studentId);
@@ -112,7 +113,7 @@ const assignStudent = async (req, res) => {
     }
 };
 
-const joinClass = async (req, res) => {
+const joinClass = async (req: Request, res: Response) => {
     try {
         const classObj = await Class.findOne({ inviteToken: req.params.inviteToken });
         
@@ -149,7 +150,7 @@ const joinClass = async (req, res) => {
     }
 };
 
-const editClass = async (req, res) => {
+const editClass = async (req: Request, res: Response) => {
     const conflictingClass = await Class.findOne({ 
              _id: { $ne: req.params.classId },
              teacher: req.user.userId, 
@@ -183,7 +184,7 @@ const editClass = async (req, res) => {
     }
 };
 
-const deleteClass = async (req, res) => {
+const deleteClass = async (req: Request, res: Response) => {
     try {
         const classObj = await Class.findOne({ _id: req.params.classId, teacher: req.user.userId });
         
@@ -209,7 +210,7 @@ const deleteClass = async (req, res) => {
     }
 };
 
-module.exports = {
+export {
     createClass,
     getClassesByHub,
     assignStudent,
