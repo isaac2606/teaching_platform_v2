@@ -1,8 +1,9 @@
-import { Request, Response, NextFunction } from "express";
-import  from ;
-import {  } from ;
-import  from ;.v2;
-require("dotenv").config();
+import multer from "multer";
+import { CloudinaryStorage } from "multer-storage-cloudinary";
+import { v2 as cloudinary } from "cloudinary";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -20,4 +21,4 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage: storage });
 
-export default ;
+export default upload;

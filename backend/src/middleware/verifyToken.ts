@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import  from ;
+import jwt from "jsonwebtoken";
 const verifyToken = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization || req.headers['x-access-token'];
   const token = authHeader && (authHeader.startsWith('Bearer ') || authHeader.startsWith('bearer '))
@@ -24,4 +24,4 @@ const verifyToken = (req: Request, res: Response, next: NextFunction) => {
 
 
 
-export default ;
+export default verifyToken;

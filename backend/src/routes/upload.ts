@@ -4,6 +4,12 @@ const router = express.Router();
 import verifyToken from "../middleware/verifyToken";
 import Upload from "../middleware/upload";
 
+
+
+
+
+
+
 router.post("/", verifyToken, Upload.single("image"), (req, res) => {
   try {
     // Cloudinary returns the full absolute HTTPS URL in req.file.path
