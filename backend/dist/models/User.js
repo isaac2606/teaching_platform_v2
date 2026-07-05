@@ -26,6 +26,14 @@ const UserSchema = new mongoose_1.default.Schema({
             type: mongoose_1.default.Schema.Types.ObjectId,
             ref: "Hub"
         }],
+    students: [{
+            type: mongoose_1.default.Schema.Types.ObjectId,
+            ref: "User"
+        }],
+    teachers: [{
+            type: mongoose_1.default.Schema.Types.ObjectId,
+            ref: "User"
+        }],
     recentUsers: [{
             type: mongoose_1.default.Schema.Types.ObjectId,
             ref: "User"

@@ -26,7 +26,7 @@ const getUserProfile = async (req, res) => {
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-        const { password, updatedAt, ...other } = user._doc;
+        const { password, updatedAt, ...other } = user.toObject();
         res.status(200).json(other);
     }
     catch (err) {
@@ -61,12 +61,20 @@ exports.getContact = getContact;
 const addNewContact = async (req, res) => {
     try {
         const newContact = await User_1.default.findById(req.body.newContact);
+        if (!newContact) {
+            return res.status(404).json({ message: "That contact does not exist!" });
+        }
         if (req.user.role === "student" && newContact.role === "student")
             res.status(403).json({ message: "cannot contact student privatly" });
         else {
             const updatedUser = await User_1.default.findByIdAndUpdate(req.user.userId, { $addToSet: { recentUsers: newContact._id } }, { new: true } // Return updated doc
             );
-            res.status(200).json({ message: "Contact added", recentUsers: updatedUser.recentUsers });
+            if (!updatedUser) {
+                return res.status(403).json({ message: "Failed to update user" });
+            }
+            else {
+                res.status(200).json({ message: "Contact added", recentUsers: updatedUser.recentUsers });
+            }
         }
     }
     catch (err) {
@@ -78,6 +86,9 @@ exports.addNewContact = addNewContact;
 const getAllStudents = async (req, res) => {
     try {
         const user = await User_1.default.findById(req.user.userId).populate("students");
+        if (!user) {
+            return res.status(404).json({ message: "That contact does not exist!" });
+        }
         res.status(200).json(user.students);
     }
     catch (err) {

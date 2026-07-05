@@ -5,6 +5,8 @@ export interface IUser extends Document {
     password?: string;
     role: "student" | "teacher" | "admin";
     hubs: mongoose.Types.ObjectId[];
+    students: mongoose.Types.ObjectId[];
+    teachers: mongoose.Types.ObjectId[];
     recentUsers: mongoose.Types.ObjectId[];
     refreshToken?: string;
     createdAt?: Date;

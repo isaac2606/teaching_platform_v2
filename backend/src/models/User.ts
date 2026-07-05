@@ -5,6 +5,8 @@ export interface IUser extends Document {
   password?: string;
   role: "student" | "teacher" | "admin";
   hubs: mongoose.Types.ObjectId[];
+  students: mongoose.Types.ObjectId[];
+  teachers: mongoose.Types.ObjectId[];
   recentUsers: mongoose.Types.ObjectId[];
   refreshToken?: string;
   createdAt?: Date;
@@ -34,6 +36,14 @@ const UserSchema = new mongoose.Schema(
     hubs:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Hub" 
+    }],
+    students:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"User"
+    }],
+    teachers:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"User"
     }],
     recentUsers:[{
       type:mongoose.Schema.Types.ObjectId,
