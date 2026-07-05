@@ -27,8 +27,12 @@ const addAnnouncement = async (req: Request, res: Response) => {
             announcement: savedAnnouncement
         });
     } catch (err) {
-        res.status(500).json(err);
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
     }
+  }
 };
 
 const getAllAnnouncements = async (req: Request, res: Response) => {
@@ -36,13 +40,21 @@ const getAllAnnouncements = async (req: Request, res: Response) => {
         const anounc = await Announcement.find({});
         res.status(200).json(anounc);
     } catch (err) {
-        res.status(500).json(err);
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
     }
+  }
 };
 
 const getHubFeed = async (req: Request, res: Response) => {
     try {
-        const feed = await Announcement.find({ hubs: req.params.hubId })
+        const params :any = {};
+        if(req.params.hubId){
+            params.hubId = req.params.hubId;
+        }
+        const feed = await Announcement.find({ hubs : params.hubId})
             .populate("teacher", "email");
             
         const hub = await Hub.findById(req.params.hubId);
@@ -52,8 +64,12 @@ const getHubFeed = async (req: Request, res: Response) => {
         
         res.status(200).json(feed);
     } catch (err) {
-        res.status(500).json(err);
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
     }
+  }
 };
 
 export {

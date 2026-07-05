@@ -16,7 +16,12 @@ const logout = async (req, res) => {
         res.status(200).json({ message: "logged out succesfully" });
     }
     catch (err) {
-        res.status(500).json(err);
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.logout = logout;
@@ -52,7 +57,12 @@ const login = async (req, res) => {
         });
     }
     catch (err) {
-        res.status(500).json(err);
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.login = login;
@@ -95,7 +105,12 @@ const register = async (req, res) => {
         });
     }
     catch (err) {
-        res.status(500).json(err);
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.register = register;
@@ -127,7 +142,12 @@ const refresh = async (req, res) => {
         });
     }
     catch (err) {
-        res.status(500).json(err);
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.refresh = refresh;

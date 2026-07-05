@@ -11,7 +11,12 @@ const getAllUsers = async (req, res) => {
         res.status(200).json(users);
     }
     catch (err) {
-        res.status(500).json({ message: "Error fetching users", error: err.message });
+        if (err instanceof Error) {
+            res.status(500).json({ message: "Error fetching users", error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.getAllUsers = getAllUsers;
@@ -25,7 +30,12 @@ const getUserProfile = async (req, res) => {
         res.status(200).json(other);
     }
     catch (err) {
-        res.status(500).json({ message: "Error fetching user profile", error: err.message });
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.getUserProfile = getUserProfile;
@@ -39,7 +49,12 @@ const getContact = async (req, res) => {
     }
     catch (err) {
         console.error("GET CONTACT ERROR:", err);
-        res.status(500).json({ message: err.message, stack: err.stack });
+        if (err instanceof Error) {
+            res.status(500).json({ message: err.message, stack: err.stack });
+        }
+        else {
+            res.status(500).json({ message: "An unknown error occurred" });
+        }
     }
 };
 exports.getContact = getContact;
@@ -66,7 +81,12 @@ const getAllStudents = async (req, res) => {
         res.status(200).json(user.students);
     }
     catch (err) {
-        res.status(500).json(err);
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.getAllStudents = getAllStudents;
@@ -76,7 +96,12 @@ const getAllTeachers = async (req, res) => {
         res.status(200).json(user.teachers);
     }
     catch (err) {
-        res.status(500).json(err);
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.getAllTeachers = getAllTeachers;

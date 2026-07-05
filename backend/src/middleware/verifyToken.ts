@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 const verifyToken = (req: Request, res: Response, next: NextFunction) => {
-  const authHeader = req.headers.authorization || req.headers['x-access-token'];
+  const authHeader = (req.headers.authorization || req.headers['x-access-token']) as string;
   const token = authHeader && (authHeader.startsWith('Bearer ') || authHeader.startsWith('bearer '))
     ? authHeader.split(' ')[1]
     : authHeader;
@@ -11,9 +11,9 @@ const verifyToken = (req: Request, res: Response, next: NextFunction) => {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!);
     req.user = decoded;
-    /*res.json({
+     /*res.json({
       messages:req.user
     })*/
     next();

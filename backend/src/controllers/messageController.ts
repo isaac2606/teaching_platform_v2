@@ -13,9 +13,13 @@ const getPrivateChatHistory  = async (req: Request, res: Response)=>{
         }).populate("sender", "username").populate("receiver", "username").sort({createdAt: 1});
 
         res.status(200).json(messages);
-    }catch(err){
-        res.status(500).json(err)   
+    }catch (err) {
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
     }
+  }
 }
 
 const getPublicChatHistory  = async (req: Request, res: Response)=>{
@@ -23,9 +27,13 @@ const getPublicChatHistory  = async (req: Request, res: Response)=>{
         const messages = await Message.find({hubId : req.params.hubId}).populate("sender","username").sort({createdAt:1})
 
         res.status(200).json(messages)
-    }catch(err){
-        res.status(500).json(err)
+    }catch (err) {
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
     }
+  }
 }
 
 

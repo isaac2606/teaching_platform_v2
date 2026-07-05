@@ -15,7 +15,11 @@ router.post("/", verifyToken, Upload.single("image"), (req, res) => {
     // Cloudinary returns the full absolute HTTPS URL in req.file.path
     res.status(200).json({ filename: req.file.path });
   } catch (err) {
-    res.status(500).json(err);
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
+    }
   }
 });
 

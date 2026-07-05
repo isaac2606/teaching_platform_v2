@@ -14,9 +14,13 @@ const logout= async (req: Request, res: Response)=>{
     await User.findByIdAndUpdate(userId,{refreshToken:null});
 
     res.status(200).json({message:"logged out succesfully"})
-    }catch(err){
-        res.status(500).json(err)
+    }catch (err) {
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
     }
+  }
 }
 
 const login = async (req: Request, res: Response)=>{
@@ -67,9 +71,13 @@ const login = async (req: Request, res: Response)=>{
             user:userWithoutPassword,
             
         })
-    }catch(err){
-        res.status(500).json(err)
+    }catch (err) {
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
     }
+  }
 }
 
 
@@ -128,9 +136,13 @@ const register = async (req: Request, res: Response)=> {
                 role:user.role
             }
         })
-    }catch(err){
-        res.status(500).json(err)
+    }catch (err) {
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
     }
+  }
 }
 
 const refresh = async (req: Request, res: Response) => {
@@ -170,8 +182,12 @@ const refresh = async (req: Request, res: Response) => {
             });
         });
     } catch (err) {
-        res.status(500).json(err);
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
     }
+  }
 };
 
 

@@ -15,7 +15,7 @@ router.get("/fix-db", async (req, res) => {
         res.send("<h1>Database fixed! You can now use the app.</h1>");
     }
     catch (err) {
-        res.send("Error fixing db: " + err.message);
+        res.send("Error fixing db: " + (err instanceof Error ? err.message : "Unknown error"));
     }
 });
 router.get("/getUsers", verifyToken_1.default, userController_1.getAllUsers);

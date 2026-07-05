@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.kickStudent = exports.getStudents = exports.joinHubByInviteToken = exports.getChatHistory = exports.fixIndex = exports.getDashboardStats = exports.deleteHub = exports.updateHub = exports.getHubByInviteToken = exports.getHubById = exports.getMyHubs = exports.getAllHubs = exports.leaveHub = exports.createHub = void 0;
 const Hub_1 = __importDefault(require("../models/Hub"));
 const User_1 = __importDefault(require("../models/User"));
+const Class_1 = __importDefault(require("../models/Class"));
 const crypto_1 = __importDefault(require("crypto"));
 const createHub = async (req, res) => {
     try {
@@ -20,7 +21,12 @@ const createHub = async (req, res) => {
         res.status(201).json(savedHub);
     }
     catch (err) {
-        res.status(500).json(err);
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.createHub = createHub;
@@ -32,9 +38,9 @@ const leaveHub = async (req, res) => {
         }
         if (hub.students.includes(req.user.userId)) {
             await hub.updateOne({ $pull: { students: req.user.userId } });
-            const classesInHub = await Class.find({ hub: hub._id });
+            const classesInHub = await Class_1.default.find({ hub: hub._id });
             const classIds = classesInHub.map(c => c._id);
-            await Class.updateMany({ hub: hub._id }, { $pull: { students: req.user.userId } });
+            await Class_1.default.updateMany({ hub: hub._id }, { $pull: { students: req.user.userId } });
             await User_1.default.updateOne({ _id: req.user.userId }, {
                 $pull: { hubs: hub._id },
                 $pullAll: { classes: classIds }
@@ -46,7 +52,12 @@ const leaveHub = async (req, res) => {
         }
     }
     catch (err) {
-        res.status(500).json(err);
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.leaveHub = leaveHub;
@@ -61,9 +72,9 @@ const kickStudent = async (req, res) => {
         }
         if (hub.students.includes(req.params.studentId)) {
             await hub.updateOne({ $pull: { students: req.params.studentId } });
-            const classesInHub = await Class.find({ hub: hub._id });
+            const classesInHub = await Class_1.default.find({ hub: hub._id });
             const classIds = classesInHub.map(c => c._id);
-            await Class.updateMany({ hub: hub._id }, { $pull: { students: req.params.studentId } });
+            await Class_1.default.updateMany({ hub: hub._id }, { $pull: { students: req.params.studentId } });
             await User_1.default.updateOne({ _id: req.params.studentId }, {
                 $pull: { hubs: hub._id },
                 $pullAll: { classes: classIds }
@@ -75,7 +86,12 @@ const kickStudent = async (req, res) => {
         }
     }
     catch (err) {
-        res.status(500).json(err);
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.kickStudent = kickStudent;
@@ -85,7 +101,12 @@ const getAllHubs = async (req, res) => {
         res.status(200).json(hubs);
     }
     catch (err) {
-        res.status(500).json(err);
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.getAllHubs = getAllHubs;
@@ -108,7 +129,12 @@ const getMyHubs = async (req, res) => {
         }
     }
     catch (err) {
-        res.status(500).json(err);
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.getMyHubs = getMyHubs;
@@ -123,7 +149,12 @@ const getHubById = async (req, res) => {
         res.status(200).json(hub);
     }
     catch (err) {
-        res.status(500).json(err);
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.getHubById = getHubById;
@@ -136,14 +167,19 @@ const getHubByInviteToken = async (req, res) => {
         res.status(200).json(hub);
     }
     catch (err) {
-        res.status(500).json(err);
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.getHubByInviteToken = getHubByInviteToken;
 const joinHubByInviteToken = async (req, res) => {
     try {
         const hub = await Hub_1.default.findOne({ inviteToken: req.params.inviteToken });
-        const group = await Class.findOne({ inviteToken: req.params.inviteToken });
+        const group = await Class_1.default.findOne({ inviteToken: req.params.inviteToken });
         if (!hub && group) {
             if (!group.students.includes(req.user.userId)) {
                 // Add student to the Cohort
@@ -178,7 +214,12 @@ const joinHubByInviteToken = async (req, res) => {
         }
     }
     catch (err) {
-        res.status(500).json(err);
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.joinHubByInviteToken = joinHubByInviteToken;
@@ -191,7 +232,12 @@ const updateHub = async (req, res) => {
         res.status(200).json(updatedHub);
     }
     catch (err) {
-        res.status(500).json(err);
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.updateHub = updateHub;
@@ -205,7 +251,12 @@ const deleteHub = async (req, res) => {
         res.status(200).json({ message: "Hub has been deleted" });
     }
     catch (err) {
-        res.status(500).json(err);
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.deleteHub = deleteHub;
@@ -234,7 +285,12 @@ const getDashboardStats = async (req, res) => {
         });
     }
     catch (err) {
-        res.status(500).json({ error: err.message });
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.getDashboardStats = getDashboardStats;
@@ -257,7 +313,12 @@ const getChatHistory = async (req, res) => {
         res.status(200).json(chatHistory);
     }
     catch (err) {
-        res.status(500).json(err);
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.getChatHistory = getChatHistory;
@@ -267,7 +328,12 @@ const getStudents = async (req, res) => {
         res.status(200).json(hub.students);
     }
     catch (err) {
-        res.status(500).json(err);
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.getStudents = getStudents;

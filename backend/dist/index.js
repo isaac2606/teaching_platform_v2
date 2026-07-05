@@ -94,6 +94,9 @@ io.on("connection", (socket) => {
             // Enforce role-based safety: Students cannot message other students
             const senderUser = await User_1.default.findById(data.sender);
             const receiverUser = await User_1.default.findById(data.receiver);
+            if (!senderUser || !receiverUser) {
+                return socket.emit("private_message_error", "User not found.");
+            }
             if (senderUser.role === "student" && receiverUser.role === "student") {
                 return socket.emit("private_message_error", "Students cannot message other students privately.");
             }

@@ -29,7 +29,7 @@ import messageRoute from "./routes/message";
 import uploadRoute from "./routes/upload";
 
 mongoose
-    .connect(process.env.MONGO_URL)
+    .connect(process.env.MONGO_URL!)
     .then(()=>{
         console.log("connected to mongo");
     })
@@ -110,6 +110,9 @@ io.on("connection", (socket)=>{
         // Enforce role-based safety: Students cannot message other students
         const senderUser = await User.findById(data.sender);
         const receiverUser = await User.findById(data.receiver);
+        if (!senderUser || !receiverUser) {
+            return socket.emit("private_message_error", "User not found.");
+        }
 
         if (senderUser.role === "student" && receiverUser.role === "student") {
             return socket.emit("private_message_error", "Students cannot message other students privately.");

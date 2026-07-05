@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Hub from "../models/Hub";
 import User from "../models/User";
+import Class from "../models/Class";
 import crypto from "crypto";
 
 const createHub = async (req: Request, res: Response) => {
@@ -16,7 +17,11 @@ const createHub = async (req: Request, res: Response) => {
     await User.findByIdAndUpdate({ _id: req.user.userId }, { $push: { hubs: savedHub._id } });
     res.status(201).json(savedHub);
   } catch (err) {
-    res.status(500).json(err);
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
+    }
   }
 };
 
@@ -50,7 +55,11 @@ const leaveHub = async (req: Request, res: Response) => {
       res.status(200).json({ message: "Student was not in the hub" });
     }
   } catch (err) {
-    res.status(500).json(err);
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
+    }
   }
 };
 
@@ -88,7 +97,11 @@ const kickStudent = async(req: Request, res: Response)=>{
       res.status(200).json({ message: "Student was not in the hub" });
     }
   } catch (err) {
-    res.status(500).json(err);
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
+    }
   }
 }
 
@@ -97,7 +110,11 @@ const getAllHubs = async (req: Request, res: Response) => {
     const hubs = await Hub.find({});
     res.status(200).json(hubs);
   } catch (err) {
-    res.status(500).json(err);
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
+    }
   }
 };
 
@@ -117,7 +134,11 @@ const getMyHubs = async (req: Request, res: Response) => {
       return res.status(403).json({ message: "Unauthorized role" });
     }
   } catch (err) {
-    res.status(500).json(err);
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
+    }
   }
 };
 
@@ -132,7 +153,11 @@ const getHubById = async (req: Request, res: Response) => {
     }
     res.status(200).json(hub);
   } catch (err) {
-    res.status(500).json(err);
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
+    }
   }
 };
 
@@ -144,7 +169,11 @@ const getHubByInviteToken = async (req: Request, res: Response) => {
     }
     res.status(200).json(hub);
   } catch (err) {
-    res.status(500).json(err);
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
+    }
   }
 };
 
@@ -196,8 +225,12 @@ const joinHubByInviteToken = async (req: Request, res: Response) => {
           }
         }
     } catch (err) {
-        res.status(500).json(err);
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
     }
+  }
 };
 
 const updateHub = async (req: Request, res: Response) => {
@@ -212,7 +245,11 @@ const updateHub = async (req: Request, res: Response) => {
     }
     res.status(200).json(updatedHub);
   } catch (err) {
-    res.status(500).json(err);
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
+    }
   }
 };
 
@@ -230,7 +267,11 @@ const deleteHub = async (req: Request, res: Response) => {
     
     res.status(200).json({ message: "Hub has been deleted" });
   } catch (err) {
-    res.status(500).json(err);
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
+    }
   }
 };
 
@@ -266,7 +307,11 @@ const getDashboardStats = async (req: Request, res: Response) => {
     });
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
+    }
   }
 };
 
@@ -288,9 +333,13 @@ const getChatHistory = async (req: Request, res: Response)=>{
 
         res.status(200).json(chatHistory)
 
-    }catch(err){
-        res.status(500).json(err)
+    }catch (err) {
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
     }
+  }
 }
 
 
@@ -300,8 +349,12 @@ const getStudents = async (req: Request, res: Response)=>{
 
     res.status(200).json(hub.students)
 
-  }catch(err){
-    res.status(500).json(err)
+  }catch (err) {
+    if (err instanceof Error) {
+      res.status(500).json({ error: err.message });
+    } else {
+      res.status(500).json("An unknown error occurred");
+    }
   }
 }
 

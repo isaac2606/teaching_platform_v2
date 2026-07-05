@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 import verifyToken from "../middleware/verifyToken";
-import { getAllUsers, getUserProfile ,getContact ,addNewContact, getStudents,getAllTeachers,getAllStudents } from "../controllers/userController";
+import { getAllUsers, getUserProfile ,getContact ,addNewContact,getAllTeachers,getAllStudents } from "../controllers/userController";
 import { verify  } from "jsonwebtoken";
 import roleMiddleware from "../middleware/roleMiddleware";
 
@@ -12,7 +12,7 @@ router.get("/fix-db", async (req, res) => {
         await User.updateMany({}, { $set: { recentUsers: [] } });
         res.send("<h1>Database fixed! You can now use the app.</h1>");
     } catch (err) {
-        res.send("Error fixing db: " + err.message);
+        res.send("Error fixing db: " + (err instanceof Error ? err.message : "Unknown error"));
     }
 });
 

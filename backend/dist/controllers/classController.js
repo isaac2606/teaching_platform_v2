@@ -47,7 +47,12 @@ const createClass = async (req, res) => {
         res.status(201).json(savedClass);
     }
     catch (err) {
-        res.status(500).json({ message: "Error creating class", error: err.message });
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.createClass = createClass;
@@ -61,7 +66,12 @@ const getClassesByHub = async (req, res) => {
         res.status(200).json(classes);
     }
     catch (err) {
-        res.status(500).json({ message: "Error fetching classes", error: err.message });
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.getClassesByHub = getClassesByHub;
@@ -91,7 +101,12 @@ const assignStudent = async (req, res) => {
         res.status(200).json({ message: "Student assigned successfully", class: updatedClass });
     }
     catch (err) {
-        res.status(500).json({ message: "Error assigning student", error: err.message });
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.assignStudent = assignStudent;
@@ -118,7 +133,12 @@ const joinClass = async (req, res) => {
         }
     }
     catch (err) {
-        res.status(500).json(err);
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.joinClass = joinClass;
@@ -146,7 +166,12 @@ const editClass = async (req, res) => {
         res.status(200).json(updatedClass);
     }
     catch (err) {
-        res.status(500).json({ message: "Error editing class", error: err.message });
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.editClass = editClass;
@@ -168,7 +193,12 @@ const deleteClass = async (req, res) => {
         res.status(200).json({ message: "Class deleted successfully" });
     }
     catch (err) {
-        res.status(500).json({ message: "Error deleting class", error: err.message });
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        }
+        else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
 };
 exports.deleteClass = deleteClass;
