@@ -1,1 +1,1 @@
-{"version":3,"file":"verifyToken.d.ts","sourceRoot":"","sources":["../../src/middleware/verifyToken.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,QAAQ,EAAE,YAAY,EAAE,MAAM,SAAS,CAAC;AAE1D,QAAA,MAAM,WAAW,GAAI,KAAK,OAAO,EAAE,KAAK,QAAQ,EAAE,MAAM,YAAY,mDAoBnE,CAAC;AAIF,eAAe,WAAW,CAAC"}
+{"version":3,"file":"verifyToken.d.ts","sourceRoot":"","sources":["../../src/middleware/verifyToken.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,QAAQ,EAAE,YAAY,EAAE,MAAM,SAAS,CAAC;AAO1D,QAAA,MAAM,WAAW,GAAI,KAAK,OAAO,EAAE,KAAK,QAAQ,EAAE,MAAM,YAAY,mDAoBnE,CAAC;AAIF,eAAe,WAAW,CAAC"}

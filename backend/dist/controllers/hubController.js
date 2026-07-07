@@ -70,7 +70,7 @@ const kickStudent = async (req, res) => {
         if (hub.teacher.toString() !== req.user.userId) {
             return res.status(403).json({ message: "You do not have permission to modify this hub's roster." });
         }
-        if (hub.students.includes(req.params.studentId)) {
+        if (hub.students.some(id => id.toString() === req.params.studentId)) {
             await hub.updateOne({ $pull: { students: req.params.studentId } });
             const classesInHub = await Class_1.default.find({ hub: hub._id });
             const classIds = classesInHub.map(c => c._id);
@@ -247,7 +247,8 @@ const deleteHub = async (req, res) => {
         if (!hub) {
             return res.status(404).json({ message: "Hub not found" });
         }
-        await User_1.default.updateMany({ hubs: req.params.id }, { $pull: { hubs: req.params.id } });
+        const hubId = req.params.id;
+        await User_1.default.updateMany({ hubs: hubId }, { $pull: { hubs: hubId } });
         res.status(200).json({ message: "Hub has been deleted" });
     }
     catch (err) {
@@ -270,7 +271,7 @@ const getDashboardStats = async (req, res) => {
         const today = new Date().toISOString().split('T')[0];
         hubs.forEach(hub => {
             hub.students.forEach(studentId => allStudentIds.add(studentId.toString()));
-            hub.classes.forEach(c => {
+            hub.classes.forEach((c) => {
                 outstandingDues += (c.dues || 0) * (c.students?.length || 0);
                 if (c.date && c.date.startsWith(today)) {
                     sessionsToday++;
@@ -303,7 +304,7 @@ const fixIndex = async (req, res) => {
         if (err.code === 27) {
             return res.status(200).json({ message: "Index already dropped or doesn't exist" });
         }
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: err instanceof Error ? err.message : "Unknown error" });
     }
 };
 exports.fixIndex = fixIndex;
@@ -325,6 +326,9 @@ exports.getChatHistory = getChatHistory;
 const getStudents = async (req, res) => {
     try {
         const hub = await Hub_1.default.findById(req.params.hubId).populate("students");
+        if (!hub) {
+            return res.status(404).json({ message: "Hub not found" });
+        }
         res.status(200).json(hub.students);
     }
     catch (err) {

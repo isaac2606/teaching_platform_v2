@@ -48,7 +48,7 @@ const login = async (req, res) => {
         }, REFRESH_TOKEN_SECRET);
         user.refreshToken = refreshToken;
         await user.save();
-        const { password, ...userWithoutPassword } = user._doc;
+        const { password, ...userWithoutPassword } = user;
         res.status(200).json({
             message: "loggin succesful",
             accessToken: accessToken,
@@ -122,7 +122,10 @@ const refresh = async (req, res) => {
         jsonwebtoken_1.default.verify(refreshToken, REFRESH_TOKEN_SECRET, async (err, payload) => {
             if (err)
                 return res.status(403).json({ message: "Refresh token is invalid or expired" });
-            const user = await User_1.default.findById(payload.userId);
+            if (!payload)
+                return res.status(403).json({ message: "No payload" });
+            const decodedPayload = payload;
+            const user = await User_1.default.findById(decodedPayload.userId);
             if (!user || user.refreshToken !== refreshToken) {
                 return res.status(403).json({ message: "Invalid refresh token" });
             }

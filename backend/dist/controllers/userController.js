@@ -104,6 +104,9 @@ exports.getAllStudents = getAllStudents;
 const getAllTeachers = async (req, res) => {
     try {
         const user = await User_1.default.findById(req.user.userId).populate("teachers");
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
         res.status(200).json(user.teachers);
     }
     catch (err) {

@@ -91,6 +91,9 @@ const assignStudent = async (req, res) => {
             return res.status(400).json({ message: "Student is already enrolled in this group." });
         }
         const updatedClass = await Class_1.default.findByIdAndUpdate(req.params.classId, { $addToSet: { students: req.body.studentId } }, { new: true });
+        if (!updatedClass) {
+            return res.status(404).json({ message: "Class not found" });
+        }
         // Add student to the parent Hub
         await Hub_1.default.updateOne({ _id: updatedClass.hub }, { $addToSet: { students: req.body.studentId } });
         // Add Hub and Class to Student's User document

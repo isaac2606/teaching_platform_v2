@@ -100,6 +100,10 @@ const assignStudent = async (req: Request, res: Response) => {
             { new: true }
         );
 
+        if (!updatedClass) {
+            return res.status(404).json({ message: "Class not found" });
+        }
+
         // Add student to the parent Hub
         await Hub.updateOne(
             { _id: updatedClass.hub },

@@ -12,6 +12,6 @@ declare const deleteHub: (req: Request, res: Response) => Promise<Response<any, 
 declare const getDashboardStats: (req: Request, res: Response) => Promise<void>;
 declare const fixIndex: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 declare const getChatHistory: (req: Request, res: Response) => Promise<void>;
-declare const getStudents: (req: Request, res: Response) => Promise<void>;
+declare const getStudents: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 export { createHub, leaveHub, getAllHubs, getMyHubs, getHubById, getHubByInviteToken, updateHub, deleteHub, getDashboardStats, fixIndex, getChatHistory, joinHubByInviteToken, getStudents, kickStudent };
 //# sourceMappingURL=hubController.d.ts.map

@@ -4,6 +4,6 @@ declare const getUserProfile: (req: Request, res: Response) => Promise<Response<
 declare const getContact: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 declare const addNewContact: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 declare const getAllStudents: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
-declare const getAllTeachers: (req: Request, res: Response) => Promise<void>;
+declare const getAllTeachers: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 export { getAllUsers, getUserProfile, addNewContact, getContact, getAllStudents, getAllTeachers };
 //# sourceMappingURL=userController.d.ts.map
