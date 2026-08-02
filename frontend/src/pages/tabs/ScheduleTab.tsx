@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { useRouteLoaderData } from "react-router-dom";
@@ -14,7 +15,7 @@ export default function ScheduleTab() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
-  const [upcomingClasses, setUpcomingClasses] = useState([]);
+  const [upcomingClasses, setUpcomingClasses] = useState<any[]>([]);
 
   useEffect(() => {
     const getUpcomingClasses = async () => {

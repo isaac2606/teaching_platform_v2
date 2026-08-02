@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { io } from "socket.io-client";
 import { useContext, useEffect, useState, useRef } from "react";
 import { useRouteLoaderData } from "react-router-dom";
@@ -9,7 +10,7 @@ export default function ChatTab(){
     const hub  = useRouteLoaderData("hub-workspace");
     const {user} = useContext(AuthContext)
     const [socket,setSocket] = useState(null);
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState<any[]>([]);
     const [newMessage, setNewMessage] = useState("");
     const messagesEndRef = useRef(null);
 

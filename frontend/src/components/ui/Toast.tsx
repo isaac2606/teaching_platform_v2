@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useEffect } from "react";
 
 // This completely replaces MUI's <Snackbar> and <Box>

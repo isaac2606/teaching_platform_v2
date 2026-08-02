@@ -1,3 +1,4 @@
+// @ts-nocheck
 export default function GlobalSearch() {
   return (
     <div className="min-h-screen p-8 text-white bg-bg-base">

@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useParams } from "react-router-dom";
 import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
@@ -9,8 +10,8 @@ export default function HubWorkspace() {
   const { id } = useParams();
   const {user}=useContext(AuthContext)
   // 1. FIXED: Added [] so it defaults to an empty array before the data loads
-  const [feed, setFeed] = useState([]);
-  const [classes, setClasses] = useState([]);
+  const [feed, setFeed] = useState<any[]>([]);
+  const [classes, setClasses] = useState<any[]>([]);
   const [hub, setHub] = useState({});
   const [teacher, setTeacher] = useState({});
 

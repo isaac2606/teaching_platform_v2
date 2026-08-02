@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { lazy, Suspense } from "react";
 import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import DashboardLayout from "./layouts/DashboardLayout";

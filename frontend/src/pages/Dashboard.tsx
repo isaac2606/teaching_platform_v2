@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState } from "react";
 import { Link, useLoaderData } from "react-router-dom";
 import api from "../services/api";

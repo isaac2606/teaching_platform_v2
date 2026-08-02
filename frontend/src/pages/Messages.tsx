@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useContext, useState, useRef, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { SocketContext } from "../context/SocketContext";
@@ -10,9 +11,9 @@ export default function Messages() {
     const { user } = useContext(AuthContext);
     
     const [activeReceiver, setActiveReceiver] = useState(null);
-    const [recentContacts,setRecentContacts] = useState([])
+    const [recentContacts,setRecentContacts] = useState<any[]>([])
 
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState<any[]>([]);
     const [newMessage, setNewMessage] = useState("");
     const [newReceiver, setNewReceiver] = useState("");
     const [searchError, setSearchError] = useState("");

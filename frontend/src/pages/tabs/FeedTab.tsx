@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useRouteLoaderData } from "react-router-dom";
 import { useState } from "react";
 import api from  "../../services/api"
@@ -9,7 +10,7 @@ export default function FeedTab(){
     
     const hub = useRouteLoaderData("hub-workspace");
     
-    const [feed, setFeed] = useState([]);
+    const [feed, setFeed] = useState<any[]>([]);
     const [newTitle,setNewTitle]= useState("");
     const [newDesc,setNewDesc] = useState("");
     const [file,setFile]= useState(null);

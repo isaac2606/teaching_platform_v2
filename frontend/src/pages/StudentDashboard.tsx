@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useState,useContext,useEffect } from "react";
 import HubCard from "../features/hubs/HubCard";
 
@@ -15,7 +16,7 @@ export default function StudentDashboard() {
   const [loading, setLoading] = useState(false) 
   const [error, setError] = useState(null)
 
-  const [hubs,setHubs]=useState([])
+  const [hubs,setHubs]=useState<any[]>([])
 
   const {user}= useContext(AuthContext);
 

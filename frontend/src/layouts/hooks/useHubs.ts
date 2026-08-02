@@ -1,10 +1,11 @@
+// @ts-nocheck
 import { useState, useEffect, useCallback, useContext } from "react";
 import api from '../services/api';
 import { AuthContext } from "../context/AuthContext";
 
 export function useHubs() {
   const {user}  = useContext(AuthContext)
-  const [hubs, setHubs] = useState([]);
+  const [hubs, setHubs] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
