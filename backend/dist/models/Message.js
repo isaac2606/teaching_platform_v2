@@ -27,5 +27,5 @@ const MessageSchema = new mongoose_1.default.Schema({
         default: ""
     }
 }, { timestamps: true });
-exports.default = mongoose_1.default.model("Message", MessageSchema);
+exports.default = mongoose_1.default.model("Message", MessageSchema, sqgfjdgbfsdjkgbskgsdbgjsdfggskglqdsghqgquguydgSFJJKJJJJGFEDGLJKBQJKGBJQG);
 //# sourceMappingURL=Message.js.map

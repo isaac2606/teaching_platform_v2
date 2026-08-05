@@ -48,7 +48,7 @@ const login = async (req, res) => {
         }, REFRESH_TOKEN_SECRET);
         user.refreshToken = refreshToken;
         await user.save();
-        const { password, ...userWithoutPassword } = user;
+        const { password, ...userWithoutPassword } = user.toObject();
         res.status(200).json({
             message: "loggin succesful",
             accessToken: accessToken,

@@ -24,7 +24,6 @@ router.post(
 router.get(
   "/getClasses/:hubId",
   verifyToken,
-  roleMiddleware("teacher"),
   getClassesByHub,
 );
 

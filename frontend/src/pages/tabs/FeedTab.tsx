@@ -22,7 +22,8 @@ export default function FeedTab(){
         const getFeed = async () => {
             try {
                 const response = await api.get(`/announcement/hub/${hub._id}`);
-                setFeed(response.data);
+                const array = response.data.reverse();
+                setFeed(array);
             } catch (err) {
                 console.error(err.message);
             }
