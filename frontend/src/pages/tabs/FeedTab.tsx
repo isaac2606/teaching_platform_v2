@@ -15,6 +15,8 @@ export default function FeedTab(){
     const [newDesc,setNewDesc] = useState("");
     const [file,setFile]= useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [hubClasses, setHubClasses] = useState<any[]>([]);
+    const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
 
     const {user} = useContext(AuthContext)
     
@@ -28,8 +30,20 @@ export default function FeedTab(){
                 console.error(err.message);
             }
         };
+        const getClasses = async () => {
+            try {
+                const response = await api.get(`/class/getClasses/${hub._id}`);
+                setHubClasses(response.data);
+            } catch (err) {
+                console.error("Failed to fetch classes for feed target", err);
+            }
+        };
+        
         getFeed();
-    }, [hub._id]);
+        if (user?.role === "teacher") {
+            getClasses();
+        }
+    }, [hub._id, user?.role]);
 
     const [isUploading, setIsUploading] = useState(false);
 
@@ -45,6 +59,10 @@ export default function FeedTab(){
         formData.append("title",newTitle)
         formData.append("description",newDesc)
         formData.append("hubIds", hub._id);
+        
+        if (selectedClasses.length > 0) {
+            formData.append("targetClasses", JSON.stringify(selectedClasses));
+        }
 
         if(file){
         formData.append("image",file);
@@ -60,6 +78,7 @@ export default function FeedTab(){
         setNewTitle("");
         setNewDesc("");
         setFile(null);
+        setSelectedClasses([]);
         setIsModalOpen(false);
 
         
@@ -169,6 +188,24 @@ export default function FeedTab(){
                             onChange={(e) => setNewDesc(e.target.value)}
                             className="w-full bg-bg-base border border-border-subtle rounded-xl px-5 py-3 text-text-primary min-h-[120px] focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all resize-none"
                         />
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-semibold text-text-secondary">Target Specific Classes (Optional)</label>
+                            <select 
+                                multiple
+                                value={selectedClasses}
+                                onChange={(e) => {
+                                    const options = [...e.target.selectedOptions];
+                                    const values = options.map(option => option.value);
+                                    setSelectedClasses(values);
+                                }}
+                                className="w-full bg-bg-base border border-border-subtle rounded-xl px-4 py-2 text-text-primary focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all min-h-[100px]"
+                            >
+                                {hubClasses.map(cls => (
+                                    <option key={cls._id} value={cls._id}>{cls.title} ({cls.type || 'Group'})</option>
+                                ))}
+                            </select>
+                            <p className="text-xs text-text-secondary">Hold Ctrl/Cmd to select multiple. Leave unselected to broadcast to the entire Hub.</p>
+                        </div>
                         <div className="flex justify-between items-center mt-4">
                             <input
                             type="file"

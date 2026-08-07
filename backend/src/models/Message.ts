@@ -3,6 +3,7 @@ export interface IMessage extends Document {
   sender: mongoose.Types.ObjectId;
   text: string;
   hubId?: mongoose.Types.ObjectId;
+  channel?: string;
   receiver?: mongoose.Types.ObjectId;
   imageUrl?: string;
   createdAt?: Date;
@@ -25,6 +26,10 @@ const MessageSchema = new mongoose.Schema({
    hubId:{
     type:mongoose.Schema.Types.ObjectId,
     ref: "Hub"
+   },
+   channel:{
+    type: String, // e.g. "general" or "homework"
+    default: "general"
    },
 
    receiver:{

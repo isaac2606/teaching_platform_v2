@@ -4,6 +4,7 @@ export interface IAnnouncement extends Document {
   description?: string;
   teacher: mongoose.Types.ObjectId;
   hubs: mongoose.Types.ObjectId[];
+  targetClasses?: mongoose.Types.ObjectId[];
   imageUrl?: string;
   createdAt?: Date;
   updatedAt?: Date;
@@ -28,7 +29,10 @@ const AnnouncementSchema = new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"Hub",
         required:true
- 
+    }],
+    targetClasses: [{
+        type:mongoose.Schema.Types.ObjectId,
+        ref: "Class"
     }],
     imageUrl:{
         type:String,

@@ -11,6 +11,7 @@ import { createClass,
   joinClass,
   editClass,
   deleteClass,
+  recordAttendance
  } from "../controllers/classController";
 
 router.post(
@@ -53,6 +54,13 @@ router.delete(
   verifyToken,
   roleMiddleware("teacher"),
   deleteClass
+);
+
+router.post(
+  "/:classId/attendance",
+  verifyToken,
+  roleMiddleware("teacher"),
+  recordAttendance
 );
 
 

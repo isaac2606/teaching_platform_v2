@@ -7,12 +7,22 @@ const addAnnouncement = async (req: Request, res: Response) => {
         const hubIds = Array.isArray(req.body.hubIds) ? req.body.hubIds : [req.body.hubIds];
         const imagePath = req.file ? req.file.filename : "";
 
+        let targetClasses = [];
+        if (req.body.targetClasses) {
+            try {
+                targetClasses = JSON.parse(req.body.targetClasses);
+            } catch (e) {
+                targetClasses = Array.isArray(req.body.targetClasses) ? req.body.targetClasses : [req.body.targetClasses];
+            }
+        }
+
         const announcement = new Announcement({
             title: req.body.title,
             description: req.body.description,
             teacher: req.user.userId,
             imageUrl: imagePath,
-            hubs: hubIds
+            hubs: hubIds,
+            targetClasses: targetClasses
         });
 
         const savedAnnouncement = await announcement.save();

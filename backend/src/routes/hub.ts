@@ -16,7 +16,8 @@ import { createHub,
   getChatHistory,
   joinHubByInviteToken,
   getStudents,
-  kickStudent
+  kickStudent,
+  toggleChannelLock
  } from "../controllers/hubController";
 import { verify  } from "jsonwebtoken";
 
@@ -25,6 +26,8 @@ router.post("/", verifyToken, authorize("teacher"), createHub);
 router.put("/:id/leave", verifyToken, authorize("student"), leaveHub);
 
 router.put("/:id/kick/:studentId", verifyToken, authorize("teacher"), kickStudent);
+
+router.put("/:hubId/lock-channel", verifyToken, authorize("teacher"), toggleChannelLock);
 
 router.get("/getHubs", verifyToken, getAllHubs);
 

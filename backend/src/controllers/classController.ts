@@ -238,11 +238,45 @@ const deleteClass = async (req: Request, res: Response) => {
   }
 };
 
+const recordAttendance = async (req: Request, res: Response) => {
+    try {
+        const { classId } = req.params;
+        const { records } = req.body;
+        
+        const Attendance = require('../models/Attendance').default;
+        
+        for (const [studentId, status] of Object.entries(records)) {
+            // Capitalize status to match model enum 'Present' or 'Absent'
+            const formattedStatus = (status as string).charAt(0).toUpperCase() + (status as string).slice(1);
+            
+            await Attendance.findOneAndUpdate(
+                { student: studentId, classCohort: classId, date: { $gte: new Date().setHours(0,0,0,0) } },
+                { 
+                    student: studentId, 
+                    classCohort: classId, 
+                    status: formattedStatus,
+                    date: new Date()
+                },
+                { upsert: true, new: true }
+            );
+        }
+        
+        res.status(200).json({ message: 'Attendance recorded successfully' });
+    } catch (err) {
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        } else {
+            res.status(500).json('An unknown error occurred');
+        }
+    }
+};
+
 export {
     createClass,
     getClassesByHub,
     assignStudent,
     joinClass,
     editClass,
-    deleteClass
+    deleteClass,
+    recordAttendance
 };

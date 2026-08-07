@@ -13,6 +13,7 @@ const io = new Server(server, {
 });
 import Message from "./models/Message";
 import User from "./models/User";
+import Hub from "./models/Hub";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 import helmet from "helmet";
@@ -35,17 +36,9 @@ mongoose
     })
     .catch((err)=>{
         console.log(err);
-
     });
 
-
 app.use(cors());
-/*app.use(
-  cors({
-    origin: "http://127.0.0.1:5500", // your frontend's exact origin
-    credentials: true, // include if you're sending cookies/auth headers
-  }),
-);*/
 app.use(express.json());
 app.use(helmet({
   crossOriginResourcePolicy: false,
@@ -61,38 +54,38 @@ app.use("/api/class",classRoute)
 app.use("/api/message",messageRoute)
 app.use("/api/upload",uploadRoute)
 
-
 io.on("connection", (socket)=>{
   console.log("A user connected:" , socket.id)
 
   socket.on("join_Hub", (hubId) => {
       socket.join(hubId);
-      
-    });
+  });
 
   socket.on("join_private_room",(userId)=>{
     socket.join(userId);
     console.log("user joined private room :",userId)
   })
 
-
-  // Add 'async' here!
   socket.on("send_message", async (data) => {
       try {
-          // 1. Save it to MongoDB
+          const hub = await Hub.findById(data.hubId);
+          const senderUser = await User.findById(data.sender);
+          const channel = data.channel || "general";
+          
+          if (hub && hub.lockedChannels && hub.lockedChannels.includes(channel) && senderUser?.role === "student") {
+              return socket.emit("chat_error", "This channel is currently locked by the teacher.");
+          }
+
           const newMessage = await Message.create({
               sender: data.sender,
               hubId: data.hubId,
               text: data.text,
-              imageUrl:data.imageUrl || ""
+              imageUrl:data.imageUrl || "",
+              channel: channel
           });
 
-
-          // 2. We populate the sender so the frontend gets the username!
           await newMessage.populate("sender", "username");
           
-          
-          // 3. Now broadcast the permanently saved message!
           io.to(data.hubId).emit("receive_message", newMessage);
           
       } catch (err) {
@@ -100,14 +93,12 @@ io.on("connection", (socket)=>{
       }
   });
 
-    socket.on("disconnect",()=>{
+  socket.on("disconnect",()=>{
       console.log("User disconnected ")
-    })
+  })
     
-    socket.on("send_private_message",async (data)=>{
-
+  socket.on("send_private_message",async (data)=>{
       try{
-        // Enforce role-based safety: Students cannot message other students
         const senderUser = await User.findById(data.sender);
         const receiverUser = await User.findById(data.receiver);
         if (!senderUser || !receiverUser) {
@@ -119,12 +110,10 @@ io.on("connection", (socket)=>{
         }
 
         const newMessage = await Message.create({
-
           receiver:data.receiver,
           sender:data.sender,
           text:data.text,
           imageUrl:data.imageUrl || ""
-
         })
         await newMessage.populate("sender","username");
         await newMessage.populate("receiver","username");
@@ -135,23 +124,8 @@ io.on("connection", (socket)=>{
       }catch(err){
         console.error("Error saving message:", err)
       }
-
-    })
+  })
 })
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 server.listen(3000,()=>{
     console.log("backend server is running")

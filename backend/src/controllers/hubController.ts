@@ -362,6 +362,31 @@ const getStudents = async (req: Request, res: Response)=>{
   }
 }
 
+const toggleChannelLock = async (req: Request, res: Response) => {
+    try {
+        const hub = await Hub.findById(req.params.hubId);
+        if (!hub) return res.status(404).json({ message: "Hub not found" });
+        
+        const { channel } = req.body;
+        
+        if (hub.lockedChannels?.includes(channel)) {
+            hub.lockedChannels = hub.lockedChannels.filter(c => c !== channel);
+        } else {
+            if (!hub.lockedChannels) hub.lockedChannels = [];
+            hub.lockedChannels.push(channel);
+        }
+        
+        await hub.save();
+        res.status(200).json({ lockedChannels: hub.lockedChannels });
+    } catch (err) {
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        } else {
+            res.status(500).json("An unknown error occurred");
+        }
+    }
+};
+
 
 
 export {
@@ -378,5 +403,6 @@ export {
   getChatHistory,
   joinHubByInviteToken,
   getStudents,
-  kickStudent
+  kickStudent,
+  toggleChannelLock
 };

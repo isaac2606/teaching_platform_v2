@@ -7,6 +7,7 @@ export interface IHub extends Document {
   classes: mongoose.Types.ObjectId[];
   inviteToken?: string;
   messages: mongoose.Types.ObjectId[];
+  lockedChannels?: string[];
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -28,7 +29,10 @@ const HubSchema = new mongoose.Schema({
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
  
-    }], 
+    }],
+    lockedChannels:[{
+        type: String
+    }],
     announcements:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Announcement"
