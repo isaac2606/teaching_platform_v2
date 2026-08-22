@@ -28,6 +28,7 @@ import announcementRoute from "./routes/announcement";
 import classRoute from "./routes/class";
 import messageRoute from "./routes/message";
 import uploadRoute from "./routes/upload";
+import assignmentRoute from "./routes/assignment";
 
 mongoose
     .connect(process.env.MONGO_URL!)
@@ -53,6 +54,7 @@ app.use("/api/announcement",announcementRoute);
 app.use("/api/class",classRoute)
 app.use("/api/message",messageRoute)
 app.use("/api/upload",uploadRoute)
+app.use("/api/assignment",assignmentRoute)
 
 io.on("connection", (socket)=>{
   console.log("A user connected:" , socket.id)
