@@ -6,7 +6,7 @@ export interface IAssignment extends Document {
   dueDate: Date;
   feedback?: string;
   hub: mongoose.Types.ObjectId;
-  class?: mongoose.Types.ObjectId;
+  classes?: mongoose.Types.ObjectId[];
   type: "assignment" | "homework" | "quiz" | "project" | "exam";
   imageUrl?: string;
   createdAt?: Date;
@@ -40,10 +40,10 @@ const assignmentSchema = new mongoose.Schema(
       ref: "Hub",
       required: true,
     },
-    class: {
+  classes: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "Class",
-    },
+    }],
     teacher: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
