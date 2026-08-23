@@ -25,6 +25,7 @@ const JoinHub = lazy(() => import("./features/hubs/JoinHub"));
 const FeedTab = lazy(() => import("./pages/tabs/FeedTab"));
 const ChatTab = lazy(() => import("./pages/tabs/ChatTab"));
 const ScheduleTab = lazy(() => import("./pages/tabs/ScheduleTab"));
+const AssignmentTab = lazy(() => import("./pages/tabs/AssignmentTab"));
 const RosterTab = lazy(() => import("./pages/tabs/RosterTab"));
 const VaultTab = lazy(() => import("./pages/tabs/VaultTab"));
 
@@ -99,6 +100,7 @@ const router = createBrowserRouter([
               { path: "feed", element: <FeedTab /> },
               { path: "chat", element: <ChatTab /> },
               { path: "schedule", element: <ScheduleTab /> },
+              { path: "assignments", element: <AssignmentTab /> },
               { 
                 path: "roster", 
                 element: <RosterTab />,
