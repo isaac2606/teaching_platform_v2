@@ -54,7 +54,7 @@ const login = async (req: Request, res: Response)=>{
 
             },
             JWT_SECRET!,
-            {expiresIn:"15d"},
+            {expiresIn:"15m"},
         );
         const refreshToken = jwt.sign(
 
@@ -114,7 +114,7 @@ const register = async (req: Request, res: Response)=> {
 
             },
             JWT_SECRET!,
-            {expiresIn:"15d"},
+            {expiresIn:"15m"},
         );
 
 
@@ -172,7 +172,7 @@ const refresh = async (req: Request, res: Response) => {
                     role: user.role
                 },
                 JWT_SECRET!,
-                { expiresIn: "15d" }
+                { expiresIn: "15m" }
             );
 
             const newRefreshToken = jwt.sign(
