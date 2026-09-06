@@ -6,24 +6,19 @@ interface DecodedToken {
   role: string;
 }
 const verifyToken = (req: Request, res: Response, next: NextFunction) => {
-  const authHeader = (req.headers.authorization || req.headers['x-access-token']) as string;
-  const token = authHeader && (authHeader.startsWith('Bearer ') || authHeader.startsWith('bearer '))
-    ? authHeader.split(' ')[1]
-    : authHeader;
+  // Read the token from the HttpOnly cookie instead of the Authorization header
+  const token = req.cookies?.accessToken;
   
   if (!token) {
-    return res.status(401).json('No token provided');
+    return res.status(401).json({ message: "Not authenticated. No token provided." });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as DecodedToken;
     req.user = decoded;
-     /*res.json({
-      messages:req.user
-    })*/
     next();
   } catch (err) {
-    res.status(403).json('Token is invalid or expired');
+    res.status(403).json({ message: "Token is invalid or expired" });
   }
 };
 
