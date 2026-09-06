@@ -39,9 +39,9 @@ export default function Register() {
       const data = response.data;
       // If successful, redirect to login
 
-      if (data.accessToken){
+      if (data.user){
 
-        login(data.user, data.accessToken, data.refreshToken);
+        login(data.user);
           
         navigate(data.user.role === "teacher" ? "/dashboard/teacher" : "/dashboard/student");
         

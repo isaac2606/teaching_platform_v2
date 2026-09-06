@@ -3,7 +3,7 @@ interface AuthContextType{
 
     user: any;
     loading:boolean;
-    login:(userData: any , accessToken:string,refreshToken?:string)=>void;
+    login:(userData: any )=>void;
     logout:()=>void;
 
 }
@@ -16,9 +16,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Check if user is already logged in by looking for token/user in localStorage
     const storedUser = localStorage.getItem("user");
-    const storedToken = localStorage.getItem("accessToken");
-
-    if (storedUser && storedToken) {
+    
+    
+    if (storedUser) {
       try {
         setUser(JSON.parse(storedUser));
       } catch (e) {
@@ -28,20 +28,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(false);
   }, []);
 
-  const login = (userData: any, accessToken: string, refreshToken?: string) => {
+  const login = (userData: any) => {
     setUser(userData);
     localStorage.setItem("user", JSON.stringify(userData));
-    localStorage.setItem("accessToken", accessToken);
-    if (refreshToken) {
-      localStorage.setItem("refreshToken", refreshToken);
-    }
+    
+   
   };
 
   const logout = () => {
     setUser(null);
     localStorage.removeItem("user");
-    localStorage.removeItem("accessToken");
-    localStorage.removeItem("refreshToken");
+    
   };
 
   return (

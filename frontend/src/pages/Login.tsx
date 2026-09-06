@@ -36,9 +36,9 @@ export default function Login() {
       const response = await api.post("/auth/login", formData);
       const data = response.data;
       
-      if (data.accessToken) {
+      if (data.user) {
         // Use the V2 AuthContext login function
-        login(data.user, data.accessToken, data.refreshToken);
+        login(data.user);
         
         const finalRedirect = location.state?.from || (data.user.role === "teacher" ? "/dashboard/teacher" : "/dashboard/student");
         navigate(finalRedirect)
