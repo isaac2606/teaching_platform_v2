@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 const app = express();
 
+import cookieParser from "cookie-parser";
 import http from "http";
 import { Server } from "socket.io";
 const server = http.createServer(app);
@@ -41,6 +42,7 @@ mongoose
 
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 app.use(helmet({
   crossOriginResourcePolicy: false,
 }));

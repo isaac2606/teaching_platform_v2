@@ -62,17 +62,29 @@ const login = async (req: Request, res: Response)=>{
                 userId : user._id,
 
             },
-            REFRESH_TOKEN_SECRET
+            REFRESH_TOKEN_SECRET,
+            {expiresIn:"7d"}
         );
         user.refreshToken = refreshToken;
         await user.save();
         
         const {password,...userWithoutPassword} = user.toObject();
 
+
+        res.cookie("accessToken",accessToken,{
+            httpOnly:true,
+            secure:process.env.NODE_ENV ==="production",
+            sameSite:"lax",
+            maxAge:15*60*1000
+        })
+         res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        });
         res.status(200).json({
             message:"loggin succesful",
-            accessToken:accessToken,
-            refreshToken:refreshToken,
             user:userWithoutPassword,
             
         })
