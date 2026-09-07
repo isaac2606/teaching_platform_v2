@@ -3,6 +3,7 @@ import Hub from "../models/Hub";
 import User from "../models/User";
 import Class from "../models/Class";
 import crypto from "crypto";
+import Membership from "../models/Membership";
 
 const createHub = async (req: Request, res: Response) => {
   try {
@@ -13,7 +14,12 @@ const createHub = async (req: Request, res: Response) => {
       inviteToken:inviteToken
     });
     const savedHub = await hub.save();
-
+    const membership = new Membership({
+      hub:savedHub._id,
+      user:req.user.userId,
+      role:"owner"
+    })
+    const savedMembership = await membership.save();
     await User.findByIdAndUpdate({ _id: req.user.userId }, { $push: { hubs: savedHub._id } });
     res.status(201).json(savedHub);
   } catch (err) {
