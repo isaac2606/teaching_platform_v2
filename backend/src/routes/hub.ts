@@ -20,8 +20,9 @@ import { createHub,
   toggleChannelLock
  } from "../controllers/hubController";
 import { verify  } from "jsonwebtoken";
+import permit from "../middleware/requireGlobalRole";
 
-router.post("/", verifyToken, authorize("owner"), createHub);
+router.post("/", verifyToken,permit("owner"), createHub);
 
 router.put("/:id/leave", verifyToken, authorize("student"), leaveHub);
 

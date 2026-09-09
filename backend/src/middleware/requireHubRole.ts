@@ -4,6 +4,7 @@ import Membership from "../models/Membership";
 
 const authorize = (...roles:string[])=>{
     return async (req:Request , res:Response, next:NextFunction)=>{
+        
         const hubId = req.params.hubId || req.params.id || req.body.hubId;
         if(hubId && req.user.userId){
             try{
