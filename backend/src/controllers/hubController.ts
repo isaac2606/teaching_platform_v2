@@ -56,6 +56,10 @@ const leaveHub = async (req: Request, res: Response) => {
             $pullAll: { classes: classIds } 
         }
       );
+      const membership = await Membership.deleteOne({
+        user:req.user.userId,
+        hub:hub._id
+      })
       res.status(200).json({ message: "Student left the hub and its groups" });
     } else {
       res.status(200).json({ message: "Student was not in the hub" });
@@ -98,6 +102,10 @@ const kickStudent = async(req: Request, res: Response)=>{
             $pullAll: { classes: classIds }
         }
       );
+      const membership = await Membership.deleteOne({
+        user:req.params.studentId ,
+        hub:hub._id
+      })
       res.status(200).json({ message: "Student kicked from the hub and all its groups" });
     } else {
       res.status(200).json({ message: "Student was not in the hub" });
@@ -203,7 +211,12 @@ const joinHubByInviteToken = async (req: Request, res: Response) => {
                     $push: { classes: group._id }
                 }
             );
-
+            const membership = new Membership({
+              hub:group.hub._id,
+              user:req.user.userId,
+              role:"student"
+            })
+            const savedMembership = await membership.save();
             res.status(200).json({ message: "Student joined the Class successfully" });
           } else {
             res.status(200).json({ message: "Student already in the Class" });
@@ -224,6 +237,12 @@ const joinHubByInviteToken = async (req: Request, res: Response) => {
                       $addToSet: { hubs: hub._id },
                   }
               );
+              const membership = new Membership({
+              hub:hub._id,
+              user:req.user.userId,
+              role:"student"
+            })
+            const savedMembership = await membership.save();
 
               res.status(200).json({ message: "Student joined the Hub successfully" });
           } else {
