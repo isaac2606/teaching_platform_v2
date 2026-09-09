@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router();
 import verifyToken from "../middleware/verifyToken";
-import authorize from "../middleware/roleMiddleware";
+import authorize from "../middleware/requireHubRole";
 
 import { createHub,
   leaveHub,
@@ -21,31 +21,31 @@ import { createHub,
  } from "../controllers/hubController";
 import { verify  } from "jsonwebtoken";
 
-router.post("/", verifyToken, authorize("teacher"), createHub);
+router.post("/", verifyToken, authorize("owner"), createHub);
 
 router.put("/:id/leave", verifyToken, authorize("student"), leaveHub);
 
-router.put("/:id/kick/:studentId", verifyToken, authorize("teacher"), kickStudent);
+router.put("/:id/kick/:studentId", verifyToken, authorize("owner","co_teacher"), kickStudent);
 
-router.put("/:hubId/lock-channel", verifyToken, authorize("teacher"), toggleChannelLock);
+router.put("/:hubId/lock-channel", verifyToken, authorize("owner"), toggleChannelLock);
 
 router.get("/getHubs", verifyToken, getAllHubs);
 
 router.get("/fix-index", fixIndex);
 
-router.get("/stats", verifyToken, authorize("teacher"), getDashboardStats);
+router.get("/stats", verifyToken, authorize("owner"), getDashboardStats);
 
 router.get("/my-hubs", verifyToken, getMyHubs);
 
-router.get("/getStudents/:hubId",verifyToken,authorize("teacher"),getStudents)
+router.get("/getStudents/:hubId",verifyToken,authorize("owner"),getStudents)
 
 router.get("/invite/:inviteToken", verifyToken, getHubByInviteToken);
 
 router.get("/:id", verifyToken, getHubById);
 
-router.put("/:id", verifyToken, authorize("teacher"), updateHub);
+router.put("/:id", verifyToken, authorize("owner"), updateHub);
 
-router.delete("/:id", verifyToken, authorize("teacher"), deleteHub);
+router.delete("/:id", verifyToken, authorize("owner"), deleteHub);
 
 router.get("/:hubId",verifyToken, getChatHistory)
 
