@@ -2,7 +2,6 @@ import express from "express";
 const router = express.Router();
 
 import verifyToken from "../middleware/verifyToken";
-import authorize from "../middleware/roleMiddleware";
 
 import { getPrivateChatHistory,
     getPublicChatHistory

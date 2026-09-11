@@ -3,7 +3,7 @@ const router = express.Router();
 import verifyToken from "../middleware/verifyToken";
 import { getAllUsers, getUserProfile ,getContact ,addNewContact,getAllTeachers,getAllStudents } from "../controllers/userController";
 import { verify  } from "jsonwebtoken";
-import roleMiddleware from "../middleware/roleMiddleware";
+import permit from "../middleware/requireGlobalRole"
 
 import User from "../models/User";
 
@@ -22,9 +22,9 @@ router.get("/getContact",verifyToken,getContact);
 router.get("/:id", verifyToken,getUserProfile);
 router.post("/addContact",verifyToken,addNewContact);
 
-router.get("/getAllStudents",verifyToken,roleMiddleware("teacher"),getAllStudents);
+router.get("/getAllStudents",verifyToken,permit("teacher"),getAllStudents);
 
-router.get("/getAllTeachers",verifyToken,roleMiddleware("student"),getAllTeachers);
+router.get("/getAllTeachers",verifyToken,permit("student"),getAllTeachers);
 
 
 

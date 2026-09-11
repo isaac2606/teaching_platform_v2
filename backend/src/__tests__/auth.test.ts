@@ -39,6 +39,7 @@ describe("Auth Routes Integration Tests", () => {
         role: "student"
       });
 
+    console.log("TEST 1 BODY:", res.body);
     expect(res.status).toBe(400); // Expecting Bad Request
     expect(res.body.message).toBe("Validation failed");
   });
@@ -53,6 +54,7 @@ describe("Auth Routes Integration Tests", () => {
           role: "teacher"
       });
 
+    console.log("TEST 2 BODY:", res.body);
     expect(res.status).toBe(200);
     expect(res.body.message).toBe("User registered successfully");
 

@@ -2,7 +2,7 @@ import express from "express";
 const router = express.Router();
 
 import verifyToken from "../middleware/verifyToken";
-import roleMiddleware from "../middleware/roleMiddleware";
+import roleMiddleware from "../middleware/requireGlobalRole";
 import upload from "../middleware/upload";
 
 import { createClass,
