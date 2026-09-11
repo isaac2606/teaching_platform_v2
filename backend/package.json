@@ -8,10 +8,11 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --exec ts-node src/index.ts",
+    
+    "build": "tsc",
     "start": "ts-node src/index.ts",
-    "build": "tsc"
+    "dev": "nodemon src/index.ts",
+    "test": "vitest run"  
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -36,7 +37,11 @@
     "@types/morgan": "^1.9.10",
     "@types/multer": "^2.2.0",
     "@types/node": "^26.1.0",
+    "@types/supertest": "^7.2.1",
+    "mongodb-memory-server": "^11.2.0",
+    "supertest": "^7.2.2",
     "ts-node": "^10.9.2",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^5.0.0"
   }
 }

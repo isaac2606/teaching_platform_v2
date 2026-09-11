@@ -31,14 +31,12 @@ import messageRoute from "./routes/message";
 import uploadRoute from "./routes/upload";
 import assignmentRoute from "./routes/assignment";
 
-mongoose
+if (process.env.NODE_ENV !== "test") {
+  mongoose
     .connect(process.env.MONGO_URL!)
-    .then(()=>{
-        console.log("connected to mongo");
-    })
-    .catch((err)=>{
-        console.log(err);
-    });
+    .then(() => console.log("connected to mongo"))
+    .catch((err) => console.log(err));
+}
 
 app.use(cors({
     origin:"http://localhost:5173",
@@ -133,7 +131,10 @@ io.on("connection", (socket)=>{
       }
   })
 })
+if (process.env.NODE_ENV !== "test") {
+  server.listen(3000, () => {
+      console.log("backend server is running")
+  });
+}
 
-server.listen(3000,()=>{
-    console.log("backend server is running")
-})
+export { app };
