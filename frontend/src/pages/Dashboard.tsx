@@ -1,10 +1,12 @@
 // @ts-nocheck
 import { useState } from "react";
+
 import { Link, useLoaderData } from "react-router-dom";
 import api from "../services/api";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import HubCard from "../features/hubs/HubCard";
+import { useQueries, useQuery,useMutation, QueryClient } from "@tanstack/react-query";
 
 export default function Dashboard() {
   const data = useLoaderData();
@@ -18,7 +20,26 @@ export default function Dashboard() {
   const [localHubs, setLocalHubs] = useState(hubs);
   const [newHubTitle, setNewHubTitle] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const {data:hubs =[], isLoading} = useQuery({
+    queryKey:["hubs"],
+    queryFn:async () =>{
+        const res = await api.get ("/hub/my-hubs")
+        return res.data;
+    }
+  })
 
+
+  const mutation = useMutation({
+    mutationFn:async() =>{
+        const res = await api.post("/hub,",{title: newHubTitle})
+        
+        return res.data
+    },
+    onSuccess:()=>{
+        queryClient.invalidateQueries({qureyKey:['hubs']})
+        setNewHubTitle("");
+    }
+  })
   const handleCreateHub = async () => {
       if (!newHubTitle.trim()) return;
       setIsCreating(true);

@@ -17,6 +17,8 @@ const logout= async (req: Request, res: Response)=>{
     const userId = req.user.userId;
 
     await User.findByIdAndUpdate(userId,{refreshToken:null});
+    res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
 
     res.status(200).json({message:"logged out succesfully"})
     }catch (err) {
@@ -141,16 +143,25 @@ const register = async (req: Request, res: Response)=> {
 
         user.refreshToken = refreshToken;
         await user.save();
+        const {password,...userWithoutPassword} = user.toObject();
 
+        res.cookie("accessToken",accessToken,{
+            httpOnly:true,
+            secure:process.env.NODE_ENV ==="production",
+            sameSite:"lax",
+            maxAge:15*60*1000
+        })
+         res.cookie("refreshToken", refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        });
         res.status(200).json({
             message:"user registered succesfully",
-            accessToken:accessToken,
-            refreshToken:refreshToken,
+            
             user:{
-                _id:user._id,
-                username:user.username,
-                email:user.email,
-                role:user.role
+                userWithoutPassword
             }
         })
     }catch (err) {
@@ -193,10 +204,15 @@ const refresh = async (req: Request, res: Response) => {
             );
             user.refreshToken = newRefreshToken;
             await user.save();
+            res.cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",
+                maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        });
 
             res.status(200).json({
-                accessToken: newAccessToken,
-                refreshToken: newRefreshToken
+                
             });
         });
     } catch (err) {

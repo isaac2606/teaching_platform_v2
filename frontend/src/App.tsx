@@ -7,6 +7,7 @@ import ProtectedRoute from "./routes/ProtectedRoute";
 import { dashboardLoader , HubLoader,AllStudentsLoader,StudentsLoader} from "./loaders";
 import { ThemeProvider } from "./context/ThemeContext";
 import { SocketProvider } from "./context/SocketContext";
+import {QueryClient,QureyClientProvider} from "@tanstack/react-query"
 import './App.css';
 // TeacherFeed has been refactored into pages/GroupFeed.jsx and lazy loaded below
 
@@ -122,15 +123,18 @@ const router = createBrowserRouter([
     element: <ProtectedRoute><Suspense fallback={<Loader />}><JoinHub /></Suspense></ProtectedRoute>
   }
 ]);
+const queryClient= new QueryClient();
 
 export default function App() {
   return (
     <AuthProvider>
-      <SocketProvider>
-        <ThemeProvider>
-          <RouterProvider router={router} />
-        </ThemeProvider>
-      </SocketProvider>
+      <QureyClientProvider>
+        <SocketProvider>
+          <ThemeProvider>
+            <RouterProvider router={router} />
+          </ThemeProvider>
+        </SocketProvider>
+      </QureyClientProvider>
     </AuthProvider>
   );
 }

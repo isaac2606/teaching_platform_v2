@@ -1,4 +1,5 @@
 import express from "express";
+import "dotenv/config";
 import cors from "cors";
 const app = express();
 
@@ -16,11 +17,9 @@ import Message from "./models/Message";
 import User from "./models/User";
 import Hub from "./models/Hub";
 import mongoose from "mongoose";
-import dotenv from "dotenv";
 import helmet from "helmet";
 import morgan from "morgan";
 import path from "path";
-dotenv.config();
 
 import authRoute from "./routes/auth";
 import userRoute from "./routes/user";

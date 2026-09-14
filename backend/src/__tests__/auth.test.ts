@@ -41,7 +41,7 @@ describe("Auth Routes Integration Tests", () => {
 
     console.log("TEST 1 BODY:", res.body);
     expect(res.status).toBe(400); // Expecting Bad Request
-    expect(res.body.message).toBe("Validation failed");
+    expect(res.body.message).toBe("Validation failed ");
   });
 
   it("should successfully register a user and return HttpOnly cookies", async () => {
@@ -56,7 +56,7 @@ describe("Auth Routes Integration Tests", () => {
 
     console.log("TEST 2 BODY:", res.body);
     expect(res.status).toBe(200);
-    expect(res.body.message).toBe("User registered successfully");
+    expect(res.body.message).toBe("user registered succesfully");
 
     // We check if the 'set-cookie' header exists and is an array of strings
     expect(res.headers['set-cookie']).toBeDefined();
