@@ -6,63 +6,43 @@ import api from "../services/api";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import HubCard from "../features/hubs/HubCard";
-import { useQueries, useQuery,useMutation, QueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function Dashboard() {
   const data = useLoaderData();
+  const queryClient = useQueryClient();
   
-  // React Router v7 Loader Data
-  const hubs = data?.hubs || [];
-  //const stats = data?.stats || { totalStudents: 0, activeHubs: 0, outstandingDues: 0, sessionsToday: 0 };
   const isTeacher = data?.role === "teacher";
 
-  // Local state for fast UI updates (though we should eventually move to React 19 Actions)
-  const [localHubs, setLocalHubs] = useState(hubs);
   const [newHubTitle, setNewHubTitle] = useState("");
-  const [isCreating, setIsCreating] = useState(false);
-  const {data:hubs =[], isLoading} = useQuery({
-    queryKey:["hubs"],
-    queryFn:async () =>{
-        const res = await api.get ("/hub/my-hubs")
+
+  const { data: hubs = [], isLoading } = useQuery({
+    queryKey: ["hubs"],
+    queryFn: async () => {
+        const res = await api.get("/hub/my-hubs");
         return res.data;
     }
-  })
+  });
 
-
-  const mutation = useMutation({
-    mutationFn:async() =>{
-        const res = await api.post("/hub,",{title: newHubTitle})
-        
-        return res.data
+  const createHubMutation = useMutation({
+    mutationFn: async (titleToCreate: string) => {
+        const res = await api.post("/hub", { title: titleToCreate });
+        return res.data;
     },
-    onSuccess:()=>{
-        queryClient.invalidateQueries({qureyKey:['hubs']})
+    onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['hubs'] });
         setNewHubTitle("");
     }
-  })
-  const handleCreateHub = async () => {
-      if (!newHubTitle.trim()) return;
-      setIsCreating(true);
-      try {
-          const response = await api.post("/hub", { title: newHubTitle });
-          
-          setLocalHubs([...localHubs, response.data]);
-          setNewHubTitle("");
-      } catch (err) {
-          console.error("Failed to create hub", err);
-      } finally {
-          setIsCreating(false);
-      }
-  };
+  });
 
-  const handleDeleteHub = async (id) => {
-      try {
-          await api.delete(`/hub/${id}`);
-          setLocalHubs(localHubs.filter(h => h._id !== id));
-      } catch (err) {
-          console.error("Failed to delete hub", err);
-      }
-  };
+  const deleteHubMutation = useMutation({
+    mutationFn: async (id: string) => {
+        await api.delete(`/hub/${id}`);
+    },
+    onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['hubs'] });
+    }
+  });
 
   return (
     <div className="p-8 min-h-screen text-text-primary font-sans flex-1 bg-bg-base transition-colors duration-300">
@@ -87,10 +67,10 @@ export default function Dashboard() {
                     
                     <Button 
                         variant="primary"
-                        onClick={handleCreateHub}
-                        disabled={isCreating}
+                        onClick={() => createHubMutation.mutate(newHubTitle)}
+                        disabled={createHubMutation.isPending}
                     > 
-                        {isCreating ? "Creating..." : "Create Hub"}
+                        {createHubMutation.isPending ? "Creating..." : "Create Hub"}
                     </Button>
                 </div>
             )}
@@ -98,19 +78,23 @@ export default function Dashboard() {
 
         {/* HUB MATRIX */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-            {localHubs.map((hub) => (
+            {hubs.map((hub) => (
                 <HubCard 
                     key={hub._id} 
                     hub={hub} 
-                    onDelete={handleDeleteHub}
+                    onDelete={(id) => deleteHubMutation.mutate(id)}
                 />
             ))}
 
-            {localHubs.length === 0 && (
+            {hubs.length === 0 && !isLoading && (
                 <div className="col-span-full flex flex-col items-center justify-center text-text-secondary py-16 bg-bg-surface border border-border-subtle rounded-xl shadow-sm">
                     <span className="text-4xl mb-4 opacity-50">🏢</span>
                     <p>No Hubs found. Create your first subject category!</p>
                 </div>
+            )}
+            
+            {isLoading && (
+                <div className="col-span-full text-center">Loading hubs...</div>
             )}
         </div>
         
