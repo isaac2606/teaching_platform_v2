@@ -2,93 +2,78 @@
 import { useRouteLoaderData } from "react-router-dom";
 import { useState } from "react";
 import api from  "../../services/api"
-import { useContext , useEffect } from "react";
+import { useContext } from "react";
 import { AuthContext  } from "../../context/AuthContext";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function FeedTab(){
 
     
     const hub = useRouteLoaderData("hub-workspace");
     
-    const [feed, setFeed] = useState<any[]>([]);
     const [newTitle,setNewTitle]= useState("");
     const [newDesc,setNewDesc] = useState("");
     const [file,setFile]= useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [hubClasses, setHubClasses] = useState<any[]>([]);
     const [selectedClasses, setSelectedClasses] = useState<string[]>([]);
 
     const {user} = useContext(AuthContext)
     
-    useEffect(() => {
-        const getFeed = async () => {
-            try {
-                const response = await api.get(`/announcement/hub/${hub._id}`);
-                const array = response.data.reverse();
-                setFeed(array);
-            } catch (err) {
-                console.error(err.message);
-            }
-        };
-        const getClasses = async () => {
-            try {
-                const response = await api.get(`/class/getClasses/${hub._id}`);
-                setHubClasses(response.data);
-            } catch (err) {
-                console.error("Failed to fetch classes for feed target", err);
-            }
-        };
-        
-        getFeed();
-        if (user?.role === "teacher") {
-            getClasses();
+    const { data: feed = [] } = useQuery({
+        queryKey: ["announcements", hub._id],
+        queryFn: async () => {
+            const response = await api.get(`/announcement/hub/${hub._id}`);
+            return response.data.reverse();
         }
-    }, [hub._id, user?.role]);
+    });
 
-    const [isUploading, setIsUploading] = useState(false);
+    const { data: hubClasses = [] } = useQuery({
+        queryKey: ["classes", hub._id],
+        queryFn: async () => {
+            const response = await api.get(`/class/getClasses/${hub._id}`);
+            return response.data;
+        },
+        enabled: user?.role === "teacher" // Only fetch if teacher!
+    });
 
-    const handlePostAnnouncement = async (e)=>{
+    const queryClient = useQueryClient();
+
+    const postAnnouncementMutation = useMutation({
+        mutationFn: async (formData) => {
+            const response = await api.post("/announcement/add", formData, {
+                headers: { "Content-Type": "multipart/form-data" }
+            });
+            return response.data;
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["announcements", hub._id] });
+            setNewTitle("");
+            setNewDesc("");
+            setFile(null);
+            setSelectedClasses([]);
+            setIsModalOpen(false);
+        }
+    });
+
+    const handlePostAnnouncement = (e) => {
         e.preventDefault();
-        if(!newTitle){
-        return;
-        }
-        
-        setIsUploading(true);
-        const formData = new FormData();
+        if(!newTitle) return;
 
-        formData.append("title",newTitle)
-        formData.append("description",newDesc)
+        const formData = new FormData();
+        formData.append("title", newTitle);
+        formData.append("description", newDesc);
         formData.append("hubIds", hub._id);
         
         if (selectedClasses.length > 0) {
             formData.append("targetClasses", JSON.stringify(selectedClasses));
         }
 
-        if(file){
-        formData.append("image",file);
-
+        if (file) {
+            formData.append("image", file);
         }
-        try{
-        const response = await api.post("/announcement/add",formData,{
-            headers:{
-            "Content-Type":"multipart/form-data"
-            }
-        });
 
-        setNewTitle("");
-        setNewDesc("");
-        setFile(null);
-        setSelectedClasses([]);
-        setIsModalOpen(false);
-
-        
-        setFeed([response.data.announcement, ...feed])
-        }catch(err){
-        console.error(err.message)
-        } finally {
-        setIsUploading(false);
-        }
-    }
+        postAnnouncementMutation.mutate(formData);
+    };
     return (
         <div className="w-full lg:w-2/3 flex flex-col gap-6">
             <div className="flex items-center gap-3 relative z-10 w-full md:w-auto">
@@ -214,10 +199,10 @@ export default function FeedTab(){
                             />
                             <button
                             type="submit"
-                            disabled={isUploading}
-                            className={`bg-brand-primary text-white px-8 py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(var(--brand-primary),0.3)] ${isUploading ? 'opacity-50 cursor-not-allowed' : 'hover:bg-brand-secondary hover:shadow-[0_0_25px_rgba(var(--brand-primary),0.5)] hover:-translate-y-0.5'}`}
+                            disabled={postAnnouncementMutation.isPending}
+                            className={`bg-brand-primary text-white px-8 py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(var(--brand-primary),0.3)] ${postAnnouncementMutation.isPending ? 'opacity-50 cursor-not-allowed' : 'hover:bg-brand-secondary hover:shadow-[0_0_25px_rgba(var(--brand-primary),0.5)] hover:-translate-y-0.5'}`}
                             >
-                            {isUploading ? "Uploading..." : "Post"}
+                            {postAnnouncementMutation.isPending ? "Uploading..." : "Post"}
                             </button>
                         </div>
                         </form>

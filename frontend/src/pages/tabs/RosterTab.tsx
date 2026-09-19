@@ -2,50 +2,84 @@
 import { AuthContext } from "../../context/AuthContext"
 import { useContext , useState, useEffect } from "react"
 import api from  "../../services/api"
-import { useRouteLoaderData } from "react-router-dom";
-import { useLoaderData } from "react-router-dom";
+import { useRouteLoaderData, useLoaderData } from "react-router-dom";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import StudentCard from "../../features/students/StudentCard";
+
 export default function RosterTab(){
     const { user } = useContext(AuthContext);
     const hub = useRouteLoaderData("hub-workspace");
     const loaderData = useLoaderData();
+    const queryClient = useQueryClient();
     
-    const [students, setStudents] = useState(loaderData || []);
     const [isAttendanceModalOpen, setIsAttendanceModalOpen] = useState(false);
-    const [hubClasses, setHubClasses] = useState([]);
     const [selectedClassId, setSelectedClassId] = useState("");
     const [attendanceRecord, setAttendanceRecord] = useState({}); // studentId -> status ("present" | "absent")
-    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const { data: students = [] } = useQuery({
+        queryKey: ["students", hub._id],
+        queryFn: async () => {
+            const res = await api.get(`/hub/getStudents/${hub._id}`);
+            return res.data;
+        },
+        initialData: loaderData || []
+    });
+
+    const { data: hubClasses = [] } = useQuery({
+        queryKey: ["classes", hub._id],
+        queryFn: async () => {
+            const res = await api.get(`/class/getClasses/${hub._id}`);
+            return res.data;
+        },
+        enabled: isAttendanceModalOpen && user?.role === "teacher"
+    });
 
     useEffect(() => {
-        if (isAttendanceModalOpen && user?.role === "teacher") {
-            const fetchClasses = async () => {
-                try {
-                    const res = await api.get(`/class/getClasses/${hub._id}`);
-                    setHubClasses(res.data);
-                    if (res.data.length > 0) setSelectedClassId(res.data[0]._id);
-                } catch (err) {
-                    console.error("Failed to load classes for attendance", err);
-                }
-            };
-            fetchClasses();
+        if (hubClasses.length > 0 && !selectedClassId) {
+            setSelectedClassId(hubClasses[0]._id);
+        }
+    }, [hubClasses, selectedClassId]);
 
-            // Initialize all as present
+    useEffect(() => {
+        if (isAttendanceModalOpen && students) {
             const initialRecord = {};
             students.forEach(s => initialRecord[s._id] = "present");
             setAttendanceRecord(initialRecord);
         }
-    }, [isAttendanceModalOpen, hub._id, user?.role, students]);
+    }, [isAttendanceModalOpen, students]);
 
-    const handleKickStudent = async (studentId)=>{
-        if(!window.confirm("Are you sure you want to remove this student?")) return;
-        try{
-            await api.put(`/hub/${hub._id}/kick/${studentId}`)
-            setStudents(prev => prev.filter(s => s._id !== studentId));
-        }catch(err){
-            console.error("Error with kicking the student ", err)
+    const kickMutation = useMutation({
+        mutationFn: async (studentId) => {
+            await api.put(`/hub/${hub._id}/kick/${studentId}`);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["students", hub._id] });
+        },
+        onError: (err) => {
+            console.error("Error with kicking the student ", err);
             alert(err.response?.data?.message || "Failed to remove student");
         }
+    });
+
+    const attendanceMutation = useMutation({
+        mutationFn: async (data) => {
+            await api.post(`/class/${data.selectedClassId}/attendance`, {
+                records: data.attendanceRecord
+            });
+        },
+        onSuccess: () => {
+            setIsAttendanceModalOpen(false);
+            alert("Attendance recorded successfully!");
+        },
+        onError: (err) => {
+            console.error("Failed to record attendance", err);
+            alert(err.response?.data?.message || "Failed to record attendance");
+        }
+    });
+
+    const handleKickStudent = (studentId)=>{
+        if(!window.confirm("Are you sure you want to remove this student?")) return;
+        kickMutation.mutate(studentId);
     };
 
     const handleToggleAttendance = (studentId) => {
@@ -55,23 +89,10 @@ export default function RosterTab(){
         }));
     };
 
-    const submitAttendance = async (e) => {
+    const submitAttendance = (e) => {
         e.preventDefault();
         if (!selectedClassId) return alert("Please select a class session first.");
-        
-        setIsSubmitting(true);
-        try {
-            await api.post(`/class/${selectedClassId}/attendance`, {
-                records: attendanceRecord
-            });
-            setIsAttendanceModalOpen(false);
-            alert("Attendance recorded successfully!");
-        } catch (err) {
-            console.error("Failed to record attendance", err);
-            alert(err.response?.data?.message || "Failed to record attendance");
-        } finally {
-            setIsSubmitting(false);
-        }
+        attendanceMutation.mutate({ selectedClassId, attendanceRecord });
     };
 
     return (
@@ -121,9 +142,10 @@ export default function RosterTab(){
                                             <td className="p-4 text-right">
                                                 <button 
                                                     onClick={() => handleKickStudent(student._id)}
-                                                    className="text-red-500 hover:text-white hover:bg-red-500 px-3 py-1 rounded-md text-xs font-bold transition-colors border border-red-500/30"
+                                                    disabled={kickMutation.isPending}
+                                                    className="text-red-500 hover:text-white hover:bg-red-500 px-3 py-1 rounded-md text-xs font-bold transition-colors border border-red-500/30 disabled:opacity-50"
                                                 >
-                                                    Kick
+                                                    {kickMutation.isPending && kickMutation.variables === student._id ? "Kicking..." : "Kick"}
                                                 </button>
                                             </td>
                                         )}
@@ -196,10 +218,10 @@ export default function RosterTab(){
                             <div className="flex justify-end mt-2">
                                 <button
                                     type="submit"
-                                    disabled={isSubmitting || !selectedClassId}
+                                    disabled={attendanceMutation.isPending || !selectedClassId}
                                     className="bg-brand-primary text-white px-8 py-3 rounded-xl font-bold hover:bg-brand-secondary transition-colors disabled:opacity-50"
                                 >
-                                    {isSubmitting ? "Saving..." : "Save Attendance"}
+                                    {attendanceMutation.isPending ? "Saving..." : "Save Attendance"}
                                 </button>
                             </div>
                         </form>

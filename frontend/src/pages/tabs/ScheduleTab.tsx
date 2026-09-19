@@ -1,8 +1,9 @@
 // @ts-nocheck
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
 import { useRouteLoaderData } from "react-router-dom";
-import api from "../../services/api"
+import api from "../../services/api";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 import CreateCohortModal from "../../features/cohorts/CreateCohortModal";
 import EditCohortModal from "../../features/cohorts/EditCohortModal";
@@ -12,52 +13,48 @@ export default function ScheduleTab() {
 
   const { user } = useContext(AuthContext);
   const hub = useRouteLoaderData("hub-workspace");
+  const queryClient = useQueryClient();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingGroup, setEditingGroup] = useState(null);
-  const [upcomingClasses, setUpcomingClasses] = useState<any[]>([]);
 
-  useEffect(() => {
-    const getUpcomingClasses = async () => {
-      try {
-        const response = await api.get(`/class/getClasses/${hub._id}`);
-        setUpcomingClasses(response.data);
-      } catch (err) {
-        console.error("failed to get classes", err);
-      }
-    };
+  const { data: upcomingClasses = [] } = useQuery({
+    queryKey: ["classes", hub?._id],
+    queryFn: async () => {
+      const response = await api.get(`/class/getClasses/${hub._id}`);
+      return response.data;
+    },
+    enabled: !!hub?._id
+  });
 
-    if (hub && hub._id) {
-      getUpcomingClasses();
-    }
-  }, [hub]);
-
-  const handleCohortCreated = (newCohort) => {
-    setUpcomingClasses([...upcomingClasses, newCohort]);
-  };
-
-  const handleDelete = async (classId) => {
-    try {
+  const deleteMutation = useMutation({
+    mutationFn: async (classId) => {
       await api.delete(`/class/deleteClass/${classId}`);
-      // Remove the deleted class from state
-      setUpcomingClasses((prev) => prev.filter(cls => cls._id !== classId));
-    } catch (err) {
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["classes", hub?._id] });
+    },
+    onError: (err) => {
       console.error("Failed to delete class", err);
       alert("Failed to delete the group. Please try again.");
     }
+  });
+
+  const handleCohortCreated = () => {
+    queryClient.invalidateQueries({ queryKey: ["classes", hub?._id] });
+  };
+
+  const handleDelete = (classId) => {
+    deleteMutation.mutate(classId);
   };
 
   const handleEdit = (newClass) => {
-    setUpcomingClasses((prev) => 
-        prev.map(cls => cls._id === newClass._id ? newClass : cls)
-    );
+    queryClient.invalidateQueries({ queryKey: ["classes", hub?._id] });
     setEditingGroup(null);
   };
 
   const handleUpdate = (updatedClass) => {
-    setUpcomingClasses((prev) => 
-        prev.map(cls => cls._id === updatedClass._id ? updatedClass : cls)
-    );
+    queryClient.invalidateQueries({ queryKey: ["classes", hub?._id] });
   };
 
   return (
