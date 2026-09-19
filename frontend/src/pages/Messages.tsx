@@ -5,6 +5,7 @@ import { SocketContext } from "../context/SocketContext";
 import api from "../services/api";
 import { useLocation } from "react-router-dom";
 import Button from "../components/ui/Button";
+import { useMutation } from "@tanstack/react-query";
 export default function Messages() {
     const { socket ,setUnreadCount,unreadCount} = useContext(SocketContext);
 
@@ -13,17 +14,24 @@ export default function Messages() {
     const [activeReceiver, setActiveReceiver] = useState(null);
     const [recentContacts,setRecentContacts] = useState<any[]>([])
 
-    const [messages, setMessages] = useState<any[]>([]);
     const [newMessage, setNewMessage] = useState("");
     const [newReceiver, setNewReceiver] = useState("");
     const [searchError, setSearchError] = useState("");
-    const [file,setFile]= useState(null);
+    const [file, setFile] = useState(null);
 
     const messagesEndRef = useRef(null);
-
     const location = useLocation();
     
-    
+    const queryClient = useQueryClient();
+
+    const { data: messages = [] } = useQuery({
+        queryKey: ["private-messages", activeReceiver?._id],
+        queryFn: async () => {
+            const savedMessages = await api.get(`/message/private/${activeReceiver._id}`);
+            return savedMessages.data;
+        },
+        enabled: !!activeReceiver?._id
+    });
    
 
     useEffect(()=>{
@@ -103,21 +111,10 @@ export default function Messages() {
 
 
     useEffect(() => { 
-        const getPrivateMessages = async () => {
-            if (!activeReceiver?._id) return;
-            
-            try {
-                const savedMessages = await api.get(`/message/private/${activeReceiver._id}`);
-                console.log(activeReceiver._id)
-                setMessages(savedMessages.data);
-                setTimeout(scrollToBottom, 100);
-            } catch (err) {
-                console.error("Failed to load messages", err);
-            }
-        };
-        
-        getPrivateMessages();
-    }, [activeReceiver?._id, user,socket]);
+        if (messages.length > 0) {
+            setTimeout(scrollToBottom, 100);
+        }
+    }, [messages]);
 
 
 
@@ -132,20 +129,18 @@ export default function Messages() {
                 message.receiver === activeReceiver?._id;
 
             if (belongsToCurrentChat) {
-                
-                setMessages((prev) => [...prev, message]);
+                queryClient.setQueryData(["private-messages", activeReceiver._id], (oldMessages = []) => {
+                    return [...oldMessages, message];
+                });
                 setTimeout(scrollToBottom, 50);
             }
             
-            if(!recentContacts.some(c => c._id === message.sender._id) && message.sender._id != user._id){
-               
+            if(!recentContacts.some(c => c._id === message.sender._id) && message.sender._id !== user._id){
                 await api.post("/user/addContact",{
                     newContact: message.sender._id
                 })
                 setRecentContacts(prev => [...prev, message.sender]);
             }
-           
-            
         };
 
         socket.on("receive_private_message", handleReceive);
@@ -159,7 +154,7 @@ export default function Messages() {
             socket.off("receive_private_message", handleReceive);
             socket.off("private_message_error", handleError);
         };
-    }, [socket, activeReceiver?._id, user._id,recentContacts]);
+    }, [socket, activeReceiver?._id, user._id, recentContacts, queryClient]);
 
 
     
@@ -206,40 +201,45 @@ export default function Messages() {
     const sendMessage = async (e) => {
         e.preventDefault();
 
-        if ((!newMessage.trim() &&!file) || !socket || !activeReceiver || isUploading) {
+        if ((!newMessage.trim() && !file) || !socket || !activeReceiver || isUploading) {
             return;
         }
 
         setIsUploading(true);
-        try {
-            const messageData = {
-                receiver: activeReceiver._id,
-                text: newMessage,
-                sender: user._id,
-                imageUrl:""
-            };
+        
+        const messageData = {
+            receiver: activeReceiver._id,
+            text: newMessage,
+            sender: user._id, 
+            imageUrl: ""
+        };
+        
+        if (file) {
+            const formData = new FormData();
+            formData.append("image", file);
             
-            if(file){
-                const formData = new FormData();
-                formData.append("image",file);
-                
-                const uploadRes = await api.post("/upload", formData, {
-                    headers: {
-                        "Content-Type": "multipart/form-data"
-                    }
-                });
-                
-                messageData.imageUrl = uploadRes.data.filename;
-            }
-
-            socket.emit("send_private_message", messageData);
-            setNewMessage("");
-            setFile(null);
-        } catch (error) {
-            console.error("Failed to send message", error);
-        } finally {
-            setIsUploading(false);
+            const uploadRes = await api.post("/upload", formData, {
+                headers: { "Content-Type": "multipart/form-data" }
+            });
+            messageData.imageUrl = uploadRes.data.filename;
         }
+        
+        const fakeMessage = {
+            _id: Math.random().toString(),
+            ...messageData,
+            sender: user,
+            createdAt: new Date().toISOString()
+        };
+
+        queryClient.setQueryData(["private-messages", activeReceiver._id], (oldMessages = []) => {
+            return [...oldMessages, fakeMessage];
+        });
+
+        socket.emit("send_private_message", messageData);
+        
+        setNewMessage("");
+        setFile(null);
+        setIsUploading(false);
     };
 
     return (
