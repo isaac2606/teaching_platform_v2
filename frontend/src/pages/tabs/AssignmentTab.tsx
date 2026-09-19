@@ -3,14 +3,15 @@ import { useState, useEffect, useContext } from "react";
 import { useParams } from "react-router-dom";
 import api from "../../services/api";
 import { AuthContext } from "../../context/AuthContext";
+import { useQuery, useMutation, useQueryClient, QueryClient } from "@tanstack/react-query";
 
 export default function AssignmentTab() {
   const { hubId } = useParams();
   const { user } = useContext(AuthContext);
-  
-  const [assignments, setAssignments] = useState([]);
+
+  const queryClient = useQueryClient();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
   // Form states
   const [title, setTitle] = useState("");
@@ -22,22 +23,36 @@ export default function AssignmentTab() {
 
   const isTeacher = user?.role === "teacher";
 
-  useEffect(() => {
-    const fetchAssignments = async () => {
-      try {
-        const res = await api.get(`/assignment/hub/${hubId}`);
-        setAssignments(res.data);
-      } catch (err) {
-        console.error("Failed to fetch assignments", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    if (hubId) {
-      fetchAssignments();
+  const { data: assignments = [], isLoading } = useQuery({
+    queryKey: ["assignments", hubId],
+    queryFn: async () => {
+      const res = await api.get(`/assignment/hub/${hubId}`)
+      return res.data
     }
-  }, [hubId]);
+  })
+
+  const createAssignmentMutation = useMutation({
+    mutationFn: async (formData) => {
+      const res = await api.post("/assignment/create", formData, {
+         headers: { "Content-Type": "multipart/form-data" }
+      })
+      return res.data
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['assignments', hubId] })
+
+      setIsModalOpen(false);
+      setTitle("");
+      setDescription("");
+      setDueDate("");
+      setType("assignment");
+      setTotalPoints(100);
+      setFile(null);
+    }
+  })
+
+
+
 
   const handleCreateAssignment = async (e) => {
     e.preventDefault();
@@ -55,24 +70,7 @@ export default function AssignmentTab() {
       formData.append("image", file);
     }
 
-    try {
-      const response = await api.post("/assignment/create", formData, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
-      
-      setAssignments([response.data.assignment, ...assignments]);
-      setIsModalOpen(false);
-      
-      // Reset form
-      setTitle("");
-      setDescription("");
-      setDueDate("");
-      setType("assignment");
-      setTotalPoints(100);
-      setFile(null);
-    } catch (err) {
-      console.error("Failed to create assignment", err);
-    }
+    createAssignmentMutation.mutate(formData)
   };
 
   if (isLoading) {

@@ -23,7 +23,7 @@ export default function Dashboard() {
         return res.data;
     }
   });
-
+  
   const createHubMutation = useMutation({
     mutationFn: async (titleToCreate: string) => {
         const res = await api.post("/hub", { title: titleToCreate });
