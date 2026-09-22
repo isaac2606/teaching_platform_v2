@@ -2,12 +2,16 @@
 import { NavLink } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
+
 import {useSocket} from "../context/SocketContext"
+import { useUIStore } from '../store/ThemeStore'
+
+import { useThemeStore } from '../store/themeStore';
 
 export default function Sidebar() {
   const { user, logout } = useContext(AuthContext);
-  const { isDarkMode, toggleTheme } = useTheme();
+  const isDarkMode = useThemeStore((state) => state.isDarkMode);
+const toggleTheme = useThemeStore((state) => state.toggleTheme);  
   const {unreadCount} = useSocket();
 
   const navItems = [

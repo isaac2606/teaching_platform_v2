@@ -240,7 +240,7 @@ export default function Messages() {
         setNewMessage("");
         setFile(null);
         setIsUploading(false);
-    };
+f    };
 
     return (
         <div className="flex h-screen bg-bg-surface overflow-hidden p-4 gap-4">

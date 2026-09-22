@@ -130,9 +130,9 @@ export default function App() {
     <AuthProvider>
       <QureyClientProvider>
         <SocketProvider>
-          <ThemeProvider>
+          
             <RouterProvider router={router} />
-          </ThemeProvider>
+          
         </SocketProvider>
       </QureyClientProvider>
     </AuthProvider>
