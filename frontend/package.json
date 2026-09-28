@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.9.1",
     "@tailwindcss/vite": "^4.3.0",
     "@tanstack/react-query": "^5.102.8",
     "axios": "^1.17.0",
@@ -18,9 +19,11 @@
     "multer-storage-cloudinary": "^4.0.0",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
+    "react-hook-form": "^7.89.0",
     "react-router-dom": "^7.16.0",
     "socket.io-client": "^4.8.3",
     "styled-components": "^6.4.2",
+    "zod": "^3.25.76",
     "zustand": "^5.0.15"
   },
   "devDependencies": {
