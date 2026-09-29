@@ -1,9 +1,22 @@
 // @ts-nocheck
-import { useState, useEffect, useContext } from "react";
+import { useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import api from "../../services/api";
 import { AuthContext } from "../../context/AuthContext";
-import { useQuery, useMutation, useQueryClient, QueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const assignmentSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string().optional(),
+  dueDate: z.string().min(1, "Due date is required"),
+  type: z.enum(["assignment", "homework", "quiz", "project", "exam"]),
+  totalPoints: z.coerce.number().min(1, "Points must be at least 1"),
+});
+
+type AssignmentFormData = z.infer<typeof assignmentSchema>;
 
 export default function AssignmentTab() {
   const { hubId } = useParams();
@@ -12,16 +25,17 @@ export default function AssignmentTab() {
   const queryClient = useQueryClient();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // Form states
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const [type, setType] = useState("assignment");
-  const [totalPoints, setTotalPoints] = useState(100);
   const [file, setFile] = useState(null);
 
   const isTeacher = user?.role === "teacher";
+
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<AssignmentFormData>({
+    resolver: zodResolver(assignmentSchema),
+    defaultValues: {
+      type: "assignment",
+      totalPoints: 100,
+    }
+  });
 
   const { data: assignments = [], isLoading } = useQuery({
     queryKey: ["assignments", hubId],
@@ -40,30 +54,19 @@ export default function AssignmentTab() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['assignments', hubId] })
-
       setIsModalOpen(false);
-      setTitle("");
-      setDescription("");
-      setDueDate("");
-      setType("assignment");
-      setTotalPoints(100);
+      reset(); // Clears the form back to defaultValues!
       setFile(null);
     }
   })
 
-
-
-
-  const handleCreateAssignment = async (e) => {
-    e.preventDefault();
-    if (!title || !dueDate) return;
-
+  const handleCreateAssignment = (data: AssignmentFormData) => {
     const formData = new FormData();
-    formData.append("title", title);
-    formData.append("description", description);
-    formData.append("dueDate", dueDate);
-    formData.append("type", type);
-    formData.append("totalPoints", totalPoints);
+    formData.append("title", data.title);
+    if (data.description) formData.append("description", data.description);
+    formData.append("dueDate", data.dueDate);
+    formData.append("type", data.type);
+    formData.append("totalPoints", data.totalPoints.toString());
     formData.append("hubId", hubId);
     
     if (file) {
@@ -152,24 +155,22 @@ export default function AssignmentTab() {
             </button>
             <h2 className="text-2xl font-bold text-text-primary mb-6">Create New Task</h2>
             
-            <form onSubmit={handleCreateAssignment} className="flex flex-col gap-4">
+            <form onSubmit={handleSubmit(handleCreateAssignment)} className="flex flex-col gap-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2">
                   <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1 block">Title</label>
                   <input
                     type="text"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    {...register("title")}
                     className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-primary transition-all"
-                    required
                   />
+                  {errors.title && <p className="text-red-400 text-xs mt-1">{errors.title.message}</p>}
                 </div>
                 
                 <div className="col-span-2">
                   <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1 block">Description / Instructions</label>
                   <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    {...register("description")}
                     className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white min-h-[100px] focus:outline-none focus:border-brand-primary transition-all resize-none"
                   />
                 </div>
@@ -178,19 +179,17 @@ export default function AssignmentTab() {
                   <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1 block">Due Date</label>
                   <input
                     type="date"
-                    value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
+                    {...register("dueDate")}
                     className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-primary transition-all cursor-pointer"
                     style={{ colorScheme: 'dark' }}
-                    required
                   />
+                  {errors.dueDate && <p className="text-red-400 text-xs mt-1">{errors.dueDate.message}</p>}
                 </div>
 
                 <div>
                   <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1 block">Task Type</label>
                   <select
-                    value={type}
-                    onChange={(e) => setType(e.target.value)}
+                    {...register("type")}
                     className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-primary transition-all appearance-none cursor-pointer"
                   >
                     <option value="assignment">Assignment</option>
@@ -205,12 +204,10 @@ export default function AssignmentTab() {
                   <label className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-1 block">Total Points</label>
                   <input
                     type="number"
-                    value={totalPoints}
-                    onChange={(e) => setTotalPoints(parseInt(e.target.value))}
-                    min="1"
+                    {...register("totalPoints")}
                     className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-primary transition-all"
-                    required
                   />
+                  {errors.totalPoints && <p className="text-red-400 text-xs mt-1">{errors.totalPoints.message}</p>}
                 </div>
                 
                 <div>
@@ -226,9 +223,10 @@ export default function AssignmentTab() {
               <div className="flex justify-end mt-4 pt-4 border-t border-white/5">
                 <button
                   type="submit"
-                  className="bg-brand-primary hover:bg-brand-secondary text-white px-8 py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(var(--brand-primary),0.3)] hover:shadow-[0_0_25px_rgba(var(--brand-primary),0.5)] hover:-translate-y-0.5"
+                  disabled={createAssignmentMutation.isPending}
+                  className="bg-brand-primary hover:bg-brand-secondary text-white px-8 py-3 rounded-xl font-bold transition-all shadow-[0_0_15px_rgba(var(--brand-primary),0.3)] hover:shadow-[0_0_25px_rgba(var(--brand-primary),0.5)] hover:-translate-y-0.5 disabled:opacity-50"
                 >
-                  Post Task
+                  {createAssignmentMutation.isPending ? "Posting..." : "Post Task"}
                 </button>
               </div>
             </form>
