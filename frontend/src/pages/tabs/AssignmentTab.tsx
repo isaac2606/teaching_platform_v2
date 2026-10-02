@@ -191,7 +191,7 @@ export default function AssignmentTab() {
                   <select
                     {...register("type")}
                     className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-brand-primary transition-all appearance-none cursor-pointer"
-                  >
+                  >f
                     <option value="assignment">Assignment</option>
                     <option value="homework">Homework</option>
                     <option value="quiz">Quiz</option>

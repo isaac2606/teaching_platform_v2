@@ -20,7 +20,7 @@ import mongoose from "mongoose";
 import helmet from "helmet";
 import morgan from "morgan";
 import path from "path";
-
+import jwt from "jsonwebtoken";
 import authRoute from "./routes/auth";
 import userRoute from "./routes/user";
 import hubRoute from "./routes/hub";
@@ -58,6 +58,22 @@ app.use("/api/class",classRoute)
 app.use("/api/message",messageRoute)
 app.use("/api/upload",uploadRoute)
 app.use("/api/assignment",assignmentRoute)
+
+io.use((socket, next) => {
+    // 1. Grab the token from the handshake auth object
+    const token = socket.handshake.auth.token;
+    if (!token) {
+        return next(new Error("Authentication error: No token provided"));
+    }
+    // 2. Verify the token using your JWT_SECRET
+    jwt.verify(token, process.env.JWT_SECRET as string, (err, decoded) => {
+        if (err) return next(new Error("Authentication error: Invalid token"));
+        
+        // 3. Attach the decoded user payload to the socket!
+        socket.data.user = decoded; 
+        next();
+    });
+});
 
 io.on("connection", (socket)=>{
   console.log("A user connected:" , socket.id)
