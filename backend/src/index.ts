@@ -9,7 +9,8 @@ import { Server } from "socket.io";
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", // Allows your React app to connect
+    origin: "http://localhost:5173",
+    credentials:true, // Allows your React app to connect
     methods: ["GET", "POST"]
   }
 });
@@ -60,16 +61,21 @@ app.use("/api/upload",uploadRoute)
 app.use("/api/assignment",assignmentRoute)
 
 io.use((socket, next) => {
-    // 1. Grab the token from the handshake auth object
-    const token = socket.handshake.auth.token;
-    if (!token) {
-        return next(new Error("Authentication error: No token provided"));
-    }
-    // 2. Verify the token using your JWT_SECRET
+    // 1. Grab the raw cookie string from the handshake headers
+    const cookieString = socket.handshake.headers.cookie;
+    if (!cookieString) return next(new Error("Authentication error: No cookies"));
+
+    // 2. Parse out the "accessToken" manually
+    const token = cookieString
+        .split('; ')
+        .find(row => row.startsWith('accessToken='))
+        ?.split('=')[1];
+
+    if (!token) return next(new Error("Authentication error: No token provided"));
+
+    // 3. Verify it just like before
     jwt.verify(token, process.env.JWT_SECRET as string, (err, decoded) => {
         if (err) return next(new Error("Authentication error: Invalid token"));
-        
-        // 3. Attach the decoded user payload to the socket!
         socket.data.user = decoded; 
         next();
     });
