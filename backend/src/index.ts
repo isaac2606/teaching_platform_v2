@@ -31,6 +31,7 @@ import messageRoute from "./routes/message";
 import uploadRoute from "./routes/upload";
 import assignmentRoute from "./routes/assignment";
 import { experimental_createProviderRegistry } from "ai";
+import { addConnection, removeConnection, getOnlineUsers } from "./services/redis";
 
 if (process.env.NODE_ENV !== "test") {
   mongoose
@@ -38,6 +39,7 @@ if (process.env.NODE_ENV !== "test") {
     .then(() => console.log("connected to mongo"))
     .catch((err) => console.log(err));
 }
+
 
 app.use(cors({
     origin:"http://localhost:5173",
@@ -81,48 +83,72 @@ io.use((socket, next) => {
     });
 });
 
-io.on("connection", (socket)=>{
-  console.log("A user connected:" , socket.id)
+io.on("connection", async (socket) => {
+  console.log("A user connected:", socket.id);
+
+  const userId = socket.data?.user?.userId;
+
+  if (userId) {
+    // 1. Join user's private room securely using authenticated ID
+    socket.join(userId);
+
+    // 2. Track connection in Redis. If newly online, broadcast to all clients
+    try {
+      const isNewlyOnline = await addConnection(userId, socket.id);
+      if (isNewlyOnline) {
+        io.emit("user_status", { userId, status: "online" });
+      }
+
+      // 3. Send current list of online users to the newly connected client
+      const currentOnline = await getOnlineUsers();
+      socket.emit("online_users_list", currentOnline);
+    } catch (err) {
+      console.error("Redis presence error on connection:", err);
+    }
+  }
 
   socket.on("join_Hub", (hubId) => {
-      socket.join(hubId);
+    socket.join(hubId);
   });
-
-  socket.on("join_private_room",(userId)=>{
-    socket.join(userId);
-    console.log("user joined private room :",userId)
-  })
 
   socket.on("send_message", async (data) => {
-      try {
-          const hub = await Hub.findById(data.hubId);
-          const senderUser = await User.findById(data.sender);
-          const channel = data.channel || "general";
-          
-          if (hub && hub.lockedChannels && hub.lockedChannels.includes(channel) && senderUser?.role === "student") {
-              return socket.emit("chat_error", "This channel is currently locked by the teacher.");
-          }
-
-          const newMessage = await Message.create({
-              sender: data.sender,
-              hubId: data.hubId,
-              text: data.text,
-              imageUrl:data.imageUrl || "",
-              channel: channel
-          });
-
-          await newMessage.populate("sender", "username");
-          
-          io.to(data.hubId).emit("receive_message", newMessage);
-          
-      } catch (err) {
-          console.error("Error saving message:", err);
+    try {
+      const hub = await Hub.findById(data.hubId);
+      const senderUser = await User.findById(data.sender);
+      const channel = data.channel || "general";
+      
+      if (hub && hub.lockedChannels && hub.lockedChannels.includes(channel) && senderUser?.role === "student") {
+        return socket.emit("chat_error", "This channel is currently locked by the teacher.");
       }
+
+      const newMessage = await Message.create({
+        sender: data.sender,
+        hubId: data.hubId,
+        text: data.text,
+        imageUrl: data.imageUrl || "",
+        channel: channel
+      });
+
+      await newMessage.populate("sender", "username");
+      io.to(data.hubId).emit("receive_message", newMessage);
+    } catch (err) {
+      console.error("Error saving message:", err);
+    }
   });
 
-  socket.on("disconnect",()=>{
-      console.log("User disconnected ")
-  })
+  socket.on("disconnect", async () => {
+    console.log("User disconnected:", socket.id);
+    if (userId) {
+      try {
+        const isNowOffline = await removeConnection(userId, socket.id);
+        if (isNowOffline) {
+          io.emit("user_status", { userId, status: "offline" });
+        }
+      } catch (err) {
+        console.error("Redis presence error on disconnect:", err);
+      }
+    }
+  });
     
   socket.on("send_private_message",async (data)=>{
       try{

@@ -8,13 +8,13 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    
     "build": "tsc",
     "start": "ts-node src/index.ts",
     "dev": "nodemon src/index.ts",
-    "test": "vitest run"  
+    "test": "vitest run"
   },
   "dependencies": {
+    "@upstash/redis": "^1.39.0",
     "bcrypt": "^6.0.0",
     "cloudinary": "^1.41.3",
     "dotenv": "^17.4.2",
