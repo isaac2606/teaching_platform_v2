@@ -7,15 +7,6 @@ import permit from "../middleware/requireGlobalRole"
 
 import User from "../models/User";
 
-router.get("/fix-db", async (req, res) => {
-    try {
-        await User.updateMany({}, { $set: { recentUsers: [] } });
-        res.send("<h1>Database fixed! You can now use the app.</h1>");
-    } catch (err) {
-        res.send("Error fixing db: " + (err instanceof Error ? err.message : "Unknown error"));
-    }
-});
-
 router.get("/getUsers", verifyToken, getAllUsers);
 router.get("/getContact",verifyToken,getContact);
 

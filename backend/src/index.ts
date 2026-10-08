@@ -4,7 +4,7 @@ import cors from "cors";
 const app = express();
 
 import cookieParser from "cookie-parser";
-import http, { request } from "http";
+import http from "http";
 import { Server } from "socket.io";
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -30,7 +30,6 @@ import classRoute from "./routes/class";
 import messageRoute from "./routes/message";
 import uploadRoute from "./routes/upload";
 import assignmentRoute from "./routes/assignment";
-import { experimental_createProviderRegistry } from "ai";
 import { addConnection, removeConnection, getOnlineUsers } from "./services/redis";
 
 if (process.env.NODE_ENV !== "test") {

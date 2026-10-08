@@ -5,7 +5,7 @@ import { SocketContext } from "../context/SocketContext";
 import api from "../services/api";
 import { useLocation } from "react-router-dom";
 import Button from "../components/ui/Button";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 export default function Messages() {
     const { socket ,setUnreadCount,unreadCount} = useContext(SocketContext);
 
@@ -240,7 +240,7 @@ export default function Messages() {
         setNewMessage("");
         setFile(null);
         setIsUploading(false);
-f    };
+    };
 
     return (
         <div className="flex h-screen bg-bg-surface overflow-hidden p-4 gap-4">

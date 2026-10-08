@@ -22,7 +22,7 @@ import { createHub,
 import { verify  } from "jsonwebtoken";
 import permit from "../middleware/requireGlobalRole";
 
-router.post("/", verifyToken,permit("owner"), createHub);
+router.post("/", verifyToken,permit("teacher"), createHub);
 
 router.put("/:id/leave", verifyToken, authorize("student"), leaveHub);
 
@@ -31,8 +31,6 @@ router.put("/:id/kick/:studentId", verifyToken, authorize("owner","co_teacher"),
 router.put("/:hubId/lock-channel", verifyToken, authorize("owner"), toggleChannelLock);
 
 router.get("/getHubs", verifyToken, getAllHubs);
-
-router.get("/fix-index", fixIndex);
 
 router.get("/stats", verifyToken, authorize("owner"), getDashboardStats);
 
