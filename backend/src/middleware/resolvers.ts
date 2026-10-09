@@ -46,7 +46,7 @@ export const resolveHubFromAssignment = async (req: Request, res: Response, next
             return;
         }
 
-        req.params.hubId = assignment.hubId.toString();
+        req.params.hubId = assignment.hub._id.toString();
         next();
     } catch (err) {
         if (err instanceof Error) {
