@@ -3,7 +3,8 @@ const router = express.Router();
 
 import verifyToken from "../middleware/verifyToken";
 import authorize from "../middleware/requireHubRole";
-import roleMiddleware from "../middleware/requireGlobalRole";
+import permit from "../middleware/requireGlobalRole";
+import { resolveHubFromClass } from "../middleware/resolvers";
 import upload from "../middleware/upload";
 
 import { createClass,
@@ -33,35 +34,39 @@ router.get(
 router.post(
   "/:classId/assign",
   verifyToken,
-  roleMiddleware("teacher"),
+  resolveHubFromClass,
+  authorize("owner", "co_teacher"),
   assignStudent,
 );
 
 router.post(
   "/join/:inviteToken",
   verifyToken,
-  roleMiddleware("student"),
+  permit("student"),
   joinClass,
 );
 
 router.put(
   "/editClass/:classId",
   verifyToken,
-  roleMiddleware("teacher"),
+  resolveHubFromClass,
+  authorize("owner", "co_teacher"),
   editClass
 );
 
 router.delete(
   "/deleteClass/:classId",
   verifyToken,
-  roleMiddleware("teacher"),
+  resolveHubFromClass,
+  authorize("owner", "co_teacher"),
   deleteClass
 );
 
 router.post(
   "/:classId/attendance",
   verifyToken,
-  roleMiddleware("teacher"),
+  resolveHubFromClass,
+  authorize("owner", "co_teacher"),
   recordAttendance
 );
 

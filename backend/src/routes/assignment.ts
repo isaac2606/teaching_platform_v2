@@ -3,6 +3,7 @@ const router = express.Router();
 
 import verifyToken from "../middleware/verifyToken";
 import authorize from "../middleware/requireHubRole";
+import { resolveHubFromAssignment } from "../middleware/resolvers";
 import upload from "../middleware/upload";
 import { 
     createAssignment,
@@ -17,6 +18,6 @@ router.post("/create", verifyToken, authorize("owner", "co_teacher"), upload.sin
 router.get("/hub/:hubId", verifyToken, authorize("owner", "co_teacher", "student"), getAssignmentsByHub);
 
 // get a specific assignment by ID
-router.get("/:id", verifyToken, getAssignmentById);
+router.get("/:id", verifyToken, resolveHubFromAssignment, authorize("owner", "co_teacher", "student"), getAssignmentById);
 
 export default router;
