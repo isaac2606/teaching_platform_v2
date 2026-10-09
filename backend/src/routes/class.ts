@@ -2,6 +2,7 @@ import express from "express";
 const router = express.Router();
 
 import verifyToken from "../middleware/verifyToken";
+import authorize from "../middleware/requireHubRole";
 import roleMiddleware from "../middleware/requireGlobalRole";
 import upload from "../middleware/upload";
 
@@ -17,7 +18,7 @@ import { createClass,
 router.post(
   "/createClass",
   verifyToken,
-  roleMiddleware("teacher"),
+  authorize("owner", "co_teacher"),
   upload.single("imageUrl"),
   createClass,
 );
@@ -25,6 +26,7 @@ router.post(
 router.get(
   "/getClasses/:hubId",
   verifyToken,
+  authorize("owner", "co_teacher", "student"),
   getClassesByHub,
 );
 
