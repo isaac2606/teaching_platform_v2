@@ -176,8 +176,10 @@ const refresh = async (req: Request, res: Response) => {
         jwt.verify(refreshToken, REFRESH_TOKEN_SECRET, async (err: any, payload: any) => {
             if (err) return res.status(403).json({ message: "Refresh token is invalid or expired" });
             if(!payload) return res.status(403).json({ message: "No payload" });
+            
             const decodedPayload = payload as DecodedToken;
             const user = await User.findById(decodedPayload.userId);
+
             if (!user || !user.refreshToken) {
                 return res.status(403).json({ message: "Invalid refresh token" });
             }
