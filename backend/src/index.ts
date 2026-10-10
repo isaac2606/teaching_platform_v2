@@ -51,9 +51,7 @@ app.use(helmet({
 }));
 app.use(morgan("common"));
 
-app.use("/api/auth",authRoute);
-app.use("/images", express.static(path.join(__dirname, "uploads")));
-app.use("/api/user",userRoute);
+app.use("/api/auth",authRoute);app.use("/api/user",userRoute);
 app.use("/api/hub", hubRoute);
 app.use("/api/announcement",announcementRoute);
 app.use("/api/class",classRoute)

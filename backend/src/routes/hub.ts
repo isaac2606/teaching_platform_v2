@@ -30,8 +30,6 @@ router.put("/:id/kick/:studentId", verifyToken, authorize("owner","co_teacher"),
 
 router.put("/:hubId/lock-channel", verifyToken, authorize("owner"), toggleChannelLock);
 
-router.get("/getHubs", verifyToken, getAllHubs);
-
 router.get("/stats", verifyToken, authorize("owner"), getDashboardStats);
 
 router.get("/my-hubs", verifyToken, getMyHubs);
@@ -45,8 +43,6 @@ router.get("/:id", verifyToken, getHubById);
 router.put("/:id", verifyToken, authorize("owner"), updateHub);
 
 router.delete("/:id", verifyToken, authorize("owner"), deleteHub);
-
-router.get("/:hubId",verifyToken, getChatHistory)
 
 router.post("/join/:inviteToken",verifyToken, joinHubByInviteToken)
 

@@ -24,10 +24,10 @@ export function SocketProvider({ children }) {
 
     useEffect(()=>{
         if(user){
-            const newSocket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:3000");
+            const newSocket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:3000", { withCredentials: true });
             setSocket(newSocket);
 
-            newSocket.emit("join_private_room",user._id)
+            // removed join_private_room
             console.log("joined private chat")
 
             return () => newSocket.close();

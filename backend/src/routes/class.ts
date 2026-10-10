@@ -39,13 +39,6 @@ router.post(
   assignStudent,
 );
 
-router.post(
-  "/join/:inviteToken",
-  verifyToken,
-  permit("student"),
-  joinClass,
-);
-
 router.put(
   "/editClass/:classId",
   verifyToken,

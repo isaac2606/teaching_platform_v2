@@ -159,10 +159,7 @@ const register = async (req: Request, res: Response)=> {
         });
         res.status(200).json({
             message:"user registered succesfully",
-            
-            user:{
-                userWithoutPassword
-            }
+            user: userWithoutPassword
         })
     }catch (err) {
     if (err instanceof Error) {

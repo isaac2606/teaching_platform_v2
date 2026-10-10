@@ -1,4 +1,4 @@
-import { io } from "socket.io-client";
+import { useSocket } from "../../context/SocketContext";
 import { useContext, useEffect, useState, useRef } from "react";
 import { useRouteLoaderData } from "react-router-dom";
 import { AuthContext } from "../../context/AuthContext";
@@ -9,7 +9,7 @@ export default function ChatTab() {
     const hub = useRouteLoaderData("hub-workspace");
     const { user } = useContext(AuthContext);
     
-    const [socket, setSocket] = useState(null);
+    const { socket } = useSocket();
     const [messages, setMessages] = useState([]);
     const [newMessage, setNewMessage] = useState("");
     const messagesEndRef = useRef(null);
@@ -58,18 +58,11 @@ export default function ChatTab() {
 
     // Setup Socket
     useEffect(() => {
-        const newSocket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:3000");
-        setSocket(newSocket);
-
+        if (!socket) return;
         if (hub?._id) {
-            newSocket.emit("join_Hub", hub._id);
+            socket.emit("join_Hub", hub._id);
         }
-        if (user?._id) {
-            newSocket.emit("join_private_room", user._id);
-        }
-
-        return () => newSocket.close();
-    }, [hub?._id, user?._id]);
+    }, [hub?._id, socket]);
 
     // Socket Listeners
     useEffect(() => {

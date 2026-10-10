@@ -7,7 +7,6 @@ import permit from "../middleware/requireGlobalRole"
 
 import User from "../models/User";
 
-router.get("/getUsers", verifyToken, getAllUsers);
 router.get("/getContact",verifyToken,getContact);
 
 router.get("/:id", verifyToken,getUserProfile);

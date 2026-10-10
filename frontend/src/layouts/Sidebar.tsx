@@ -4,8 +4,6 @@ import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 
 import {useSocket} from "../context/SocketContext"
-import { useUIStore } from '../store/ThemeStore'
-
 import { useThemeStore } from '../store/themeStore';
 
 export default function Sidebar() {
