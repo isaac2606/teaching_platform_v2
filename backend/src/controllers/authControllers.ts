@@ -67,7 +67,7 @@ const login = async (req: Request, res: Response)=>{
             REFRESH_TOKEN_SECRET,
             {expiresIn:"7d"}
         );
-        user.refreshToken = refreshToken;
+        user.refreshToken = await bcrypt.hash(refreshToken, 10);
         await user.save();
         
         const {password,...userWithoutPassword} = user.toObject();
@@ -133,15 +133,13 @@ const register = async (req: Request, res: Response)=> {
 
 
         const refreshToken = jwt.sign(
-
             {
                 userId : user._id,
-
             },
-            REFRESH_TOKEN_SECRET
+            REFRESH_TOKEN_SECRET,
+            { expiresIn: "7d" }
         );
-
-        user.refreshToken = refreshToken;
+        user.refreshToken = await bcrypt.hash(refreshToken, 10);
         await user.save();
         const {password,...userWithoutPassword} = user.toObject();
 
@@ -179,8 +177,13 @@ const refresh = async (req: Request, res: Response) => {
             if (err) return res.status(403).json({ message: "Refresh token is invalid or expired" });
             if(!payload) return res.status(403).json({ message: "No payload" });
             const decodedPayload = payload as DecodedToken;
-            const user = await User.findById(decodedPayload.userId );
-            if (!user || user.refreshToken !== refreshToken) {
+            const user = await User.findById(decodedPayload.userId);
+            if (!user || !user.refreshToken) {
+                return res.status(403).json({ message: "Invalid refresh token" });
+            }
+            
+            const isMatch = await bcrypt.compare(refreshToken, user.refreshToken);
+            if (!isMatch) {
                 return res.status(403).json({ message: "Invalid refresh token" });
             }
 
@@ -200,7 +203,7 @@ const refresh = async (req: Request, res: Response) => {
                 REFRESH_TOKEN_SECRET!,
                 {expiresIn:"7d"}
             );
-            user.refreshToken = newRefreshToken;
+            user.refreshToken = await bcrypt.hash(newRefreshToken, 10);
             await user.save();
 
             res.cookie("accessToken", newAccessToken, {

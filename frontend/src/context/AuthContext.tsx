@@ -1,4 +1,5 @@
 import { createContext, useState, useEffect } from "react";
+import api from ".././services/api"
 interface AuthContextType{
 
     user: any;
@@ -35,11 +36,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    
   };
 
-  const logout = () => {
+ const logout = async () => {
+  try {
+    await api.post("/auth/logout");
+  } catch (err) {
+    console.error("Backend logout failed, but proceeding to clear local state.", err);
+  } finally {
+    // This always runs, even if the try block throws an error!
     setUser(null);
     localStorage.removeItem("user");
-    
-  };
+  }
+};
 
   return (
     <AuthContext.Provider value={{ user, login, logout, loading }}>
