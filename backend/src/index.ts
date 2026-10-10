@@ -149,19 +149,22 @@ io.on("connection", async (socket) => {
     
   socket.on("send_private_message",async (data)=>{
       try{
-        const senderUser = await User.findById(data.sender);
+        const senderId = socket.data.user.userId;
+        const senderRole = socket.data.user.role;
+
+        const senderUser = await User.findById(senderId);
         const receiverUser = await User.findById(data.receiver);
         if (!senderUser || !receiverUser) {
             return socket.emit("private_message_error", "User not found.");
         }
 
-        if (senderUser.role === "student" && receiverUser.role === "student") {
+        if (senderRole === "student" && receiverUser.role === "student") {
             return socket.emit("private_message_error", "Students cannot message other students privately.");
         }
 
         const newMessage = await Message.create({
           receiver:data.receiver,
-          sender:data.sender,
+          sender:senderId,
           text:data.text,
           imageUrl:data.imageUrl || ""
         })
@@ -169,7 +172,7 @@ io.on("connection", async (socket) => {
         await newMessage.populate("receiver","username");
 
         io.to(data.receiver).emit("receive_private_message",newMessage);
-        io.to(data.sender).emit("receive_private_message",newMessage)
+        io.to(senderId).emit("receive_private_message",newMessage)
 
       }catch(err){
         console.error("Error saving message:", err)
