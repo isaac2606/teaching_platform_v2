@@ -172,7 +172,7 @@ const register = async (req: Request, res: Response)=> {
 
 const refresh = async (req: Request, res: Response) => {
     try {
-        const { refreshToken } = req.body;
+        const  refreshToken  = req.cookies.refreshToken;
         if (!refreshToken) return res.status(401).json({ message: "Refresh token is missing" });
 
         jwt.verify(refreshToken, REFRESH_TOKEN_SECRET, async (err: any, payload: any) => {
@@ -197,16 +197,25 @@ const refresh = async (req: Request, res: Response) => {
 
             const newRefreshToken = jwt.sign(
                 { userId: user._id },
-                REFRESH_TOKEN_SECRET
+                REFRESH_TOKEN_SECRET!,
+                {expiresIn:"7d"}
             );
             user.refreshToken = newRefreshToken;
             await user.save();
-            res.cookie("refreshToken", refreshToken, {
+
+            res.cookie("accessToken", newAccessToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                sameSite: "lax",
+                maxAge: 15*60*1000, // 15m
+            });
+
+            res.cookie("refreshToken", newRefreshToken, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
                 sameSite: "lax",
                 maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        });
+            });
 
             res.status(200).json({
                 
