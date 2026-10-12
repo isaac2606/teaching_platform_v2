@@ -124,3 +124,6 @@ dist
 # Windows
 Thumbs.db
 entire_codebase.txt
+
+vite.config.js
+vite.config.d.ts
