@@ -1,43 +1,40 @@
 // @ts-nocheck
-import { useState,useContext,useEffect } from "react";
+import { useState } from "react";
 import HubCard from "../features/hubs/HubCard";
-
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import api from "../services/api";
-
-import { AuthContext } from "../context/AuthContext";
-
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function StudentDashboard() {
-  //const { groups, addGroup, deleteGroup, editGroup, loading, error } = useGroups([]);
+  const queryClient = useQueryClient();
   const [newHubTitle, setNewHubTitle] = useState("");
   const [filter, setFilter] = useState("all");
-  const [loading, setLoading] = useState(false) 
-  const [error, setError] = useState(null)
 
-  const [hubs,setHubs]=useState<any[]>([])
-
-  const {user}= useContext(AuthContext);
-
- 
-  useEffect(()=>{
-        const getStudentHubs = async () => {
-            try{
-                // Uses the new unified route. Backend knows we are a student from the token.
-                const response = await api.get(`/hub/my-hubs`)
-                setHubs(response.data);
-
-            }catch(err){
-                console.error(err.message)
-            }
-        }
-        getStudentHubs();
-
+  const { data: hubs = [], isLoading, error } = useQuery({
+    queryKey: ["hubs"],
+    queryFn: async () => {
+      const response = await api.get("/hub/my-hubs");
+      return response.data;
     }
-  ,[user])
+  });
 
-  //Filter hubs based on the active filter state
+  const joinHubMutation = useMutation({
+    mutationFn: async (token: string) => {
+      const res = await api.post(`/hub/join/${token}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["hubs"] });
+      setNewHubTitle("");
+    },
+    onError: (err: any) => {
+      console.error("Failed to join", err);
+      alert(err.response?.data?.message || err.response?.data || err.message);
+    }
+  });
+
+  // Filter hubs based on the active filter state
   const filteredHubs = hubs?.filter((hub) => {
     if (filter === "all") return true;
     return hub.status === filter;
@@ -80,40 +77,33 @@ export default function StudentDashboard() {
                 
                 <Button 
                     variant="primary"
-                    onClick={async () => {
-                            try {
-                                const token = newHubTitle.trim();
-                                await api.post(`/hub/join/${token}`);
-                                setNewHubTitle("");
-                                window.location.reload();
-                                
-                            } catch (err) {
-                                console.error("Failed to join ", err);
-                                alert(err.response?.data || err.message);
-                            }
-                        }}
+                    disabled={joinHubMutation.isPending}
+                    onClick={() => {
+                        const token = newHubTitle.trim();
+                        if (token) {
+                            joinHubMutation.mutate(token);
+                        }
+                    }}
                 > 
-                    Join
+                    {joinHubMutation.isPending ? "Joining..." : "Join"}
                 </Button>
             </div>
         </div>
 
         {error && (
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl">
-                Failed to load hubs: {error}
+                Failed to load hubs: {error instanceof Error ? error.message : "Error loading hubs"}
             </div>
         )}
 
-        {loading ? (
+        {isLoading ? (
             <div className="flex justify-center py-16">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-primary"></div>
             </div>
         ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredHubs.map((hub) => (
-                    
-                    <HubCard key={hub._id} hub={hub}  />   
-
+                    <HubCard key={hub._id} hub={hub} />   
                 ))}
 
                 {filteredHubs.length === 0 && (

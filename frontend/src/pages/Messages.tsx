@@ -6,24 +6,23 @@ import api from "../services/api";
 import { useLocation } from "react-router-dom";
 import Button from "../components/ui/Button";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-export default function Messages() {
-    const { socket ,setUnreadCount,unreadCount} = useContext(SocketContext);
 
+export default function Messages() {
+    const { socket, setUnreadCount } = useContext(SocketContext);
     const { user } = useContext(AuthContext);
     
     const [activeReceiver, setActiveReceiver] = useState(null);
-    const [recentContacts,setRecentContacts] = useState<any[]>([])
-
     const [newMessage, setNewMessage] = useState("");
     const [newReceiver, setNewReceiver] = useState("");
     const [searchError, setSearchError] = useState("");
     const [file, setFile] = useState(null);
+    const [isUploading, setIsUploading] = useState(false);
 
     const messagesEndRef = useRef(null);
     const location = useLocation();
-    
     const queryClient = useQueryClient();
 
+    // Query for private messages with activeReceiver
     const { data: messages = [] } = useQuery({
         queryKey: ["private-messages", activeReceiver?._id],
         queryFn: async () => {
@@ -32,83 +31,58 @@ export default function Messages() {
         },
         enabled: !!activeReceiver?._id
     });
-   
 
-    useEffect(()=>{
+    // Query for recent contacts
+    const { data: recentContacts = [] } = useQuery({
+        queryKey: ["recent-contacts"],
+        queryFn: async () => {
+            const res = await api.get("/user/getContact");
+            return Array.isArray(res.data) ? res.data.filter(c => c !== null) : [];
+        }
+    });
+
+    // Mutation to add contact
+    const addContactMutation = useMutation({
+        mutationFn: async (contactId: string) => {
+            await api.post("/user/addContact", { newContact: contactId });
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ["recent-contacts"] });
+        }
+    });
+
+    // Auto-select contact passed via navigation state
+    useEffect(() => {
         const autoSelectUserId = location.state?.autoSelectUserId;
-        if(autoSelectUserId){
-            const fetchAndSelectUser = async () =>{
+        if (autoSelectUserId) {
+            const fetchAndSelectUser = async () => {
                 try {
                     const response = await api.get(`/user/${autoSelectUserId}`);
                     
-                    // UI Safety Check: Block Student to Student
                     if (user.role === "student" && response.data.role === "student") {
                         setSearchError("Students cannot message other students privately.");
                         return;
                     }
 
                     setActiveReceiver(response.data);
-                     
-                    const newContact = response.data
-
-                    await api.post(`/user/addContact`,{
-                        newContact:newContact._id
-                    })
-                    setRecentContacts(prev => {
-                        if (!prev.some(c => c._id === newContact._id)) {
-                            return [...prev, newContact];
-                        }
-                        return prev;
-                    });
-                    
+                    addContactMutation.mutate(response.data._id);
                 } catch (err) {
                     console.error("Auto-select user not found!", err);
                     setSearchError("User not found from auto-select.");
                 }
-            }
+            };
             fetchAndSelectUser();
         }
-    },[location.state?.autoSelectUserId, user.role])
-    
-
+    }, [location.state?.autoSelectUserId, user.role]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
 
-    // TODO: Add your useEffect here to fetch the recent contacts from the backend on mount!
-
-    // Fetch messages when activeReceiver changes
-
-    //SET CONTACTS
-    useEffect(()=>{
+    // Reset unread count when viewing messages
+    useEffect(() => {
         setUnreadCount(0);
-    },[setUnreadCount])
-
-    useEffect(()=>{
-        const getContacts =async ()=>{
-            try{
-                const newContacts= await api.get("/user/getContact");
-               
-                
-                // Filter out any null values just in case Mongoose returned null for deleted users
-                const validContacts = Array.isArray(newContacts.data) 
-                    ? newContacts.data.filter(c => c !== null) 
-                    : [];
-                    
-                setRecentContacts(validContacts);
-
-            }catch(err){
-                console.error("GET CONTACTS ERROR:", err.response?.data || err.message)
-            }
-        }
-        getContacts()
-
-    },[user])
-
-    
-
-
+    }, [setUnreadCount]);
 
     useEffect(() => { 
         if (messages.length > 0) {
@@ -116,8 +90,7 @@ export default function Messages() {
         }
     }, [messages]);
 
-
-
+    // Socket message listeners
     useEffect(() => {
         if (!socket) return;
         
@@ -135,11 +108,8 @@ export default function Messages() {
                 setTimeout(scrollToBottom, 50);
             }
             
-            if(!recentContacts.some(c => c._id === message.sender._id) && message.sender._id !== user._id){
-                await api.post("/user/addContact",{
-                    newContact: message.sender._id
-                })
-                setRecentContacts(prev => [...prev, message.sender]);
+            if (!recentContacts.some(c => c._id === message.sender._id) && message.sender._id !== user._id) {
+                addContactMutation.mutate(message.sender._id);
             }
         };
 
@@ -156,47 +126,27 @@ export default function Messages() {
         };
     }, [socket, activeReceiver?._id, user._id, recentContacts, queryClient]);
 
-
-    
-
-
-
     const handleSearchUser = async (e) => {
         e.preventDefault();
         setSearchError("");
-        if(!newReceiver.trim()) return;
+        if (!newReceiver.trim()) return;
 
         try {
-            const response = await api.get(`/user/${newReceiver}`);
+            const response = await api.get(`/user/${newReceiver.trim()}`);
             
-            // UI Safety Check: Block Student to Student
             if (user.role === "student" && response.data.role === "student") {
                 setSearchError("Students cannot message other students privately.");
                 return;
             }
 
             setActiveReceiver(response.data);
-            setNewReceiver(""); 
-
-            const newContact = response.data
-
-            await api.post(`/user/addContact`,{
-                newContact:newContact._id
-            })
-            setRecentContacts(prev => {
-                if (!prev.some(c => c._id === newContact._id) ) {
-                    return [...prev, newContact];
-                }
-                return prev;
-            });
-            
+            addContactMutation.mutate(response.data._id);
+            setNewReceiver("");
         } catch (err) {
             console.error("User not found!", err);
             setSearchError("User not found. Please check the ID.");
         }
     };
-
-    const [isUploading, setIsUploading] = useState(false);
 
     const sendMessage = async (e) => {
         e.preventDefault();
@@ -207,39 +157,45 @@ export default function Messages() {
 
         setIsUploading(true);
         
-        const messageData = {
-            receiver: activeReceiver._id,
-            text: newMessage,
-            sender: user._id, 
-            imageUrl: ""
-        };
-        
-        if (file) {
-            const formData = new FormData();
-            formData.append("image", file);
+        try {
+            const messageData = {
+                receiver: activeReceiver._id,
+                text: newMessage,
+                sender: user._id, 
+                imageUrl: ""
+            };
             
-            const uploadRes = await api.post("/upload", formData, {
-                headers: { "Content-Type": "multipart/form-data" }
+            if (file) {
+                const formData = new FormData();
+                formData.append("image", file);
+                
+                const uploadRes = await api.post("/upload", formData, {
+                    headers: { "Content-Type": "multipart/form-data" }
+                });
+                messageData.imageUrl = uploadRes.data.filename;
+            }
+            
+            const fakeMessage = {
+                _id: Math.random().toString(),
+                ...messageData,
+                sender: user,
+                createdAt: new Date().toISOString()
+            };
+
+            queryClient.setQueryData(["private-messages", activeReceiver._id], (oldMessages = []) => {
+                return [...oldMessages, fakeMessage];
             });
-            messageData.imageUrl = uploadRes.data.filename;
+
+            socket.emit("send_private_message", messageData);
+            
+            setNewMessage("");
+            setFile(null);
+        } catch (err) {
+            console.error("Failed to send message/upload", err);
+            alert("Failed to send message: " + (err.response?.data?.error || err.message));
+        } finally {
+            setIsUploading(false);
         }
-        
-        const fakeMessage = {
-            _id: Math.random().toString(),
-            ...messageData,
-            sender: user,
-            createdAt: new Date().toISOString()
-        };
-
-        queryClient.setQueryData(["private-messages", activeReceiver._id], (oldMessages = []) => {
-            return [...oldMessages, fakeMessage];
-        });
-
-        socket.emit("send_private_message", messageData);
-        
-        setNewMessage("");
-        setFile(null);
-        setIsUploading(false);
     };
 
     return (
@@ -267,7 +223,6 @@ export default function Messages() {
                 <div className="flex-1 overflow-y-auto p-2">
                     <p className="text-xs font-bold text-text-secondary uppercase px-2 mb-2 mt-2">Recent Contacts</p>
                     
-                    {/* The UI is ready for you to map over your recentContacts state! */}
                     {recentContacts.length === 0 ? (
                         <p className="text-sm text-text-secondary px-2">No recent chats. Search for a user above!</p>
                     ) : (
@@ -284,7 +239,6 @@ export default function Messages() {
                                     <h4 className="font-bold text-text-primary text-sm truncate">{contact.username}</h4>
                                     <p className="text-xs text-text-secondary truncate capitalize">{contact.role || "Member"}</p>
                                 </div>
-                                
                             </div>
                         ))
                     )}
@@ -325,16 +279,16 @@ export default function Messages() {
                                         <div key={msg._id || index} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
                                             <div className={`max-w-[70%] rounded-lg px-4 py-2 ${isMe ? "bg-brand-primary text-white" : "bg-bg-surface text-text-primary border border-border-subtle"}`}>
                                                 {!isMe && <p className="text-xs font-bold mb-1 opacity-70">{msg.sender?.username}</p>}
-                                                <p className="text-sm">{msg.text}</p>
+                                                {msg.text && <p className="text-sm">{msg.text}</p>}
 
-                                                {msg.imageUrl &&
-                                                <img  src={msg.imageUrl}
-                                                    alt="attachment"
-                                                    className="mt-2 rounded-md max-w-full h-auto max-h-64 object-cover"
+                                                {msg.imageUrl && (
+                                                    <img 
+                                                        src={msg.imageUrl}
+                                                        alt="attachment"
+                                                        className="mt-2 rounded-md max-w-full h-auto max-h-64 object-cover"
                                                     />
-                                                }
+                                                )}
                                             </div>
-                                            
                                         </div>
                                     );
                                 })
@@ -356,7 +310,7 @@ export default function Messages() {
                                     type="file"
                                     onChange={(e) => setFile(e.target.files[0])}
                                     className="text-sm text-text-secondary file:mr-4 file:py-2.5 file:px-5 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-primary/10 file:text-brand-primary hover:file:bg-brand-primary/20 cursor-pointer transition-colors"
-                                    />
+                                />
                                 <Button type="submit" disabled={(!newMessage.trim() && !file) || isUploading} className="px-6">
                                     {isUploading ? "..." : "Send"}
                                 </Button>
