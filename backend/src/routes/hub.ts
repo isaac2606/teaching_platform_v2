@@ -30,11 +30,12 @@ router.put("/:id/kick/:studentId", verifyToken, authorize("owner","co_teacher"),
 
 router.put("/:hubId/lock-channel", verifyToken, authorize("owner"), toggleChannelLock);
 
-router.get("/stats", verifyToken, authorize("owner"), getDashboardStats);
+router.get("/stats", verifyToken, permit("teacher"), getDashboardStats);
 
 router.get("/my-hubs", verifyToken, getMyHubs);
 
-router.get("/getStudents/:hubId",verifyToken,authorize("owner"),getStudents)
+router.get("/getStudents/:hubId", verifyToken, authorize("owner", "co_teacher", "student"), getStudents);
+router.get("/:hubId/students", verifyToken, authorize("owner", "co_teacher", "student"), getStudents);
 
 router.get("/invite/:inviteToken", verifyToken, getHubByInviteToken);
 

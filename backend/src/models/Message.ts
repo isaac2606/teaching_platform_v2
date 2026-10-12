@@ -20,7 +20,7 @@ const MessageSchema = new mongoose.Schema({
    },
    text:{
     type:String,
-    required:true
+    default:""
    },
 
    hubId:{

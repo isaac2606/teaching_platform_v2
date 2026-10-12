@@ -23,7 +23,7 @@ export const createAssignment = async (req: AuthRequest, res: Response) => {
         }
 
         // Handle uploaded file via Cloudinary (req.file)
-        const attachments = req.file ? [req.file.filename] : []; // filename is usually the Cloudinary URL or path
+        const attachments = req.file ? [req.file.path] : [];
 
         const assignment = new Assignment({
             title,

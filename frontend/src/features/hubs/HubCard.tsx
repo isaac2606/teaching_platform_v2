@@ -115,7 +115,7 @@ const HubCard = memo(function HubCard({ hub, onDelete, onEdit }) {
                         <button 
                             className="flex-1 bg-brand-primary hover:bg-brand-secondary text-white py-2 rounded-xl font-bold transition-colors"
                             onClick={() => {
-                                onEdit(hub._id, editValue);
+                                onEdit?.(hub._id, editValue);
                                 setIsEditing(false);
                             }}
                         >

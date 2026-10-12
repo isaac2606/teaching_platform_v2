@@ -25,7 +25,7 @@ export default function EditCohortModal({  onClose, group, onEdit}) {
         };
     };
 
-    const {dayOfWeek,time} =parseScheduleString(group.combinedSchedule)
+    const { dayOfWeek, time } = parseScheduleString(group.date || group.combinedSchedule);
   
   
     const [formData, setFormData] = useState({

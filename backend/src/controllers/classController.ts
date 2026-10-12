@@ -23,7 +23,7 @@ const createClass = async (req: Request, res: Response) => {
              });
         }
 
-        const imagePath = req.file ? req.file.filename : "";
+        const imagePath = req.file ? req.file.path : "";
         const inviteToken = crypto.randomBytes(8).toString("hex");
 
         const newClass = new Class({

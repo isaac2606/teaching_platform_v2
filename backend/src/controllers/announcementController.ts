@@ -5,7 +5,7 @@ import Hub from "../models/Hub";
 const addAnnouncement = async (req: Request, res: Response) => {
     try {
         const hubIds = Array.isArray(req.body.hubIds) ? req.body.hubIds : [req.body.hubIds];
-        const imagePath = req.file ? req.file.filename : "";
+        const imagePath = req.file ? req.file.path : "";
 
         let targetClasses = [];
         if (req.body.targetClasses) {

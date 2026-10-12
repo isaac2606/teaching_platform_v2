@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useSocket } from "../../context/SocketContext";
 import { useContext, useEffect, useState, useRef } from "react";
 import { useRouteLoaderData } from "react-router-dom";

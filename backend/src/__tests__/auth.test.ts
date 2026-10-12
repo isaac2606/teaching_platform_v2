@@ -22,7 +22,7 @@ afterAll(async () => {
 afterEach(async () => {
   const collections = mongoose.connection.collections;
   for (const key in collections) {
-    await collections[key].deleteMany({});
+    await collections[key]?.deleteMany({});
   }
 });
 // ------------------------------
@@ -61,8 +61,8 @@ describe("Auth Routes Integration Tests", () => {
     // We check if the 'set-cookie' header exists and is an array of strings
     expect(res.headers['set-cookie']).toBeDefined();
     
-    // Convert the array of cookies into a single string for easy searching
-    const cookiesString = res.headers['set-cookie'].join(';');
+    const cookies = res.headers['set-cookie'] as string[] | string | undefined;
+    const cookiesString = Array.isArray(cookies) ? cookies.join(';') : (cookies || '');
     
     expect(cookiesString).toContain('accessToken=');
     expect(cookiesString).toContain('HttpOnly');

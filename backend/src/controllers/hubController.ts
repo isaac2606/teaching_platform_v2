@@ -312,6 +312,8 @@ const getDashboardStats = async (req: Request, res: Response) => {
     let sessionsToday = 0;
     
     const today = new Date().toISOString().split('T')[0]; 
+    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const currentDayName = (daysOfWeek[new Date().getDay()] || "").toLowerCase();
 
     hubs.forEach(hub => {
        hub.students.forEach(studentId => allStudentIds.add(studentId.toString()));
@@ -319,8 +321,11 @@ const getDashboardStats = async (req: Request, res: Response) => {
        hub.classes.forEach((c: any) => {
             outstandingDues += (c.dues || 0) * (c.students?.length || 0);
             
-            if (c.date && c.date.startsWith(today)) {
-                sessionsToday++;
+            if (c.date) {
+                const dateLower = c.date.toLowerCase();
+                if (c.date.startsWith(today) || dateLower.startsWith(currentDayName)) {
+                    sessionsToday++;
+                }
             }
        });
     });

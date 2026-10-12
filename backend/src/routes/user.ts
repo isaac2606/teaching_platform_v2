@@ -7,15 +7,13 @@ import permit from "../middleware/requireGlobalRole"
 
 import User from "../models/User";
 
-router.get("/getContact",verifyToken,getContact);
+router.get("/getContact", verifyToken, getContact);
+router.post("/addContact", verifyToken, addNewContact);
 
-router.get("/:id", verifyToken,getUserProfile);
-router.post("/addContact",verifyToken,addNewContact);
+router.get("/getAllStudents", verifyToken, permit("teacher"), getAllStudents);
+router.get("/getAllTeachers", verifyToken, permit("student"), getAllTeachers);
 
-router.get("/getAllStudents",verifyToken,permit("teacher"),getAllStudents);
-
-router.get("/getAllTeachers",verifyToken,permit("student"),getAllTeachers);
-
-
+// Dynamic parameter route must be last
+router.get("/:id", verifyToken, getUserProfile);
 
 export default router;

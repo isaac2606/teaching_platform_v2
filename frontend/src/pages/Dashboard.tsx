@@ -44,6 +44,15 @@ export default function Dashboard() {
     }
   });
 
+  const editHubMutation = useMutation({
+    mutationFn: async ({ id, title }: { id: string; title: string }) => {
+        await api.put(`/hub/${id}`, { title });
+    },
+    onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ['hubs'] });
+    }
+  });
+
   return (
     <div className="p-8 min-h-screen text-text-primary font-sans flex-1 bg-bg-base transition-colors duration-300">
         
@@ -83,6 +92,7 @@ export default function Dashboard() {
                     key={hub._id} 
                     hub={hub} 
                     onDelete={(id) => deleteHubMutation.mutate(id)}
+                    onEdit={(id, title) => editHubMutation.mutate({ id, title })}
                 />
             ))}
 
