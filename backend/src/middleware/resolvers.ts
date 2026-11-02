@@ -39,14 +39,14 @@ export const resolveHubFromAssignment = async (req: Request, res: Response, next
     }
 
     try {
-        const assignment = await Assignment.findById(assignmentId).select('hubId');
+        const assignment = await Assignment.findById(assignmentId).select('hub');
         
         if (!assignment) {
             res.status(404).json({ message: "Assignment not found" });
             return;
         }
 
-        req.params.hubId = assignment.hub._id.toString();
+        req.params.hubId = assignment.hub.toString();
         next();
     } catch (err) {
         if (err instanceof Error) {
