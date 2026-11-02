@@ -45,7 +45,7 @@ const createClass = async (req: Request, res: Response) => {
         });
         
         await User.findByIdAndUpdate(req.user.userId, { 
-            $push: { classes: savedClass._id } 
+            $addToSet: { classes: savedClass._id } 
         });
 
         res.status(201).json(savedClass);
@@ -114,8 +114,10 @@ const assignStudent = async (req: Request, res: Response) => {
         await User.updateOne(
             { _id: req.body.studentId },
             { 
-                $addToSet: { hubs: updatedClass.hub._id },
-                $push: { classes: updatedClass._id }
+                $addToSet: { 
+                    hubs: updatedClass.hub,
+                    classes: updatedClass._id 
+                }
             }
         );
 
@@ -152,8 +154,10 @@ const joinClass = async (req: Request, res: Response) => {
             await User.updateOne(
                 { _id: req.user.userId },
                 { 
-                    $addToSet: { hubs: classObj.hub },
-                    $push: { classes: classObj._id }
+                    $addToSet: { 
+                        hubs: classObj.hub,
+                        classes: classObj._id 
+                    }
                 }
             );
 
@@ -221,10 +225,11 @@ const deleteClass = async (req: Request, res: Response) => {
             $pull: { classes: classObj._id }
         });
 
-        // Remove from Teacher's classes array
-        await User.findByIdAndUpdate(req.user.userId, {
-            $pull: { classes: classObj._id }
-        });
+        // Remove from all Users' classes array (teacher and students)
+        await User.updateMany(
+            { classes: classObj._id },
+            { $pull: { classes: classObj._id } }
+        );
 
         await Class.findByIdAndDelete(req.params.classId);
 

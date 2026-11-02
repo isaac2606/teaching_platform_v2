@@ -5,6 +5,7 @@ export interface IUser extends Document {
   password?: string;
   role: "student" | "teacher" | "admin";
   hubs: mongoose.Types.ObjectId[];
+  classes: mongoose.Types.ObjectId[];
   students: mongoose.Types.ObjectId[];
   teachers: mongoose.Types.ObjectId[];
   recentUsers: mongoose.Types.ObjectId[];
@@ -37,6 +38,10 @@ const UserSchema = new mongoose.Schema(
     hubs:[{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Hub" 
+    }],
+    classes:[{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Class" 
     }],
     students:[{
         type:mongoose.Schema.Types.ObjectId,

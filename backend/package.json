@@ -11,7 +11,7 @@
     "build": "tsc",
     "start": "ts-node src/index.ts",
     "dev": "nodemon src/index.ts",
-    "test": "vitest run"
+    "test": "vitest run src"
   },
   "dependencies": {
     "@upstash/redis": "^1.39.0",

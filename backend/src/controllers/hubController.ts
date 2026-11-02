@@ -203,12 +203,14 @@ const joinHubByInviteToken = async (req: Request, res: Response) => {
             // Add student to the Cohort
             await group.updateOne({ $push: { students: req.user.userId } });
             
-            // Add Hub to User's list
+            // Add Hub and Class to User's list
             await User.updateOne(
                 { _id: req.user.userId },
                 { 
-                    $addToSet: { hubs: group.hub._id },
-                    $push: { classes: group._id }
+                    $addToSet: { 
+                        hubs: group.hub._id || group.hub,
+                        classes: group._id 
+                    }
                 }
             );
             const membership = new Membership({
