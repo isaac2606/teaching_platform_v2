@@ -4,6 +4,11 @@ import User from "../models/User";
 import Class from "../models/Class";
 import crypto from "crypto";
 import Membership from "../models/Membership";
+import { 
+  enrollUserInHub, 
+  removeUserFromHub, 
+  joinHubOrClassByInviteToken 
+} from "../services/membershipService";
 
 const createHub = async (req: Request, res: Response) => {
   try {
@@ -14,13 +19,7 @@ const createHub = async (req: Request, res: Response) => {
       inviteToken:inviteToken
     });
     const savedHub = await hub.save();
-    const membership = new Membership({
-      hub:savedHub._id,
-      user:req.user.userId,
-      role:"owner"
-    })
-    const savedMembership = await membership.save();
-    await User.findByIdAndUpdate({ _id: req.user.userId }, { $push: { hubs: savedHub._id } });
+    await enrollUserInHub(req.user.userId, savedHub._id, "owner");
     res.status(201).json(savedHub);
   } catch (err) {
     if (err instanceof Error) {
@@ -38,32 +37,13 @@ const leaveHub = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Hub not found" });
     }
 
-    if (hub.students.includes(req.user.userId)) {
-      await hub.updateOne({ $pull: { students: req.user.userId } });
-      
-      const classesInHub = await Class.find({ hub: hub._id });
-      const classIds = classesInHub.map(c => c._id);
-
-      await Class.updateMany(
-        { hub: hub._id },
-        { $pull: { students: req.user.userId } }
-      );
-
-      await User.updateOne(
-        { _id: req.user.userId },
-        { 
-            $pull: { hubs: hub._id },
-            $pullAll: { classes: classIds } 
-        }
-      );
-      const membership = await Membership.deleteOne({
-        user:req.user.userId,
-        hub:hub._id
-      })
-      res.status(200).json({ message: "Student left the hub and its groups" });
-    } else {
-      res.status(200).json({ message: "Student was not in the hub" });
+    const membership = await Membership.findOne({ user: req.user.userId, hub: hub._id });
+    if (!membership) {
+      return res.status(200).json({ message: "Student was not in the hub" });
     }
+
+    await removeUserFromHub(req.user.userId, hub._id);
+    res.status(200).json({ message: "Student left the hub and its groups" });
   } catch (err) {
     if (err instanceof Error) {
       res.status(500).json({ error: err.message });
@@ -76,40 +56,26 @@ const leaveHub = async (req: Request, res: Response) => {
 
 const kickStudent = async(req: Request, res: Response)=>{
   try {
+    const studentId = req.params.studentId as string;
+    if (!studentId) {
+      return res.status(400).json({ message: "Student ID required" });
+    }
+
     const hub = await Hub.findById(req.params.id);
     if (!hub) {
       return res.status(404).json({ message: "Hub not found" });
     }
-     if (hub.teacher.toString() !== req.user.userId) {
+    if (hub.teacher.toString() !== req.user.userId) {
       return res.status(403).json({ message: "You do not have permission to modify this hub's roster." });
     }
 
-    if (hub.students.some(id => id.toString() === req.params.studentId)) {
-      await hub.updateOne({ $pull: { students: req.params.studentId} });
-      
-      const classesInHub = await Class.find({ hub: hub._id });
-      const classIds = classesInHub.map(c => c._id);
-
-      await Class.updateMany(
-        { hub: hub._id },
-        { $pull: { students: req.params.studentId } }
-      );
-
-      await User.updateOne(
-        { _id: req.params.studentId },
-        { 
-            $pull: { hubs: hub._id },
-            $pullAll: { classes: classIds }
-        }
-      );
-      const membership = await Membership.deleteOne({
-        user:req.params.studentId ,
-        hub:hub._id
-      })
-      res.status(200).json({ message: "Student kicked from the hub and all its groups" });
-    } else {
-      res.status(200).json({ message: "Student was not in the hub" });
+    const membership = await Membership.findOne({ user: studentId, hub: hub._id });
+    if (!membership) {
+      return res.status(200).json({ message: "Student was not in the hub" });
     }
+
+    await removeUserFromHub(studentId, hub._id);
+    res.status(200).json({ message: "Student kicked from the hub and all its groups" });
   } catch (err) {
     if (err instanceof Error) {
       res.status(500).json({ error: err.message });
@@ -193,71 +159,34 @@ const getHubByInviteToken = async (req: Request, res: Response) => {
 
 const joinHubByInviteToken = async (req: Request, res: Response) => {
     try {
-
-        const hub = await Hub.findOne({ inviteToken: req.params.inviteToken });
-        const group = await Class.findOne({ inviteToken: req.params.inviteToken });
-
-
-        if(!hub && group){
-          if (!group.students.includes(req.user.userId)) {
-            // Add student to the Cohort
-            await group.updateOne({ $push: { students: req.user.userId } });
-            
-            // Add Hub and Class to User's list
-            await User.updateOne(
-                { _id: req.user.userId },
-                { 
-                    $addToSet: { 
-                        hubs: group.hub._id || group.hub,
-                        classes: group._id 
-                    }
-                }
-            );
-            const membership = new Membership({
-              hub:group.hub._id,
-              user:req.user.userId,
-              role:"student"
-            })
-            const savedMembership = await membership.save();
-            res.status(200).json({ message: "Student joined the Class successfully" });
-          } else {
-            res.status(200).json({ message: "Student already in the Class" });
+        const inviteToken = req.params.inviteToken as string;
+        if (!inviteToken) {
+            return res.status(400).json({ message: "Invite token required" });
         }
-        }else if (!hub) {
+
+        const result = await joinHubOrClassByInviteToken(req.user.userId, inviteToken);
+        if (!result) {
             return res.status(404).json({ message: "Hub not found or invalid invite token." });
+        }
 
-
-        }else{
-          if (!hub.students.includes(req.user.userId)) {
-              // Add student to the Cohort
-              await hub.updateOne({ $push: { students: req.user.userId } });
-              
-              // Add Hub to User's list
-              await User.updateOne(
-                  { _id: req.user.userId },
-                  { 
-                      $addToSet: { hubs: hub._id },
-                  }
-              );
-              const membership = new Membership({
-              hub:hub._id,
-              user:req.user.userId,
-              role:"student"
-            })
-            const savedMembership = await membership.save();
-
-              res.status(200).json({ message: "Student joined the Hub successfully" });
-          } else {
-              res.status(200).json({ message: "Student already in the Hub" });
-          }
+        if (result.type === "class") {
+            if (result.alreadyJoined) {
+                return res.status(200).json({ message: "Student already in the Class" });
+            }
+            return res.status(200).json({ message: "Student joined the Class successfully" });
+        } else {
+            if (result.alreadyJoined) {
+                return res.status(200).json({ message: "Student already in the Hub" });
+            }
+            return res.status(200).json({ message: "Student joined the Hub successfully" });
         }
     } catch (err) {
-    if (err instanceof Error) {
-      res.status(500).json({ error: err.message });
-    } else {
-      res.status(500).json("An unknown error occurred");
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        } else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
-  }
 };
 
 const updateHub = async (req: Request, res: Response) => {
@@ -288,6 +217,7 @@ const deleteHub = async (req: Request, res: Response) => {
     }
    
     const hubId = req.params.id as string;
+    await Membership.deleteMany({ hub: hubId });
     await User.updateMany(
       { hubs: hubId },
       { $pull: { hubs: hubId } }

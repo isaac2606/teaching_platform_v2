@@ -3,6 +3,7 @@ import User from "../models/User";
 import Hub from "../models/Hub";
 import Class from "../models/Class";
 import crypto from "crypto";
+import { assignStudentToClass, joinClassByInviteToken } from "../services/membershipService";
 
 const createClass = async (req: Request, res: Response) => {
     try {
@@ -78,100 +79,66 @@ const getClassesByHub = async (req: Request, res: Response) => {
 
 const assignStudent = async (req: Request, res: Response) => {
     try {
+        const studentId = req.body.studentId as string;
+        const classId = req.params.classId as string;
+
+        if (!studentId || !classId) {
+            return res.status(400).json({ message: "Student ID and Class ID are required" });
+        }
+
         // First verify the student actually exists
-        const student = await User.findById(req.body.studentId);
+        const student = await User.findById(studentId);
         if (!student || student.role !== "student") {
             return res.status(404).json({ message: "Student not found. Please check the ID." });
         }
 
         // Verify the class exists and check if student is already in it
-        const targetClass = await Class.findById(req.params.classId);
+        const targetClass = await Class.findById(classId);
         if (!targetClass) {
             return res.status(404).json({ message: "Class not found" });
         }
 
-        if (targetClass.students.includes(req.body.studentId)) {
+        if (targetClass.students.some(s => s.toString() === studentId)) {
             return res.status(400).json({ message: "Student is already enrolled in this group." });
         }
 
-        const updatedClass = await Class.findByIdAndUpdate(
-            req.params.classId,
-            { $addToSet: { students: req.body.studentId } },
-            { new: true }
-        );
-
-        if (!updatedClass) {
-            return res.status(404).json({ message: "Class not found" });
-        }
-
-        // Add student to the parent Hub
-        await Hub.updateOne(
-            { _id: updatedClass.hub },
-            { $addToSet: { students: req.body.studentId } }
-        );
-
-        // Add Hub and Class to Student's User document
-        await User.updateOne(
-            { _id: req.body.studentId },
-            { 
-                $addToSet: { 
-                    hubs: updatedClass.hub,
-                    classes: updatedClass._id 
-                }
-            }
-        );
+        const updatedClass = await assignStudentToClass(studentId, classId);
 
         res.status(200).json({ message: "Student assigned successfully", class: updatedClass });
     } catch (err) {
-    if (err instanceof Error) {
-      res.status(500).json({ error: err.message });
-    } else {
-      res.status(500).json("An unknown error occurred");
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        } else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
-  }
 };
 
 const joinClass = async (req: Request, res: Response) => {
     try {
-        const classObj = await Class.findOne({ inviteToken: req.params.inviteToken });
+        const inviteToken = req.params.inviteToken as string;
+        if (!inviteToken) {
+            return res.status(400).json({ message: "Invite token is required" });
+        }
+
+        const result = await joinClassByInviteToken(req.user.userId, inviteToken);
         
-        if (!classObj) {
-            
+        if (!result) {
             return res.status(404).json({ message: "Class not found or invalid invite token." });
         }
         
-        if (!classObj.students.includes(req.user.userId)) {
-            // Add student to the Cohort
-            await classObj.updateOne({ $push: { students: req.user.userId } });
-            
-            // Add student to the Hub if not already there
-            await Hub.updateOne(
-                { _id: classObj.hub },
-                { $addToSet: { students: req.user.userId } }
-            );
-
-            // Add Hub and Class to User's list
-            await User.updateOne(
-                { _id: req.user.userId },
-                { 
-                    $addToSet: { 
-                        hubs: classObj.hub,
-                        classes: classObj._id 
-                    }
-                }
-            );
-
-            res.status(200).json({ message: "Student joined the class successfully" });
-        } else {
-            res.status(200).json({ message: "Student already in the class" });
+        if (result.alreadyJoined) {
+            return res.status(200).json({ message: "Student already in the class" });
         }
+
+        res.status(200).json({ message: "Student joined the class successfully" });
     } catch (err) {
-    if (err instanceof Error) {
-      res.status(500).json({ error: err.message });
-    } else {
-      res.status(500).json("An unknown error occurred");
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        } else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
-  }
 };
 
 const editClass = async (req: Request, res: Response) => {
