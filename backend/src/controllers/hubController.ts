@@ -9,6 +9,7 @@ import {
   removeUserFromHub, 
   joinHubOrClassByInviteToken 
 } from "../services/membershipService";
+import { cascadeDeleteHub } from "../services/cascadeDeleteService";
 
 const createHub = async (req: Request, res: Response) => {
   try {
@@ -211,19 +212,17 @@ const updateHub = async (req: Request, res: Response) => {
 
 const deleteHub = async (req: Request, res: Response) => {
   try {
-    const hub = await Hub.findByIdAndDelete(req.params.id);
-    if (!hub) {
+    const hubId = req.params.id as string;
+    if (!hubId) {
+      return res.status(400).json({ message: "Hub ID required" });
+    }
+
+    const deletedHub = await cascadeDeleteHub(hubId);
+    if (!deletedHub) {
       return res.status(404).json({ message: "Hub not found" });
     }
-   
-    const hubId = req.params.id as string;
-    await Membership.deleteMany({ hub: hubId });
-    await User.updateMany(
-      { hubs: hubId },
-      { $pull: { hubs: hubId } }
-    );
     
-    res.status(200).json({ message: "Hub has been deleted" });
+    res.status(200).json({ message: "Hub and all associated resources deleted successfully" });
   } catch (err) {
     if (err instanceof Error) {
       res.status(500).json({ error: err.message });

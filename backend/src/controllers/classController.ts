@@ -4,6 +4,7 @@ import Hub from "../models/Hub";
 import Class from "../models/Class";
 import crypto from "crypto";
 import { assignStudentToClass, joinClassByInviteToken } from "../services/membershipService";
+import { cascadeDeleteClass } from "../services/cascadeDeleteService";
 
 const createClass = async (req: Request, res: Response) => {
     try {
@@ -181,33 +182,25 @@ const editClass = async (req: Request, res: Response) => {
 
 const deleteClass = async (req: Request, res: Response) => {
     try {
-        const classObj = await Class.findOne({ _id: req.params.classId, teacher: req.user.userId });
+        const classId = req.params.classId as string;
+        if (!classId) {
+            return res.status(400).json({ message: "Class ID required" });
+        }
+
+        const deletedClass = await cascadeDeleteClass(classId, req.user.userId);
         
-        if (!classObj) {
+        if (!deletedClass) {
             return res.status(404).json({ message: "Class not found or unauthorized" });
         }
 
-        // Remove from Hub's classes array
-        await Hub.findByIdAndUpdate(classObj.hub, {
-            $pull: { classes: classObj._id }
-        });
-
-        // Remove from all Users' classes array (teacher and students)
-        await User.updateMany(
-            { classes: classObj._id },
-            { $pull: { classes: classObj._id } }
-        );
-
-        await Class.findByIdAndDelete(req.params.classId);
-
         res.status(200).json({ message: "Class deleted successfully" });
     } catch (err) {
-    if (err instanceof Error) {
-      res.status(500).json({ error: err.message });
-    } else {
-      res.status(500).json("An unknown error occurred");
+        if (err instanceof Error) {
+            res.status(500).json({ error: err.message });
+        } else {
+            res.status(500).json("An unknown error occurred");
+        }
     }
-  }
 };
 
 const recordAttendance = async (req: Request, res: Response) => {
