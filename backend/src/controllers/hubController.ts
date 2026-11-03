@@ -20,7 +20,12 @@ const createHub = async (req: Request, res: Response) => {
       inviteToken:inviteToken
     });
     const savedHub = await hub.save();
-    await enrollUserInHub(req.user.userId, savedHub._id, "owner");
+    try {
+      await enrollUserInHub(req.user.userId, savedHub._id, "owner");
+    } catch (enrollError) {
+      await Hub.findByIdAndDelete(savedHub._id);
+      throw enrollError;
+    }
     res.status(201).json(savedHub);
   } catch (err) {
     if (err instanceof Error) {

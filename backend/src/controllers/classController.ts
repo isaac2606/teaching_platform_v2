@@ -42,13 +42,18 @@ const createClass = async (req: Request, res: Response) => {
 
         const savedClass = await newClass.save();
 
-        await Hub.findByIdAndUpdate(req.body.hubId, { 
-            $push: { classes: savedClass._id } 
-        });
-        
-        await User.findByIdAndUpdate(req.user.userId, { 
-            $addToSet: { classes: savedClass._id } 
-        });
+        try {
+            await Hub.findByIdAndUpdate(req.body.hubId, { 
+                $push: { classes: savedClass._id } 
+            });
+            
+            await User.findByIdAndUpdate(req.user.userId, { 
+                $addToSet: { classes: savedClass._id } 
+            });
+        } catch (linkError) {
+            await Class.findByIdAndDelete(savedClass._id);
+            throw linkError;
+        }
 
         res.status(201).json(savedClass);
     } catch (err) {
