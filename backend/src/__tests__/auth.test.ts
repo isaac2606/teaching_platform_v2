@@ -12,6 +12,8 @@ beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
   const uri = mongoServer.getUri();
   await mongoose.connect(uri);
+  // Ensure unique indexes are built
+  await User.init();
 });
 
 afterAll(async () => {
@@ -39,7 +41,6 @@ describe("Auth Routes Integration Tests", () => {
         role: "student"
       });
 
-    console.log("TEST 1 BODY:", res.body);
     expect(res.status).toBe(400); // Expecting Bad Request
     expect(res.body.message).toBe("Validation failed ");
   });
@@ -54,7 +55,6 @@ describe("Auth Routes Integration Tests", () => {
           role: "teacher"
       });
 
-    console.log("TEST 2 BODY:", res.body);
     expect(res.status).toBe(200);
     expect(res.body.message).toBe("user registered succesfully");
 
@@ -66,6 +66,84 @@ describe("Auth Routes Integration Tests", () => {
     
     expect(cookiesString).toContain('accessToken=');
     expect(cookiesString).toContain('HttpOnly');
+  });
+
+  it("should block sequential duplicate registration with the same email", async () => {
+    // First registration
+    const res1 = await request(app)
+      .post("/api/auth/Register")
+      .send({
+        username: "user1",
+        email: "duplicate@example.com",
+        password: "password123",
+        role: "student"
+      });
+    expect(res1.status).toBe(200);
+
+    // Second registration with the exact same email
+    const res2 = await request(app)
+      .post("/api/auth/Register")
+      .send({
+        username: "user2",
+        email: "duplicate@example.com",
+        password: "password123",
+        role: "student"
+      });
+    expect(res2.status).toBe(400);
+    expect(res2.body.message).toBe("User with this email already exists.");
+  });
+
+  it("should block duplicate registration even if email casing differs (case-insensitive)", async () => {
+    await request(app)
+      .post("/api/auth/Register")
+      .send({
+        username: "userA",
+        email: "casecheck@example.com",
+        password: "password123",
+        role: "student"
+      });
+
+    // Try registering with uppercase
+    const res = await request(app)
+      .post("/api/auth/Register")
+      .send({
+        username: "userB",
+        email: "CASECHECK@EXAMPLE.COM",
+        password: "password123",
+        role: "student"
+      });
+    expect(res.status).toBe(400);
+    expect(res.body.message).toBe("User with this email already exists.");
+  });
+
+  it("should prevent duplicate emails under concurrent/race condition requests via database unique index", async () => {
+    // Send two simultaneous registration requests for the same email
+    const [resA, resB] = await Promise.all([
+      request(app)
+        .post("/api/auth/Register")
+        .send({
+          username: "concurrent1",
+          email: "racecondition@example.com",
+          password: "password123",
+          role: "student"
+        }),
+      request(app)
+        .post("/api/auth/Register")
+        .send({
+          username: "concurrent2",
+          email: "racecondition@example.com",
+          password: "password123",
+          role: "student"
+        })
+    ]);
+
+    // Exactly one must succeed (200) and one must be rejected (400)
+    const statuses = [resA.status, resB.status].sort();
+    expect(statuses).toEqual([200, 400]);
+
+    // In the database, only one user exists
+    const usersInDb = await User.find({ email: "racecondition@example.com" });
+    expect(usersInDb).toHaveLength(1);
   });
 
 });
