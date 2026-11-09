@@ -1,14 +1,16 @@
 import mongoose, { Document, Schema } from "mongoose";
+
 export interface IAssignment extends Document {
   title: string;
   description?: string;
-  teacher: mongoose.Types.ObjectId;
   dueDate: Date;
-  feedback?: string;
+  totalPoints: number;
+  attachments: string[];
   hub: mongoose.Types.ObjectId;
-  classes?: mongoose.Types.ObjectId[];
+  classes: mongoose.Types.ObjectId[];
+  teacher: mongoose.Types.ObjectId;
   type: "assignment" | "homework" | "quiz" | "project" | "exam";
-  imageUrl?: string;
+  status: "draft" | "published" | "closed";
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -40,10 +42,12 @@ const assignmentSchema = new mongoose.Schema(
       ref: "Hub",
       required: true,
     },
-  classes: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Class",
-    }],
+    classes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Class",
+      },
+    ],
     teacher: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -53,7 +57,7 @@ const assignmentSchema = new mongoose.Schema(
       type: String,
       enum: ["assignment", "homework", "quiz", "project", "exam"],
       default: "assignment",
-      required: true
+      required: true,
     },
     status: {
       type: String,
@@ -64,4 +68,4 @@ const assignmentSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export default mongoose.model<IAssignment>("Assignment",assignmentSchema);
+export default mongoose.model<IAssignment>("Assignment", assignmentSchema);

@@ -1,9 +1,11 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface IMembership extends Document {
-    user: mongoose.Types.ObjectId,
-    hub: mongoose.Types.ObjectId,
-    role: "owner" | "co_teacher" | "student"
+    user: mongoose.Types.ObjectId;
+    hub: mongoose.Types.ObjectId;
+    role: "owner" | "co_teacher" | "student";
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 
 const MembershipSchema = new mongoose.Schema({
