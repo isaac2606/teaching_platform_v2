@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import User from "../models/User";
 import Hub from "../models/Hub";
 import Class from "../models/Class";
+import Attendance from "../models/Attendance";
 import crypto from "crypto";
 import { assignStudentToClass, joinClassByInviteToken } from "../services/membershipService";
 import { cascadeDeleteClass } from "../services/cascadeDeleteService";
@@ -213,21 +214,56 @@ const recordAttendance = async (req: Request, res: Response) => {
         const { classId } = req.params;
         const { records } = req.body;
         
-        const Attendance = require('../models/Attendance').default;
-        
+        if (!classId) {
+            return res.status(400).json({ message: "Class ID is required" });
+        }
+
+        if (!records || typeof records !== "object" || Object.keys(records).length === 0) {
+            return res.status(400).json({ message: "Attendance records are required" });
+        }
+
+        const targetClass = await Class.findById(classId);
+        if (!targetClass) {
+            return res.status(404).json({ message: "Class not found" });
+        }
+
+        const enrolledStudentIds = new Set(targetClass.students.map(s => s.toString()));
+
+        // Validate that all students in records are enrolled in this class and have valid status
         for (const [studentId, status] of Object.entries(records)) {
-            // Capitalize status to match model enum 'Present' or 'Absent'
-            const formattedStatus = (status as string).charAt(0).toUpperCase() + (status as string).slice(1);
+            if (!enrolledStudentIds.has(studentId)) {
+                return res.status(400).json({ 
+                    message: `Student with ID ${studentId} is not enrolled in this class.` 
+                });
+            }
+
+            const formattedStatus = typeof status === "string" 
+                ? (status.charAt(0).toUpperCase() + status.slice(1).toLowerCase())
+                : "";
+
+            if (!["Present", "Absent", "Late"].includes(formattedStatus)) {
+                return res.status(400).json({ 
+                    message: `Invalid attendance status '${status}' for student ${studentId}. Valid values are 'Present', 'Absent', 'Late'.` 
+                });
+            }
+        }
+
+        // Normalize session date to start of day (midnight) to align with compound unique index
+        const sessionDate = new Date();
+        sessionDate.setHours(0, 0, 0, 0);
+
+        for (const [studentId, status] of Object.entries(records)) {
+            const formattedStatus = (status as string).charAt(0).toUpperCase() + (status as string).slice(1).toLowerCase();
             
             await Attendance.findOneAndUpdate(
-                { student: studentId, classCohort: classId, date: { $gte: new Date().setHours(0,0,0,0) } },
+                { student: studentId, classCohort: classId, date: sessionDate },
                 { 
                     student: studentId, 
                     classCohort: classId, 
                     status: formattedStatus,
-                    date: new Date()
+                    date: sessionDate
                 },
-                { upsert: true, new: true }
+                { upsert: true, returnDocument: 'after' }
             );
         }
         
