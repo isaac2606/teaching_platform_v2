@@ -25,6 +25,7 @@ export default function AssignmentTab() {
   const queryClient = useQueryClient();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [file, setFile] = useState(null);
 
   const isTeacher = user?.role === "teacher";
@@ -134,7 +135,10 @@ export default function AssignmentTab() {
                   <svg className="w-4 h-4 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
                   <span>Due: {new Date(assignment.dueDate).toLocaleDateString()}</span>
                 </div>
-                <button className="text-brand-primary font-bold hover:text-white transition-colors text-sm">
+                <button 
+                  onClick={() => setSelectedAssignment(assignment)}
+                  className="text-brand-primary font-bold hover:text-white transition-colors text-sm cursor-pointer"
+                >
                   View →
                 </button>
               </div>
@@ -230,6 +234,79 @@ export default function AssignmentTab() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW ASSIGNMENT MODAL */}
+      {selectedAssignment && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-bg-surface p-8 rounded-3xl border border-white/10 shadow-2xl w-full max-w-xl relative">
+            <button 
+              onClick={() => setSelectedAssignment(null)}
+              className="absolute top-6 right-6 w-8 h-8 flex items-center justify-center rounded-full bg-white/5 hover:bg-white/10 text-text-secondary hover:text-white transition-colors cursor-pointer"
+            >
+              ✕
+            </button>
+
+            <div className="flex items-center gap-3 mb-4">
+              <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
+                selectedAssignment.type === 'exam' ? 'bg-red-500/20 text-red-400 border border-red-500/30' :
+                selectedAssignment.type === 'homework' ? 'bg-green-500/20 text-green-400 border border-green-500/30' :
+                'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+              }`}>
+                {selectedAssignment.type}
+              </span>
+              <span className="text-text-secondary text-sm font-medium">
+                {selectedAssignment.totalPoints} Points
+              </span>
+            </div>
+
+            <h2 className="text-2xl font-bold text-text-primary mb-3">
+              {selectedAssignment.title}
+            </h2>
+
+            <div className="flex items-center gap-2 text-sm text-text-secondary mb-6 pb-4 border-b border-white/10">
+              <svg className="w-4 h-4 text-brand-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <span>Due: {new Date(selectedAssignment.dueDate).toLocaleDateString()}</span>
+            </div>
+
+            <div className="mb-6">
+              <h4 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2">Instructions</h4>
+              <div className="bg-black/20 border border-white/10 rounded-xl p-4 text-text-primary text-sm whitespace-pre-wrap max-h-60 overflow-y-auto">
+                {selectedAssignment.description || "No instructions provided."}
+              </div>
+            </div>
+
+            {selectedAssignment.attachments?.length > 0 && (
+              <div className="mb-6">
+                <h4 className="text-xs font-bold text-text-secondary uppercase tracking-widest mb-2">Attachments</h4>
+                <div className="flex flex-col gap-2">
+                  {selectedAssignment.attachments.map((url: string, index: number) => (
+                    <a
+                      key={index}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-brand-primary text-sm font-medium transition-colors"
+                    >
+                      📎 View / Download Attachment #{index + 1}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end pt-4 border-t border-white/10">
+              <button
+                onClick={() => setSelectedAssignment(null)}
+                className="bg-white/10 hover:bg-white/20 text-white px-6 py-2.5 rounded-xl font-bold transition-all cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
