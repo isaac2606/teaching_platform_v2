@@ -28,7 +28,6 @@ const ChatTab = lazy(() => import("./pages/tabs/ChatTab"));
 const ScheduleTab = lazy(() => import("./pages/tabs/ScheduleTab"));
 const AssignmentTab = lazy(() => import("./pages/tabs/AssignmentTab"));
 const RosterTab = lazy(() => import("./pages/tabs/RosterTab"));
-const VaultTab = lazy(() => import("./pages/tabs/VaultTab"));
 
 // Fallback loader component
 const Loader = () => (
@@ -106,8 +105,7 @@ const router = createBrowserRouter([
                 path: "roster", 
                 element: <RosterTab />,
                 loader: StudentsLoader // <-- Attached specifically to the Roster Tab!
-              },
-              { path: "vault", element: <VaultTab /> }
+              }
             ]
           },
           {
