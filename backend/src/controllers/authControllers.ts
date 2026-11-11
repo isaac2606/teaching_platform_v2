@@ -1,5 +1,4 @@
-import { Request, Response } from "express";
-import express from "express";
+import { Request, Response, CookieOptions } from "express";
 import User from "../models/User";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -12,13 +11,36 @@ interface DecodedToken {
 const JWT_SECRET = process.env.JWT_SECRET!
 const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET! || "your-refresh-secret-key-change-this"
 
+const isProduction = process.env.NODE_ENV === "production";
+
+// Cross-site cookie configuration for production deployment (e.g. Vercel + Render)
+const getAccessTokenCookieOptions = (): CookieOptions => ({
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+  maxAge: 15 * 60 * 1000, // 15 mins
+});
+
+const getRefreshTokenCookieOptions = (): CookieOptions => ({
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+});
+
+const getClearCookieOptions = (): CookieOptions => ({
+  httpOnly: true,
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+});
+
 const logout= async (req: Request, res: Response)=>{
     try{
     const userId = req.user.userId;
 
     await User.findByIdAndUpdate(userId,{refreshToken:null});
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
+    res.clearCookie("accessToken", getClearCookieOptions());
+    res.clearCookie("refreshToken", getClearCookieOptions());
 
     res.status(200).json({message:"logged out succesfully"})
     }catch (err) {
@@ -73,18 +95,8 @@ const login = async (req: Request, res: Response)=>{
         const {password,...userWithoutPassword} = user.toObject();
 
 
-        res.cookie("accessToken",accessToken,{
-            httpOnly:true,
-            secure:process.env.NODE_ENV ==="production",
-            sameSite:"lax",
-            maxAge:15*60*1000
-        })
-         res.cookie("refreshToken", refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        });
+        res.cookie("accessToken", accessToken, getAccessTokenCookieOptions());
+        res.cookie("refreshToken", refreshToken, getRefreshTokenCookieOptions());
         res.status(200).json({
             message:"loggin succesful",
             user:userWithoutPassword,
@@ -144,18 +156,8 @@ const register = async (req: Request, res: Response)=> {
         await user.save();
         const {password,...userWithoutPassword} = user.toObject();
 
-        res.cookie("accessToken",accessToken,{
-            httpOnly:true,
-            secure:process.env.NODE_ENV ==="production",
-            sameSite:"lax",
-            maxAge:15*60*1000
-        })
-         res.cookie("refreshToken", refreshToken, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        });
+        res.cookie("accessToken", accessToken, getAccessTokenCookieOptions());
+        res.cookie("refreshToken", refreshToken, getRefreshTokenCookieOptions());
         res.status(200).json({
             message:"user registered succesfully",
             user: userWithoutPassword
@@ -213,19 +215,8 @@ const refresh = async (req: Request, res: Response) => {
             user.refreshToken = await bcrypt.hash(newRefreshToken, 10);
             await user.save();
 
-            res.cookie("accessToken", newAccessToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "lax",
-                maxAge: 15*60*1000, // 15m
-            });
-
-            res.cookie("refreshToken", newRefreshToken, {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                sameSite: "lax",
-                maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-            });
+            res.cookie("accessToken", newAccessToken, getAccessTokenCookieOptions());
+            res.cookie("refreshToken", newRefreshToken, getRefreshTokenCookieOptions());
 
             res.status(200).json({
                 

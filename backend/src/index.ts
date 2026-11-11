@@ -10,12 +10,28 @@ import cookieParser from "cookie-parser";
 import http from "http";
 import { Server } from "socket.io";
 const server = http.createServer(app);
+
+// Allowed origins for CORS (Production domain + local development ports)
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  "http://localhost:5173",
+  "http://localhost:5174",
+].filter(Boolean) as string[];
+
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (like mobile apps, curl, or server-to-server)
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+};
+
 const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:5173",
-    credentials:true, // Allows your React app to connect
-    methods: ["GET", "POST"]
-  }
+  cors: corsOptions
 });
 import Message from "./models/Message";
 import User from "./models/User";
@@ -42,10 +58,7 @@ if (process.env.NODE_ENV !== "test") {
 }
 
 
-app.use(cors({
-    origin:"http://localhost:5173",
-    credentials:true,
-}));
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 app.use(helmet({
