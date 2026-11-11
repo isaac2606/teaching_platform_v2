@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { useState } from "react";
+import { useState, useContext } from "react";
 
 import { Link, useLoaderData } from "react-router-dom";
 import api from "../services/api";
@@ -7,12 +7,14 @@ import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import HubCard from "../features/hubs/HubCard";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { AuthContext } from "../context/AuthContext";
 
 export default function Dashboard() {
   const data = useLoaderData();
+  const { user } = useContext(AuthContext);
   const queryClient = useQueryClient();
   
-  const isTeacher = data?.role === "teacher";
+  const isTeacher = user?.role === "teacher" || data?.role === "teacher";
 
   const [newHubTitle, setNewHubTitle] = useState("");
 
@@ -32,6 +34,10 @@ export default function Dashboard() {
     onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: ['hubs'] });
         setNewHubTitle("");
+    },
+    onError: (err: any) => {
+        console.error("Failed to create hub:", err);
+        alert(err.response?.data?.message || err.message || "Failed to create hub");
     }
   });
 
@@ -76,7 +82,14 @@ export default function Dashboard() {
                     
                     <Button 
                         variant="primary"
-                        onClick={() => createHubMutation.mutate(newHubTitle)}
+                        onClick={() => {
+                            const trimmed = newHubTitle.trim();
+                            if (!trimmed) {
+                                alert("Please enter a Hub title (e.g. 3ème Math)");
+                                return;
+                            }
+                            createHubMutation.mutate(trimmed);
+                        }}
                         disabled={createHubMutation.isPending}
                     > 
                         {createHubMutation.isPending ? "Creating..." : "Create Hub"}

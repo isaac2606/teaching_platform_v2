@@ -1,5 +1,8 @@
 import express from "express";
-import "dotenv/config";
+import dotenv from "dotenv";
+import path from "path";
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
+dotenv.config();
 import cors from "cors";
 const app = express();
 
@@ -20,7 +23,6 @@ import Hub from "./models/Hub";
 import mongoose from "mongoose";
 import helmet from "helmet";
 import morgan from "morgan";
-import path from "path";
 import jwt from "jsonwebtoken";
 import authRoute from "./routes/auth";
 import userRoute from "./routes/user";
@@ -58,6 +60,10 @@ app.use("/api/class",classRoute)
 app.use("/api/message",messageRoute)
 app.use("/api/upload",uploadRoute)
 app.use("/api/assignment",assignmentRoute)
+
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
 
 io.use((socket, next) => {
     // 1. Grab the raw cookie string from the handshake headers
@@ -179,9 +185,11 @@ io.on("connection", async (socket) => {
       }
   })
 })
+const PORT = process.env.PORT || 3000;
+
 if (process.env.NODE_ENV !== "test") {
-  server.listen(3000, () => {
-      console.log("backend server is running")
+  server.listen(PORT, () => {
+      console.log(`backend server is running on port ${PORT}`);
   });
 }
 

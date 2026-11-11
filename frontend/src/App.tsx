@@ -1,8 +1,8 @@
 // @ts-nocheck
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useContext } from "react";
 import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 import DashboardLayout from "./layouts/DashboardLayout";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, AuthContext } from "./context/AuthContext";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import { dashboardLoader , HubLoader,AllStudentsLoader,StudentsLoader} from "./loaders";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -35,6 +35,16 @@ const Loader = () => (
     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-primary"></div>
   </div>
 );
+
+// Dynamic Role-based Dashboard router
+const DynamicDashboard = () => {
+  const { user, loading } = useContext(AuthContext);
+  if (loading) return <Loader />;
+  if (user?.role === "teacher") {
+    return <Suspense fallback={<Loader />}><Dashboard /></Suspense>;
+  }
+  return <Suspense fallback={<Loader />}><StudentDashboard /></Suspense>;
+};
 
 import { useLoaderData } from "react-router-dom";
 import Messages from "./pages/Messages";
@@ -85,10 +95,15 @@ const router = createBrowserRouter([
             element: <Suspense fallback={<Loader />}><StudentDashboard /></Suspense>,
             loader: dashboardLoader
           },
-          // Alias for backward compatibility or simple redirect
+          // Dynamic Dashboard based on user role
           {
             path: "dashboard",
-            element: <Navigate to="/dashboard/student" replace /> // In a real scenario, this would dynamically check role.
+            element: <DynamicDashboard />,
+            loader: dashboardLoader
+          },
+          {
+            path: "hubs",
+            element: <Navigate to="/dashboard" replace />
           },
           {
             id: "hub-workspace",

@@ -1,12 +1,15 @@
 // @ts-nocheck
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { Link } from "react-router-dom";
 import HubCard from "../features/hubs/HubCard";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 import api from "../services/api";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { AuthContext } from "../context/AuthContext";
 
 export default function StudentDashboard() {
+  const { user } = useContext(AuthContext);
   const queryClient = useQueryClient();
   const [newHubTitle, setNewHubTitle] = useState("");
   const [filter, setFilter] = useState("all");
@@ -45,6 +48,15 @@ export default function StudentDashboard() {
   return (
     <div className="p-8 min-h-screen text-text-primary font-sans flex-1 bg-bg-base transition-colors duration-300">
         
+        {user?.role === "teacher" && (
+            <div className="mb-6 p-4 bg-brand-primary/10 border border-brand-primary/30 rounded-xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <span className="text-sm font-medium">You are logged in as a <strong>Teacher</strong>. To create or manage hubs, open your teacher dashboard.</span>
+                <Link to="/dashboard/teacher" className="bg-brand-primary hover:bg-brand-secondary text-white px-4 py-1.5 rounded-lg text-sm font-bold transition-all shadow-md shrink-0">
+                    Go to Teacher Dashboard →
+                </Link>
+            </div>
+        )}
+
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 mb-8 bg-bg-surface border border-border-subtle p-6 rounded-xl shadow-md transition-colors">
             <h1 className="text-3xl font-bold tracking-tight text-text-primary">
                 My Hubs
