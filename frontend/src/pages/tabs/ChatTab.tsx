@@ -102,13 +102,11 @@ export default function ChatTab() {
             socket.emit("send_message", {
                 hubId: hub._id,
                 text: newMessage,
-                sender: user._id,
                 channel: activeTab.id
             });
         } else if (activeTab.type === "dm") {
             socket.emit("send_private_message", {
                 text: newMessage,
-                sender: user._id,
                 receiver: activeTab.id
             });
         }

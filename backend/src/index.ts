@@ -49,6 +49,13 @@ import messageRoute from "./routes/message";
 import uploadRoute from "./routes/upload";
 import assignmentRoute from "./routes/assignment";
 import { addConnection, removeConnection, getOnlineUsers } from "./services/redis";
+import Membership from "./models/Membership";
+
+// Returns the user's membership in a hub, or null if they are not a member (or hubId is invalid).
+const getHubMembership = async (userId: string | undefined, hubId: unknown) => {
+  if (!userId || typeof hubId !== "string" || !mongoose.Types.ObjectId.isValid(hubId)) return null;
+  return Membership.findOne({ user: userId, hub: hubId });
+};
 
 if (process.env.NODE_ENV !== "test") {
   mongoose
@@ -76,6 +83,16 @@ app.use("/api/assignment",assignmentRoute)
 
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// Global Error Handling Middleware (Catches unhandled route errors and returns clean JSON)
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error("Unhandled Error:", err.message || err);
+  const status = typeof err.status === "number" ? err.status : 500;
+  const isProd = process.env.NODE_ENV === "production";
+  res.status(status).json({
+    error: isProd ? "An unexpected server error occurred." : (err.message || "Internal Server Error"),
+  });
 });
 
 io.use((socket, next) => {
@@ -123,22 +140,37 @@ io.on("connection", async (socket) => {
     }
   }
 
-  socket.on("join_Hub", (hubId) => {
-    socket.join(hubId);
+  socket.on("join_Hub", async (hubId) => {
+    try {
+      // 🔒 Only hub members may join the hub's room (and receive its messages)
+      const membership = await getHubMembership(userId, hubId);
+      if (!membership) {
+        return socket.emit("chat_error", "You are not a member of this hub.");
+      }
+      socket.join(hubId);
+    } catch (err) {
+      console.error("Error joining hub:", err);
+    }
   });
 
   socket.on("send_message", async (data) => {
     try {
+      // 🔒 Only hub members may post in the hub
+      const membership = await getHubMembership(userId, data?.hubId);
+      if (!membership) {
+        return socket.emit("chat_error", "You are not a member of this hub.");
+      }
+
       const hub = await Hub.findById(data.hubId);
-      const senderUser = await User.findById(data.sender);
       const channel = data.channel || "general";
-      
-      if (hub && hub.lockedChannels && hub.lockedChannels.includes(channel) && senderUser?.role === "student") {
+
+      // 🔒 Lock check uses the user's real role in THIS hub, not a role claimed by the client
+      if (hub?.lockedChannels?.includes(channel) && membership.role === "student") {
         return socket.emit("chat_error", "This channel is currently locked by the teacher.");
       }
 
       const newMessage = await Message.create({
-        sender: data.sender,
+        sender: userId, // 🔒 verified identity from the auth middleware, never data.sender
         hubId: data.hubId,
         text: data.text,
         imageUrl: data.imageUrl || "",

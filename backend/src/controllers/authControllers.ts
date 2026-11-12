@@ -8,8 +8,8 @@ interface DecodedToken {
   role?: string;
 }
 
-const JWT_SECRET = process.env.JWT_SECRET!
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET! || "your-refresh-secret-key-change-this"
+const getJwtSecret = () => process.env.JWT_SECRET || "eduspace-default-jwt-secret-key-2026";
+const getRefreshTokenSecret = () => process.env.REFRESH_TOKEN_SECRET || "eduspace-default-refresh-secret-key-2026";
 
 const isProduction = process.env.NODE_ENV === "production";
 
@@ -77,7 +77,7 @@ const login = async (req: Request, res: Response)=>{
                 role:user.role
 
             },
-            JWT_SECRET!,
+            getJwtSecret(),
             {expiresIn:"15m"},
         );
         const refreshToken = jwt.sign(
@@ -86,7 +86,7 @@ const login = async (req: Request, res: Response)=>{
                 userId : user._id,
 
             },
-            REFRESH_TOKEN_SECRET,
+            getRefreshTokenSecret(),
             {expiresIn:"7d"}
         );
         user.refreshToken = await bcrypt.hash(refreshToken, 10);
@@ -140,7 +140,7 @@ const register = async (req: Request, res: Response)=> {
                 role:user.role
 
             },
-            JWT_SECRET!,
+            getJwtSecret(),
             {expiresIn:"15m"},
         );
 
@@ -149,7 +149,7 @@ const register = async (req: Request, res: Response)=> {
             {
                 userId : user._id,
             },
-            REFRESH_TOKEN_SECRET,
+            getRefreshTokenSecret(),
             { expiresIn: "7d" }
         );
         user.refreshToken = await bcrypt.hash(refreshToken, 10);
@@ -180,7 +180,7 @@ const refresh = async (req: Request, res: Response) => {
         const  refreshToken  = req.cookies.refreshToken;
         if (!refreshToken) return res.status(401).json({ message: "Refresh token is missing" });
 
-        jwt.verify(refreshToken, REFRESH_TOKEN_SECRET, async (err: any, payload: any) => {
+        jwt.verify(refreshToken, getRefreshTokenSecret(), async (err: any, payload: any) => {
             if (err) return res.status(403).json({ message: "Refresh token is invalid or expired" });
             if(!payload) return res.status(403).json({ message: "No payload" });
             
@@ -203,13 +203,13 @@ const refresh = async (req: Request, res: Response) => {
                     username: user.username,
                     role: user.role
                 },
-                JWT_SECRET!,
+                getJwtSecret(),
                 { expiresIn: "15m" }
             );
 
             const newRefreshToken = jwt.sign(
                 { userId: user._id },
-                REFRESH_TOKEN_SECRET!,
+                getRefreshTokenSecret(),
                 {expiresIn:"7d"}
             );
             user.refreshToken = await bcrypt.hash(newRefreshToken, 10);
