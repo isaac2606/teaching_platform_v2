@@ -18,6 +18,9 @@ export default function ChatTab() {
     const [activeTab, setActiveTab] = useState({ type: "channel", id: "general", name: "general" });
     const [students, setStudents] = useState([]);
     const [lockedChannels, setLockedChannels] = useState(hub?.lockedChannels || []);
+    const [hasMore, setHasMore] = useState(false);
+    const [oldestCursor, setOldestCursor] = useState(null);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -42,12 +45,17 @@ export default function ChatTab() {
     useEffect(() => {
         const fetchHistory = async () => {
             try {
+                let res;
                 if (activeTab.type === "channel") {
-                    const res = await api.get(`/message/public/${hub._id}?channel=${activeTab.id}`);
-                    setMessages(res.data);
+                    res = await api.get(`/message/public/${hub._id}?channel=${activeTab.id}&limit=50`);
                 } else if (activeTab.type === "dm") {
-                    const res = await api.get(`/message/private/${activeTab.id}`);
-                    setMessages(res.data);
+                    res = await api.get(`/message/private/${activeTab.id}?limit=50`);
+                }
+                if (res?.data) {
+                    const list = Array.isArray(res.data) ? res.data : (res.data.messages || []);
+                    setMessages(list);
+                    setHasMore(Boolean(res.data.hasMore));
+                    setOldestCursor(res.data.oldestCursor || (list.length > 0 ? list[0].createdAt : null));
                 }
                 setTimeout(scrollToBottom, 100);
             } catch (err) {
@@ -56,6 +64,29 @@ export default function ChatTab() {
         };
         fetchHistory();
     }, [hub._id, activeTab]);
+
+    const loadOlderMessages = async () => {
+        if (!oldestCursor || isLoadingMore) return;
+        setIsLoadingMore(true);
+        try {
+            let res;
+            if (activeTab.type === "channel") {
+                res = await api.get(`/message/public/${hub._id}?channel=${activeTab.id}&limit=50&before=${encodeURIComponent(oldestCursor)}`);
+            } else if (activeTab.type === "dm") {
+                res = await api.get(`/message/private/${activeTab.id}?limit=50&before=${encodeURIComponent(oldestCursor)}`);
+            }
+            if (res?.data) {
+                const olderList = Array.isArray(res.data) ? res.data : (res.data.messages || []);
+                setMessages(prev => [...olderList, ...prev]);
+                setHasMore(Boolean(res.data.hasMore));
+                setOldestCursor(res.data.oldestCursor || (olderList.length > 0 ? olderList[0].createdAt : null));
+            }
+        } catch (err) {
+            console.error("Failed to load older messages", err);
+        } finally {
+            setIsLoadingMore(false);
+        }
+    };
 
     // Setup Socket
     useEffect(() => {
@@ -196,6 +227,19 @@ export default function ChatTab() {
 
                 {/* Chat Messages */}
                 <div className="flex-1 overflow-y-auto p-6 space-y-4">
+                    {hasMore && (
+                        <div className="flex justify-center pb-2">
+                            <button
+                                type="button"
+                                onClick={loadOlderMessages}
+                                disabled={isLoadingMore}
+                                className="text-xs font-semibold px-4 py-1.5 rounded-full bg-bg-base border border-border-subtle text-text-secondary hover:text-text-primary hover:border-brand-primary transition-all disabled:opacity-50"
+                            >
+                                {isLoadingMore ? "Loading history..." : "↑ Load older messages"}
+                            </button>
+                        </div>
+                    )}
+
                     {messages.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-full text-text-secondary">
                             <span className="text-4xl mb-3 opacity-50">💬</span>

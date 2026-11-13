@@ -43,7 +43,10 @@ const MessageSchema = new mongoose.Schema({
     
   },
 
-    { timestamps:true })
+    { timestamps:true });
 
+// ⚡ Compound Indexes for O(log N) cursor-based pagination
+MessageSchema.index({ hubId: 1, channel: 1, createdAt: -1 });
+MessageSchema.index({ sender: 1, receiver: 1, createdAt: -1 });
 
 export default mongoose.model<IMessage>("Message",MessageSchema );
