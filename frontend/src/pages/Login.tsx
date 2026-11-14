@@ -61,7 +61,10 @@ export default function Login() {
       <div className="max-w-md w-full bg-bg-surface p-8 rounded-2xl shadow-2xl border border-border-subtle transition-colors duration-300">
         
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-text-primary mb-2">Welcome Back</h2>
+          <Link to="/" className="inline-block mb-3 select-none">
+            <span className="text-3xl font-black tracking-tight text-brand-primary">Edu</span><span className="text-3xl font-black tracking-tight text-text-primary">Space</span>
+          </Link>
+          <h2 className="text-2xl font-bold text-text-primary mb-2">Welcome Back</h2>
           <p className="text-text-secondary">Log in to your account</p>
         </div>
 

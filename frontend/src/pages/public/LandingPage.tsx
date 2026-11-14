@@ -7,10 +7,9 @@ export default function LandingPage() {
     <div className="min-h-screen flex flex-col bg-bg-base text-text-primary transition-colors duration-300">
       {/* Top Navigation Bar */}
       <header className="w-full border-b border-border-subtle bg-bg-surface/80 backdrop-blur-md px-6 py-4 flex items-center justify-between sticky top-0 z-50">
-        <div className="flex items-center gap-2">
-          <span className="text-2xl font-black tracking-tight text-brand-primary">Edu</span>
-          <span className="text-2xl font-black tracking-tight text-text-primary">Space</span>
-        </div>
+        <Link to="/" className="flex items-center select-none">
+          <span className="text-2xl font-black tracking-tight text-brand-primary">Edu</span><span className="text-2xl font-black tracking-tight text-text-primary">Space</span>
+        </Link>
 
         <div className="flex items-center gap-3">
           <ThemeToggle />
