@@ -14,6 +14,14 @@
     "test": "vitest run src"
   },
   "dependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/morgan": "^1.9.10",
+    "@types/multer": "^2.2.0",
+    "@types/node": "^26.1.0",
     "@upstash/redis": "^1.39.0",
     "bcrypt": "^6.0.0",
     "cloudinary": "^1.41.3",
@@ -31,20 +39,14 @@
     "multer-storage-cloudinary": "^4.0.0",
     "nodemon": "^3.1.14",
     "socket.io": "^4.8.3",
+    "typescript": "^6.0.3",
     "zod": "^4.6.2"
   },
   "devDependencies": {
-    "@types/bcrypt": "^6.0.0",
-    "@types/express": "^5.0.6",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/morgan": "^1.9.10",
-    "@types/multer": "^2.2.0",
-    "@types/node": "^26.1.0",
     "@types/supertest": "^7.2.1",
     "mongodb-memory-server": "^11.2.0",
     "supertest": "^7.2.2",
     "ts-node": "^10.9.2",
-    "typescript": "^6.0.3",
     "vitest": "^5.0.0"
   }
 }
