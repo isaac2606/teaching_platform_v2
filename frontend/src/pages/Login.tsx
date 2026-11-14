@@ -3,6 +3,7 @@ import { useState, useContext } from "react";
 import { Link, useNavigate,useLocation } from "react-router-dom";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
+import ThemeToggle from "../components/ui/ThemeToggle";
 import api from "../services/api";
 import { AuthContext } from "../context/AuthContext";
 
@@ -51,11 +52,16 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-base px-4">
-      <div className="max-w-md w-full bg-bg-surface p-8 rounded-2xl shadow-2xl border border-white/5">
+    <div className="min-h-screen flex items-center justify-center bg-bg-base px-4 relative transition-colors duration-300">
+      {/* Top right Theme Toggle */}
+      <div className="absolute top-6 right-6">
+        <ThemeToggle />
+      </div>
+
+      <div className="max-w-md w-full bg-bg-surface p-8 rounded-2xl shadow-2xl border border-border-subtle transition-colors duration-300">
         
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-white mb-2">Welcome Back</h2>
+          <h2 className="text-3xl font-bold text-text-primary mb-2">Welcome Back</h2>
           <p className="text-text-secondary">Log in to your account</p>
         </div>
 

@@ -5,15 +5,25 @@ interface ThemeState {
   toggleTheme: () => void;
 }
 
-// Helper to get initial theme (just like your old Context)
-const getInitialTheme = () => {
+// Helper to get initial theme (checks localStorage, falls back to system preference)
+const getInitialTheme = (): boolean => {
+  if (typeof window === "undefined") return true;
   const stored = localStorage.getItem("theme");
-  if (stored) return stored === "dark";
-  return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const isDark = stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+  if (typeof document !== "undefined") {
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }
+  return isDark;
 };
 
+const initialTheme = getInitialTheme();
+
 export const useThemeStore = create<ThemeState>((set) => ({
-  isDarkMode: getInitialTheme(),
+  isDarkMode: initialTheme,
   
   toggleTheme: () => set((state) => {
     const newIsDark = !state.isDarkMode;

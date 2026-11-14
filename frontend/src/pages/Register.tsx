@@ -3,6 +3,7 @@ import { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
+import ThemeToggle from "../components/ui/ThemeToggle";
 import api from "../services/api";
 import { AuthContext } from "../context/AuthContext";
 
@@ -58,11 +59,16 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bg-base px-4">
-      <div className="max-w-md w-full bg-bg-surface p-8 rounded-2xl shadow-2xl border border-white/5">
+    <div className="min-h-screen flex items-center justify-center bg-bg-base px-4 py-8 relative transition-colors duration-300">
+      {/* Top right Theme Toggle */}
+      <div className="absolute top-6 right-6">
+        <ThemeToggle />
+      </div>
+
+      <div className="max-w-md w-full bg-bg-surface p-8 rounded-2xl shadow-2xl border border-border-subtle transition-colors duration-300">
         
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-white mb-2">Create an Account</h2>
+          <h2 className="text-3xl font-bold text-text-primary mb-2">Create an Account</h2>
           <p className="text-text-secondary">Join the Private Educator Platform</p>
         </div>
 
@@ -101,8 +107,8 @@ export default function Register() {
             placeholder="••••••••"
             required
           />
-          <div className="p-4 border-b border-white/10">
-              <div className="flex bg-black/20 rounded-lg p-1 border border-white/5">
+          <div className="p-4 border-b border-border-subtle">
+              <div className="flex bg-slate-100 dark:bg-black/20 rounded-lg p-1 border border-border-subtle">
                 <button 
                   type="button"
                   onClick={() => {
@@ -113,7 +119,7 @@ export default function Register() {
                 }}
                       
                   className={`flex-1 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 ${
-                    formData.role === "teacher" ? "bg-brand-primary text-white shadow-md" : "text-text-secondary hover:text-white"
+                    formData.role === "teacher" ? "bg-brand-primary text-white shadow-md" : "text-text-secondary hover:text-text-primary"
                   }`}
                 >
                   Teacher
@@ -127,7 +133,7 @@ export default function Register() {
                   })
                 }}
                   className={`flex-1 py-1.5 rounded-md text-sm font-semibold transition-all duration-200 ${
-                    formData.role === "student" ? "bg-brand-primary text-white shadow-md" : "text-text-secondary hover:text-white"
+                    formData.role === "student" ? "bg-brand-primary text-white shadow-md" : "text-text-secondary hover:text-text-primary"
                   }`}
                 >
                   Student
