@@ -14,6 +14,7 @@ const server = http.createServer(app);
 // Allowed origins for CORS (Production domain + local development ports)
 const allowedOrigins = [
   process.env.CLIENT_URL?.replace(/\/$/, ""),
+  "https://eduspace-hub.vercel.app",
   "https://teaching-platform-v2-theta.vercel.app",
   "http://localhost:5173",
   "http://localhost:5174",
