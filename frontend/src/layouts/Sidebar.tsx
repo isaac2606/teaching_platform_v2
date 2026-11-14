@@ -4,7 +4,7 @@ import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 
 import {useSocket} from "../context/SocketContext"
-import { useThemeStore } from '../store/themeStore';
+import { useThemeStore } from '../store/ThemeStore';
 
 export default function Sidebar() {
   const { user, logout } = useContext(AuthContext);
