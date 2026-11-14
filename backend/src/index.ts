@@ -13,7 +13,8 @@ const server = http.createServer(app);
 
 // Allowed origins for CORS (Production domain + local development ports)
 const allowedOrigins = [
-  process.env.CLIENT_URL,
+  process.env.CLIENT_URL?.replace(/\/$/, ""),
+  "https://teaching-platform-v2-theta.vercel.app",
   "http://localhost:5173",
   "http://localhost:5174",
 ].filter(Boolean) as string[];
@@ -21,7 +22,11 @@ const allowedOrigins = [
 const corsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
     // Allow requests with no origin (like mobile apps, curl, or server-to-server)
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (!origin) {
+      return callback(null, true);
+    }
+    const cleanOrigin = origin.replace(/\/$/, "");
+    if (allowedOrigins.some((allowed) => allowed.replace(/\/$/, "") === cleanOrigin)) {
       return callback(null, true);
     }
     return callback(new Error(`CORS blocked for origin: ${origin}`));
