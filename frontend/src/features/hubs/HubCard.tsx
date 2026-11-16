@@ -18,6 +18,12 @@ const HubCard = memo(function HubCard({ hub, onDelete, onEdit }) {
         setTimeout(() => setCopied(false), 2000);
     };
     
+    const teacherId = typeof hub.teacher === "object" && hub.teacher !== null ? (hub.teacher._id || hub.teacher.id) : hub.teacher;
+    const actualStudentsCount = (hub.students || []).filter(s => {
+        const studentId = typeof s === "object" && s !== null ? (s._id || s.id) : s;
+        return studentId && String(studentId) !== String(teacherId);
+    }).length;
+
     return(
         <div className="relative bg-bg-surface border border-border-subtle rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1 overflow-hidden flex flex-col h-full group">
             
@@ -66,7 +72,7 @@ const HubCard = memo(function HubCard({ hub, onDelete, onEdit }) {
                     </h3>
                     <div className="flex items-center gap-1.5 mt-1 text-blue-100 text-sm font-medium">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                        {hub.students?.length || 0} Enrolled Students
+                        {actualStudentsCount} Enrolled Students
                     </div>
                 </div>
             </div>

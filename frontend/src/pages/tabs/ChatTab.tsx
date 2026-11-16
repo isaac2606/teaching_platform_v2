@@ -282,8 +282,9 @@ export default function ChatTab() {
                             disabled={isCurrentChannelLocked && user.role === "student"}
                             className="flex-1 bg-bg-surface border border-border-subtle rounded-xl px-5 py-3 text-sm text-text-primary focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all disabled:opacity-50"
                         />
-                        <Button type="submit" disabled={!newMessage.trim() || (isCurrentChannelLocked && user.role === "student")} className="px-6 rounded-xl shrink-0">
-                            Send <span className="ml-2">?</span>
+                        <Button type="submit" disabled={!newMessage.trim() || (isCurrentChannelLocked && user.role === "student")} className="px-6 rounded-xl shrink-0 flex items-center gap-2">
+                            Send
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" /></svg>
                         </Button>
                     </form>
                 </div>

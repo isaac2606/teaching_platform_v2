@@ -23,7 +23,7 @@ export default function Messages() {
     const queryClient = useQueryClient();
 
     // Query for private messages with activeReceiver
-    const { data: messages = [] } = useQuery({
+    const { data: rawMessagesData } = useQuery({
         queryKey: ["private-messages", activeReceiver?._id],
         queryFn: async () => {
             const savedMessages = await api.get(`/message/private/${activeReceiver._id}`);
@@ -31,6 +31,10 @@ export default function Messages() {
         },
         enabled: !!activeReceiver?._id
     });
+
+    const messages = Array.isArray(rawMessagesData) 
+        ? rawMessagesData 
+        : (rawMessagesData?.messages || []);
 
     // Query for recent contacts
     const { data: recentContacts = [] } = useQuery({
@@ -95,21 +99,33 @@ export default function Messages() {
         if (!socket) return;
         
         const handleReceive = async (message) => {
+            const senderId = String(message.sender?._id || message.sender || "");
+            const receiverId = String(message.receiver?._id || message.receiver || "");
+            const activeId = String(activeReceiver?._id || "");
+
             const belongsToCurrentChat = 
-                message.sender._id === activeReceiver?._id || 
-                message.receiver._id === activeReceiver?._id ||
-                message.sender === activeReceiver?._id ||
-                message.receiver === activeReceiver?._id;
+                senderId === activeId || 
+                receiverId === activeId;
 
             if (belongsToCurrentChat) {
-                queryClient.setQueryData(["private-messages", activeReceiver._id], (oldMessages = []) => {
-                    return [...oldMessages, message];
+                queryClient.setQueryData(["private-messages", activeReceiver._id], (old) => {
+                    if (Array.isArray(old)) {
+                        return [...old, message];
+                    }
+                    if (old && typeof old === "object" && Array.isArray(old.messages)) {
+                        return {
+                            ...old,
+                            messages: [...old.messages, message]
+                        };
+                    }
+                    return [message];
                 });
                 setTimeout(scrollToBottom, 50);
             }
             
-            if (!recentContacts.some(c => c._id === message.sender._id) && message.sender._id !== user._id) {
-                addContactMutation.mutate(message.sender._id);
+            const senderRawId = message.sender?._id || message.sender;
+            if (senderRawId && !recentContacts.some(c => String(c._id) === String(senderRawId)) && String(senderRawId) !== String(user._id)) {
+                addContactMutation.mutate(senderRawId);
             }
         };
 
@@ -182,14 +198,24 @@ export default function Messages() {
                 createdAt: new Date().toISOString()
             };
 
-            queryClient.setQueryData(["private-messages", activeReceiver._id], (oldMessages = []) => {
-                return [...oldMessages, fakeMessage];
+            queryClient.setQueryData(["private-messages", activeReceiver._id], (old) => {
+                if (Array.isArray(old)) {
+                    return [...old, fakeMessage];
+                }
+                if (old && typeof old === "object" && Array.isArray(old.messages)) {
+                    return {
+                        ...old,
+                        messages: [...old.messages, fakeMessage]
+                    };
+                }
+                return [fakeMessage];
             });
 
             socket.emit("send_private_message", messageData);
             
             setNewMessage("");
             setFile(null);
+            setTimeout(scrollToBottom, 50);
         } catch (err) {
             console.error("Failed to send message/upload", err);
             alert("Failed to send message: " + (err.response?.data?.error || err.message));
@@ -209,7 +235,7 @@ export default function Messages() {
                     <form onSubmit={handleSearchUser} className="flex flex-col gap-2">
                         <div className="flex gap-2">
                             <input 
-                                placeholder="Search User ID..."
+                                placeholder="Search username, email, or ID..."
                                 value={newReceiver}
                                 onChange={(e) => setNewReceiver(e.target.value)}
                                 className="flex-1 bg-bg-surface border border-border-subtle rounded px-3 py-2 text-sm text-text-primary focus:outline-none"
@@ -261,7 +287,7 @@ export default function Messages() {
                             </div>
                             <div>
                                 <h3 className="font-bold text-text-primary text-lg">{activeReceiver.username}</h3>
-                                <p className="text-sm text-text-secondary capitalize">{activeReceiver.role || "Member"} • ID: {activeReceiver._id}</p>
+                                <p className="text-sm text-text-secondary capitalize">{activeReceiver.role || "Member"}{activeReceiver.email ? ` • ${activeReceiver.email}` : ""}</p>
                             </div>
                         </div>
 

@@ -30,8 +30,17 @@ export const enrollUserInHub = async (
 
   // 2. Synchronize denormalized Hub and User collections
   if (role === "student") {
+    const hub = await Hub.findById(hubId);
+    // Never add the hub's owner/teacher to the students array
+    if (hub && hub.teacher?.toString() !== userId.toString()) {
+      await Hub.findByIdAndUpdate(hubId, {
+        $addToSet: { students: userId }
+      });
+    }
+  } else {
+    // If user is owner or co_teacher, ensure they are not in the students array
     await Hub.findByIdAndUpdate(hubId, {
-      $addToSet: { students: userId }
+      $pull: { students: userId }
     });
   }
 
@@ -152,6 +161,13 @@ export const joinHubOrClassByInviteToken = async (
   // Check Hub token first
   const hub = await Hub.findOne({ inviteToken });
   if (hub) {
+    if (hub.teacher?.toString() === userId.toString()) {
+      return {
+        type: "hub" as const,
+        entity: hub,
+        alreadyJoined: true
+      };
+    }
     const isAlreadyMember = await Membership.findOne({ user: userId, hub: hub._id });
     await enrollUserInHub(userId, hub._id, "student");
     return {

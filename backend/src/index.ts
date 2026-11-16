@@ -228,8 +228,8 @@ io.on("connection", async (socket) => {
         await newMessage.populate("sender","username");
         await newMessage.populate("receiver","username");
 
-        io.to(data.receiver).emit("receive_private_message",newMessage);
-        io.to(senderId).emit("receive_private_message",newMessage)
+        io.to(String(data.receiver)).emit("receive_private_message", newMessage);
+        io.to(String(senderId)).emit("receive_private_message", newMessage);
 
       }catch(err){
         console.error("Error saving message:", err)

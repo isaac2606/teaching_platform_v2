@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import mongoose from "mongoose";
 import User from "../models/User";
 
 const getAllUsers = async (req: Request, res: Response) => {
@@ -17,7 +18,27 @@ const getAllUsers = async (req: Request, res: Response) => {
 
 const getUserProfile = async (req: Request, res: Response) => {
     try {
-        const user = await User.findById(req.params.id);
+        const rawId = req.params.id;
+        const idParam = Array.isArray(rawId) ? rawId[0] : rawId;
+        const queryParam = idParam ? String(idParam).trim() : "";
+        
+        if (!queryParam) {
+            return res.status(400).json({ message: "Search term required" });
+        }
+
+        let user = null;
+        if (mongoose.Types.ObjectId.isValid(queryParam)) {
+            user = await User.findById(queryParam);
+        }
+        if (!user) {
+            user = await User.findOne({
+                $or: [
+                    { username: { $regex: new RegExp(`^${queryParam}$`, "i") } },
+                    { email: queryParam.toLowerCase() }
+                ]
+            });
+        }
+
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }

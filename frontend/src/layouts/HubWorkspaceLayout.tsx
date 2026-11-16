@@ -51,7 +51,11 @@ export default function HubWorkspaceLayout() {
                         <div className="flex flex-wrap items-center gap-4 mt-2">
                             <div className="flex items-center gap-2 text-text-secondary font-medium">
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>
-                                {hub.students?.length || 0} Students
+                                {(hub.students || []).filter(s => {
+                                    const studentId = typeof s === "object" && s !== null ? (s._id || s.id) : s;
+                                    const teacherId = typeof hub.teacher === "object" && hub.teacher !== null ? (hub.teacher._id || hub.teacher.id) : hub.teacher;
+                                    return studentId && String(studentId) !== String(teacherId);
+                                }).length} Students
                             </div>
                             
                             {/* Invite Link Pill */}
