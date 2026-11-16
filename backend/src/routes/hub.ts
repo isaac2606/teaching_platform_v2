@@ -39,7 +39,7 @@ router.get("/:hubId/students", verifyToken, authorize("owner", "co_teacher", "st
 
 router.get("/invite/:inviteToken", verifyToken, getHubByInviteToken);
 
-router.get("/:id", verifyToken, getHubById);
+router.get("/:id", verifyToken, authorize("owner", "co_teacher", "student"), getHubById);
 
 router.put("/:id", verifyToken, authorize("owner"), updateHub);
 

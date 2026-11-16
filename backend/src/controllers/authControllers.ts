@@ -57,7 +57,7 @@ const login = async (req: Request, res: Response)=>{
         const normalizedEmail = req.body.email ? req.body.email.toLowerCase().trim() : "";
         const user = await User.findOne({
             email: normalizedEmail
-        })
+        }).select("+password");
         if(!user){
             return res.status(404).json("user not found");
         }
@@ -98,7 +98,7 @@ const login = async (req: Request, res: Response)=>{
         res.cookie("accessToken", accessToken, getAccessTokenCookieOptions());
         res.cookie("refreshToken", refreshToken, getRefreshTokenCookieOptions());
         res.status(200).json({
-            message:"loggin succesful",
+            message:"user logged in successfully",
             user:userWithoutPassword,
             
         })
@@ -185,7 +185,7 @@ const refresh = async (req: Request, res: Response) => {
             if(!payload) return res.status(403).json({ message: "No payload" });
             
             const decodedPayload = payload as DecodedToken;
-            const user = await User.findById(decodedPayload.userId);
+            const user = await User.findById(decodedPayload.userId).select("+refreshToken");
 
             if (!user || !user.refreshToken) {
                 return res.status(403).json({ message: "Invalid refresh token" });

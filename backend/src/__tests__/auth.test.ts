@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
+import { describe, it, expect, beforeAll, afterAll, afterEach, beforeEach } from 'vitest';
 import request from 'supertest';
 import mongoose from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
@@ -144,6 +144,107 @@ describe("Auth Routes Integration Tests", () => {
     // In the database, only one user exists
     const usersInDb = await User.find({ email: "racecondition@example.com" });
     expect(usersInDb).toHaveLength(1);
+  });
+
+  describe("Login Endpoint", () => {
+    beforeEach(async () => {
+      // Seed a user for login tests
+      await request(app)
+        .post("/api/auth/Register")
+        .send({
+          username: "tester",
+          email: "tester@example.com",
+          password: "password123",
+          role: "teacher"
+        });
+    });
+
+    it("should successfully login an existing user and return cookies", async () => {
+      const res = await request(app)
+        .post("/api/auth/Login")
+        .send({
+          email: "tester@example.com",
+          password: "password123"
+        });
+
+      expect(res.status).toBe(200);
+      expect(res.body.message).toBe("user logged in successfully");
+      expect(res.body.user).toBeDefined();
+      expect(res.body.user.email).toBe("tester@example.com");
+      expect(res.body.user.password).toBeUndefined(); // Password must never leak
+
+      // Verify Set-Cookie headers contain accessToken and refreshToken
+      const cookies = res.headers['set-cookie'] as unknown as string[];
+      expect(cookies).toBeDefined();
+      const hasAccessToken = cookies.some((c: string) => c.includes("accessToken="));
+      const hasRefreshToken = cookies.some((c: string) => c.includes("refreshToken="));
+      expect(hasAccessToken).toBe(true);
+      expect(hasRefreshToken).toBe(true);
+    });
+
+    it("should reject login with incorrect password", async () => {
+      const res = await request(app)
+        .post("/api/auth/Login")
+        .send({
+          email: "tester@example.com",
+          password: "WrongPassword999"
+        });
+
+      expect(res.status).toBe(400);
+      expect(res.body).toBe("wrong password");
+    });
+
+    it("should reject login with unregistered email", async () => {
+      const res = await request(app)
+        .post("/api/auth/Login")
+        .send({
+          email: "unknown@example.com",
+          password: "password123"
+        });
+
+      expect(res.status).toBe(404);
+      expect(res.body).toBe("user not found");
+    });
+  });
+
+  describe("Token Refresh Endpoint", () => {
+    it("should rotate access and refresh tokens when valid refreshToken cookie is sent", async () => {
+      // 1. Register a user
+      const registerRes = await request(app)
+        .post("/api/auth/Register")
+        .send({
+          username: "tokenRefresher",
+          email: "refresh@example.com",
+          password: "password123",
+          role: "student"
+        });
+
+      // Extract cookies
+      const cookies = registerRes.headers['set-cookie'] as unknown as string[];
+      const refreshTokenCookie = cookies.find((c: string) => c.startsWith("refreshToken="));
+      expect(refreshTokenCookie).toBeDefined();
+
+      // 2. Call /refresh with the cookie
+      const refreshRes = await request(app)
+        .post("/api/auth/refresh")
+        .set("Cookie", [refreshTokenCookie!]);
+
+      expect(refreshRes.status).toBe(200);
+
+      // Verify new cookies are set
+      const newCookies = refreshRes.headers['set-cookie'] as unknown as string[];
+      expect(newCookies).toBeDefined();
+      const hasNewAccessToken = newCookies.some((c: string) => c.includes("accessToken="));
+      const hasNewRefreshToken = newCookies.some((c: string) => c.includes("refreshToken="));
+      expect(hasNewAccessToken).toBe(true);
+      expect(hasNewRefreshToken).toBe(true);
+    });
+
+    it("should return 401 when refresh token cookie is missing", async () => {
+      const res = await request(app).post("/api/auth/refresh");
+      expect(res.status).toBe(401);
+      expect(res.body.message).toBe("Refresh token is missing");
+    });
   });
 
 });
