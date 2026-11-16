@@ -19,8 +19,8 @@ import { createClass,
 router.post(
   "/createClass",
   verifyToken,
-  authorize("owner", "co_teacher"),
   upload.single("imageUrl"),
+  authorize("owner", "co_teacher"),
   createClass,
 );
 

@@ -12,7 +12,7 @@ import {
 } from "../controllers/assignmentController";
 
 // create an assignment
-router.post("/create", verifyToken, authorize("owner", "co_teacher"), upload.single("image"), createAssignment);
+router.post("/create", verifyToken, upload.single("image"), authorize("owner", "co_teacher"), createAssignment);
 
 // get all assignments for a specific hub
 router.get("/hub/:hubId", verifyToken, authorize("owner", "co_teacher", "student"), getAssignmentsByHub);

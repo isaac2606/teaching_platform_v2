@@ -23,6 +23,8 @@ const Register = lazy(() => import("./pages/Register"));
 const HubWorkspaceLayout = lazy(() => import("./layouts/HubWorkspaceLayout"));
 const StudentDashboard = lazy(() => import("./pages/StudentDashboard"));
 const JoinHub = lazy(() => import("./features/hubs/JoinHub"));
+const GlobalSchedule = lazy(() => import("./pages/GlobalSchedule"));
+const MaterialsPage = lazy(() => import("./pages/MaterialsPage"));
 const FeedTab = lazy(() => import("./pages/tabs/FeedTab"));
 const ChatTab = lazy(() => import("./pages/tabs/ChatTab"));
 const ScheduleTab = lazy(() => import("./pages/tabs/ScheduleTab"));
@@ -122,6 +124,14 @@ const router = createBrowserRouter([
                 loader: StudentsLoader // <-- Attached specifically to the Roster Tab!
               }
             ]
+          },
+          {
+            path: "schedule",
+            element: <Suspense fallback={<Loader />}><GlobalSchedule /></Suspense>
+          },
+          {
+            path: "materials",
+            element: <Suspense fallback={<Loader />}><MaterialsPage /></Suspense>
           },
           {
             path: "messages",

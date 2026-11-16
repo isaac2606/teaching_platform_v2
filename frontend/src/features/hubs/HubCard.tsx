@@ -7,12 +7,15 @@ const HubCard = memo(function HubCard({ hub, onDelete, onEdit }) {
     const { user } = useContext(AuthContext);
     const [isEditing, setIsEditing] = useState(false);
     const [editValue, setEditValue] = useState("");
+    const [copied, setCopied] = useState(false);
 
     const handleCopy = (e) => {
         e.preventDefault();
         e.stopPropagation();
-        navigator.clipboard.writeText(hub.inviteToken);
-        alert("Invite Link Copied!");
+        const fullInviteUrl = `${window.location.origin}/join/${hub.inviteToken}`;
+        navigator.clipboard.writeText(fullInviteUrl);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
     };
     
     return(
@@ -91,10 +94,18 @@ const HubCard = memo(function HubCard({ hub, onDelete, onEdit }) {
                     {user?.role === "teacher" && (
                         <button 
                             onClick={handleCopy}
-                            className="p-2.5 border border-border-subtle hover:border-brand-primary text-text-secondary hover:text-brand-primary rounded-xl transition-colors bg-bg-surface shadow-sm"
-                            title="Copy Invite Link"
+                            className={`p-2.5 border rounded-xl transition-all shadow-sm flex items-center gap-1.5 ${
+                                copied 
+                                    ? "bg-green-500/10 border-green-500 text-green-500" 
+                                    : "border-border-subtle hover:border-brand-primary text-text-secondary hover:text-brand-primary bg-bg-surface"
+                            }`}
+                            title={copied ? "Invite link copied!" : "Copy Full Invite Link"}
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                            {copied ? (
+                                <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" /></svg>
+                            ) : (
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                            )}
                         </button>
                     )}
                 </div>

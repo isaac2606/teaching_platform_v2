@@ -5,8 +5,10 @@ import Membership from "../models/Membership";
 const authorize = (...roles:string[])=>{
     return async (req:Request , res:Response, next:NextFunction)=>{
         
-        const hubId = req.params.hubId || req.params.id || req.body.hubId;
-        if(hubId && req.user.userId){
+        const rawHubId = req.params.hubId || req.params.id || req.body?.hubId || req.body?.hubIds;
+        const hubId = Array.isArray(rawHubId) ? rawHubId[0] : rawHubId;
+        
+        if(hubId && req.user?.userId){
             try{
                 const membership = await Membership.findOne({
                 user:req.user.userId,

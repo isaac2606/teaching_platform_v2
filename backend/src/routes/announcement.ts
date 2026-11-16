@@ -10,7 +10,7 @@ import { addAnnouncement,
  } from "../controllers/announcementController";
 
 // create an announcement
-router.post("/add", verifyToken, authorize("owner", "co_teacher"), upload.single("image"), addAnnouncement);
+router.post("/add", verifyToken, upload.single("image"), authorize("owner", "co_teacher"), addAnnouncement);
 
 // get all announcements
 router.get("/getAnounc", verifyToken, getAllAnnouncements);
